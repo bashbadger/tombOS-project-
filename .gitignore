@@ -4,6 +4,10 @@
 kernel/*.o
 kernel/kernel.bin
 
+# Dependency directories
+node_modules/
+package-lock.json
+
 # OS specific files
 .DS_Store
 Thumbs.db
