@@ -142,6 +142,23 @@
       </div>
     </div>
 
+    <!-- Hypervisor Authorization Dialog -->
+    <div id="hypervisor-overlay" class="tour-overlay hidden" style="z-index: 20000; background: rgba(0,0,0,0.65);">
+      <div class="tour-card" style="border-color: var(--sec-red); box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 15px var(--sec-red-glow); pointer-events: auto; position: relative; left: unset; top: unset;">
+        <div class="tour-header" style="border-bottom-color: rgba(255,59,48,0.25);">
+          <h4 style="color: var(--sec-red); font-weight: 700;">[XEN] Hypervisor Interdiction</h4>
+          <span style="font-size: 9px; color: var(--ubuntu-light-grey); background: rgba(255,255,255,0.08); padding: 1px 4px; border-radius: 3px; font-family: var(--font-mono);">Dom0 Rules</span>
+        </div>
+        <div class="tour-body" id="hypervisor-body" style="font-size: 12.5px; margin: 8px 0; line-height: 1.5;">
+          Source app requesting communication channel to target app.
+        </div>
+        <div class="tour-footer" style="border-top-color: rgba(255,59,48,0.15); padding-top: 10px; display: flex; justify-content: flex-end; gap: 8px;">
+          <button class="tour-btn secondary" onclick="denyHypervisorAccess()" style="border: 1px solid rgba(255,59,48,0.4); color: #ffbaba;">Block (Default)</button>
+          <button class="tour-btn" onclick="allowHypervisorAccess()" style="background: var(--sec-red); color: #fff;">Authorize Once</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Ubuntu Left Dock -->
     <nav id="dock">
       <div class="dock-inner">
@@ -212,6 +229,14 @@
             <path d="M12 2L3 6v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V6l-9-4zm0 6c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm5 8H7v-1.5c0-1.66 3.33-2.5 5-2.5s5 .84 5 2.5V16z" fill="#E95420" />
           </svg>
           <div class="dock-dot hidden" id="dot-ultimate"></div>
+        </div>
+
+        <!-- Hypervisor VM Manager -->
+        <div class="dock-item" data-app="hypervisor" onclick="openWindow('hypervisor')" title="Tomb Hypervisor Manager (VM isolation zones)">
+          <svg viewBox="0 0 24 24" class="dock-svg-icon hypervisor-color">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#E95420" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+          </svg>
+          <div class="dock-dot hidden" id="dot-hypervisor"></div>
         </div>
 
         <!-- Interactive Tour Guide -->

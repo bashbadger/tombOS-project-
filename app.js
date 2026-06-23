@@ -38,6 +38,31 @@ const systemState = {
     step: 0,
     active: false
   },
+  hypervisor: {
+    zones: {
+      terminal: 'work',
+      ids: 'work',
+      apparmor: 'secure',
+      cis: 'secure',
+      soc2: 'secure',
+      globalcom: 'secure',
+      vault: 'personal',
+      ultimate: 'secure',
+      readme: 'personal',
+      hypervisor: 'secure'
+    },
+    rules: {
+      interAppDnd: true,
+      crossCopy: true,
+      vaultExport: true
+    },
+    logs: [
+      "Xen hypervisor v4.17 initialized.",
+      "Domain-0 control panel loaded.",
+      "Security isolation policy loaded: App containment strict."
+    ],
+    pendingAction: null
+  },
   threatLevel: "SECURE", // SECURE, WARNING, THREAT_DETECTED
   uptime: 0,
   activeWindow: null,
@@ -286,13 +311,14 @@ const windowConfig = {
           <input type="text" class="terminal-input" autofocus onkeydown="handleTerminalCommand(event, this)" spellcheck="false" aria-label="Terminal input prompt" />
         </div>
         <div class="terminal-chips-wrapper">
-          <div class="terminal-chip-label">Quick Commands (Click to Run):</div>
+          <div class="terminal-chip-label">Quick Commands:</div>
           <button class="terminal-chip" onclick="runTerminalChipCommand('ufw status')">ufw status</button>
           <button class="terminal-chip" onclick="runTerminalChipCommand('aa-status')">aa-status</button>
           <button class="terminal-chip" onclick="runTerminalChipCommand('fail2ban-client status')">fail2ban status</button>
           <button class="terminal-chip" onclick="runTerminalChipCommand('auditd')">auditd</button>
           <button class="terminal-chip" onclick="runTerminalChipCommand('sysctl -a')">sysctl -a</button>
           <button class="terminal-chip" onclick="runTerminalChipCommand('help')">help</button>
+          <button class="terminal-chip" style="background: rgba(255, 204, 0, 0.15); border-color: var(--sec-yellow);" onclick="pasteTerminalFromVMClipboard()">Paste VM Clipboard</button>
         </div>
       </div>
     `
@@ -457,14 +483,20 @@ const windowConfig = {
           </div>
           <button class="vault-btn-action" onclick="runVaultEncrypt()">Generate Sealed Payload</button>
           <div class="vault-group" style="margin-top: 10px;">
-            <label>Ciphertext Result</label>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label style="margin: 0;">Ciphertext Result</label>
+              <button class="vault-btn-action" style="font-size: 10px; padding: 2px 6px; background: rgba(0, 122, 255, 0.2); border: 1px solid #007AFF; margin: 0; width: auto;" onclick="copyVaultToVMClipboard()">Copy to VM Clipboard</button>
+            </div>
             <div class="vault-result-panel" id="vault-ciphertext-output">Payload will appear here...</div>
           </div>
         </div>
 
         <div class="vault-body hidden" id="vault-panel-decrypt">
           <div class="vault-group">
-            <label for="vault-ciphertext-input">Ciphertext Payload</label>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label for="vault-ciphertext-input" style="margin: 0;">Ciphertext Payload</label>
+              <button class="vault-btn-action" style="font-size: 10px; padding: 2px 6px; background: rgba(0, 122, 255, 0.2); border: 1px solid #007AFF; margin: 0; width: auto;" onclick="pasteVaultFromVMClipboard()">Paste from VM Clipboard</button>
+            </div>
             <textarea class="vault-textarea" id="vault-ciphertext-input" placeholder="Paste Base64 payload..."></textarea>
           </div>
           <div class="vault-row">
@@ -510,6 +542,13 @@ const windowConfig = {
     height: 500,
     icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 2L3 6v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V6l-9-4zm0 6c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm5 8H7v-1.5c0-1.66 3.33-2.5 5-2.5s5 .84 5 2.5V16z" fill="#E95420" /></svg>`,
     getContent: () => getUltimateContent()
+  },
+  hypervisor: {
+    title: "Tomb Hypervisor VM Manager",
+    width: 650,
+    height: 460,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" fill="none" stroke="#E95420" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    getContent: () => getHypervisorContent()
   }
 };
 
@@ -535,7 +574,10 @@ function openWindow(appId) {
   
   win = document.createElement('div');
   win.id = `window-${appId}`;
-  win.className = `os-window active`;
+  
+  // Qubes zone styling setup
+  const currentZone = systemState.hypervisor.zones[appId] || 'personal';
+  win.className = `os-window active zone-${currentZone}`;
   
   const desktopWidth = document.getElementById('desktop').clientWidth;
   const desktopHeight = document.getElementById('desktop').clientHeight;
@@ -548,10 +590,16 @@ function openWindow(appId) {
   win.style.top = `${top}px`;
   
   win.innerHTML = `
-    <div class="window-titlebar" onmousedown="dragStart(event, '${appId}')" ondblclick="maximizeWindow('${appId}')">
+    <div class="window-titlebar" onmousedown="dragStart(event, '${appId}')" ontouchstart="dragStart(event, '${appId}')" ondblclick="maximizeWindow('${appId}')">
       <div class="window-title">
         <span class="window-title-icon">${config.icon}</span>
         <span>${config.title}</span>
+        <select class="window-zone-select sel-${currentZone}" onchange="changeWindowZone('${appId}', this)" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()">
+          <option value="untrusted" ${currentZone === 'untrusted' ? 'selected' : ''}>[Red] Untrusted</option>
+          <option value="work" ${currentZone === 'work' ? 'selected' : ''}>[Yellow] Work</option>
+          <option value="personal" ${currentZone === 'personal' ? 'selected' : ''}>[Blue] Personal</option>
+          <option value="secure" ${currentZone === 'secure' ? 'selected' : ''}>[Green] Secure System</option>
+        </select>
       </div>
       <div class="window-controls">
         <button class="window-btn minimize" onclick="minimizeWindow('${appId}', event)" title="Minimize" aria-label="Minimize Window">─</button>
@@ -565,6 +613,7 @@ function openWindow(appId) {
   `;
 
   win.addEventListener('mousedown', () => focusWindow(win));
+  win.addEventListener('touchstart', () => focusWindow(win));
   container.appendChild(win);
   focusWindow(win);
 
@@ -603,7 +652,7 @@ function maximizeWindow(appId, e) {
   if (win) win.classList.toggle('maximized');
 }
 
-// Drag & Drop
+// Drag & Drop (Touch and Mouse compatible)
 let dragElement = null;
 let dragX = 0;
 let dragY = 0;
@@ -614,11 +663,20 @@ function dragStart(e, appId) {
 
   focusWindow(win);
   dragElement = win;
-  dragX = e.clientX - win.offsetLeft;
-  dragY = e.clientY - win.offsetTop;
+  
+  const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+  const clientY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+  
+  dragX = clientX - win.offsetLeft;
+  dragY = clientY - win.offsetTop;
 
-  document.addEventListener('mousemove', dragMove);
-  document.addEventListener('mouseup', dragEnd);
+  if (e.type === 'touchstart') {
+    document.addEventListener('touchmove', dragMove, { passive: false });
+    document.addEventListener('touchend', dragEnd);
+  } else {
+    document.addEventListener('mousemove', dragMove);
+    document.addEventListener('mouseup', dragEnd);
+  }
 }
 
 function dragMove(e) {
@@ -626,20 +684,29 @@ function dragMove(e) {
   const desktopWidth = document.getElementById('desktop').clientWidth;
   const desktopHeight = document.getElementById('desktop').clientHeight;
   
-  let left = e.clientX - dragX;
-  let top = e.clientY - dragY;
+  const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+  const clientY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+  
+  let left = clientX - dragX;
+  let top = clientY - dragY;
   
   left = Math.max(58, Math.min(left, desktopWidth - 100));
   top = Math.max(28, Math.min(top, desktopHeight - 40));
 
   dragElement.style.left = `${left}px`;
   dragElement.style.top = `${top}px`;
+  
+  if (e.cancelable) {
+    e.preventDefault(); // Prevent scrolling the browser window while dragging
+  }
 }
 
 function dragEnd() {
   dragElement = null;
   document.removeEventListener('mousemove', dragMove);
   document.removeEventListener('mouseup', dragEnd);
+  document.removeEventListener('touchmove', dragMove);
+  document.removeEventListener('touchend', dragEnd);
 }
 
 // ACCESSIBILITY: Terminal Suggestions runner
@@ -671,25 +738,26 @@ function handleTerminalCommand(e, input) {
     
     history.innerHTML += `<div class="terminal-line"><span class="terminal-prompt">sec-admin@tomb-os:~$</span> <span style="color: #fff;">${escapeHTML(rawVal)}</span></div>`;
     
-    // IMMUTABLE FILESYSTEM CONSTRAINT CHECK
-    if (systemState.ultimate.immutable) {
-      const isWriteCmd = rawVal.match(/^(gpg|touch|rm|mkdir|mv|cp|dd|sudo\s+touch|sudo\s+rm|sudo\s+mkdir)/i);
-      if (isWriteCmd) {
-        history.innerHTML += `<div class="terminal-line error">[AppArmor/Immutable Core BLOCK] Root filesystem overlay is locked read-only. File write and directory creation requests on '/usr' and '/' sectors are prohibited.</div>`;
-        const terminalContainer = input.parentElement.parentElement;
-        terminalContainer.scrollTop = terminalContainer.scrollHeight;
-        logAudit(`Unauthorized write command '${rawVal}' blocked by Immutable Core Overlay.`);
-        return;
+    const runCmd = () => {
+      // IMMUTABLE FILESYSTEM CONSTRAINT CHECK
+      if (systemState.ultimate.immutable) {
+        const isWriteCmd = rawVal.match(/^(gpg|touch|rm|mkdir|mv|cp|dd|sudo\s+touch|sudo\s+rm|sudo\s+mkdir)/i);
+        if (isWriteCmd) {
+          history.innerHTML += `<div class="terminal-line error">[AppArmor/Immutable Core BLOCK] Root filesystem overlay is locked read-only. File write and directory creation requests on '/usr' and '/' sectors are prohibited.</div>`;
+          const terminalContainer = input.parentElement.parentElement;
+          terminalContainer.scrollTop = terminalContainer.scrollHeight;
+          logAudit(`Unauthorized write command '${rawVal}' blocked by Immutable Core Overlay.`);
+          return;
+        }
       }
-    }
 
-    const args = rawVal.split(' ');
-    const cmd = args[0].toLowerCase();
-    let output = '';
-    
-    switch (cmd) {
-      case 'help':
-        output = `Available Diagnostics Toolkit Commands:
+      const args = rawVal.split(' ');
+      const cmd = args[0].toLowerCase();
+      let output = '';
+      
+      switch (cmd) {
+        case 'help':
+          output = `Available Diagnostics Toolkit Commands:
   help                       - Show this documentation index.
   whoami                     - Inspect active administrative context.
   ufw status                 - Display active Firewall filters.
@@ -701,16 +769,16 @@ function handleTerminalCommand(e, input) {
   sysctl -a                  - View hardened system network kernel configs.
   gpg -c [text]              - Run symmetric AES encryption pipeline.
   clear                      - Purge terminal lines.`;
-        break;
-      case 'whoami':
-        output = `sec-admin (System Administrator, UID: 0 - root context active)`;
-        break;
-      case 'clear':
-        history.innerHTML = '';
-        return;
-      case 'ufw':
-        if (args[1] === 'status') {
-          output = `Status: ${systemState.features.ufw ? 'active' : 'inactive'}
+          break;
+        case 'whoami':
+          output = `sec-admin (System Administrator, UID: 0 - root context active)`;
+          break;
+        case 'clear':
+          history.innerHTML = '';
+          return;
+        case 'ufw':
+          if (args[1] === 'status') {
+            output = `Status: ${systemState.features.ufw ? 'active' : 'inactive'}
 Logging: on (low)
 Default: deny (incoming), allow (outgoing), disabled (routed)
 
@@ -719,30 +787,30 @@ To                         Action      From
 22/tcp (SSH/Hardened)      LIMIT       Anywhere
 443/tcp (HTTPS)            ALLOW       Anywhere
 80/tcp (HTTP-redirect)     ALLOW       Anywhere`;
-        } else if (args[1] === 'enable') {
-          systemState.features.ufw = true;
-          const ufwIcon = document.getElementById('qs-ufw-icon');
-          if (ufwIcon) ufwIcon.classList.add('active');
-          output = `Firewall is active and enabled on system startup`;
-          logAudit("UFW Firewall status set to: ACTIVE");
-          updateSecurityShield();
-          syncComplianceDials();
-        } else if (args[1] === 'disable') {
-          systemState.features.ufw = false;
-          const ufwIcon = document.getElementById('qs-ufw-icon');
-          if (ufwIcon) ufwIcon.classList.remove('active');
-          output = `Firewall stopped and disabled on system startup`;
-          logAudit("UFW Firewall status set to: INACTIVE (WARNING)");
-          updateSecurityShield();
-          syncComplianceDials();
-        } else {
-          output = `Usage: ufw status | enable | disable`;
-        }
-        break;
-      case 'aa-status':
-        const loaded = Object.keys(systemState.apps).length;
-        const enforced = Object.values(systemState.apps).filter(a => a.secured).length;
-        output = `apparmor module is loaded.
+          } else if (args[1] === 'enable') {
+            systemState.features.ufw = true;
+            const ufwIcon = document.getElementById('qs-ufw-icon');
+            if (ufwIcon) ufwIcon.classList.add('active');
+            output = `Firewall is active and enabled on system startup`;
+            logAudit("UFW Firewall status set to: ACTIVE");
+            updateSecurityShield();
+            syncComplianceDials();
+          } else if (args[1] === 'disable') {
+            systemState.features.ufw = false;
+            const ufwIcon = document.getElementById('qs-ufw-icon');
+            if (ufwIcon) ufwIcon.classList.remove('active');
+            output = `Firewall stopped and disabled on system startup`;
+            logAudit("UFW Firewall status set to: INACTIVE (WARNING)");
+            updateSecurityShield();
+            syncComplianceDials();
+          } else {
+            output = `Usage: ufw status | enable | disable`;
+          }
+          break;
+        case 'aa-status':
+          const loaded = Object.keys(systemState.apps).length;
+          const enforced = Object.values(systemState.apps).filter(a => a.secured).length;
+          output = `apparmor module is loaded.
 ${loaded} profiles are loaded.
 ${enforced} profiles are in enforce mode.
    /usr/bin/chromium-browser
@@ -750,24 +818,24 @@ ${enforced} profiles are in enforce mode.
    /usr/bin/nautilus-file-manager
    /usr/sbin/sshd
 ${loaded - enforced} profiles are in complain mode.`;
-        break;
-      case 'aa-enforce':
-        const target = args[1];
-        if (!target) {
-          output = `Usage: aa-enforce [browser | filemanager | pdfviewer | ssh]`;
-        } else if (systemState.apps[target]) {
-          systemState.apps[target].secured = true;
-          updateAppArmorUI();
-          output = `Setting AppArmor profile for /usr/bin/${target} to Enforcing mode.`;
-          logAudit(`AppArmor containment profile for ${target} set to ENFORCE.`);
-          syncComplianceDials();
-        } else {
-          output = `AppArmor profile target '/usr/bin/${target}' not found.`;
-        }
-        break;
-      case 'fail2ban-client':
-        if (args[1] === 'status') {
-          output = `Status
+          break;
+        case 'aa-enforce':
+          const target = args[1];
+          if (!target) {
+            output = `Usage: aa-enforce [browser | filemanager | pdfviewer | ssh]`;
+          } else if (systemState.apps[target]) {
+            systemState.apps[target].secured = true;
+            updateAppArmorUI();
+            output = `Setting AppArmor profile for /usr/bin/${target} to Enforcing mode.`;
+            logAudit(`AppArmor containment profile for ${target} set to ENFORCE.`);
+            syncComplianceDials();
+          } else {
+            output = `AppArmor profile target '/usr/bin/${target}' not found.`;
+          }
+          break;
+        case 'fail2ban-client':
+          if (args[1] === 'status') {
+            output = `Status
 |- Number of jail:      1
 \`- Jail list:           sshd
    |- Status for jail:   sshd
@@ -777,59 +845,80 @@ ${loaded - enforced} profiles are in complain mode.`;
    \`- Actions
       |- Currently banned: ${systemState.blockedIPs.length}
       \`- Banned IP list:  ${systemState.blockedIPs.join(', ')}`;
-        } else {
-          output = `Usage: fail2ban-client status`;
-        }
-        break;
-      case 'auditd':
-        output = auditLogs.slice(-10).join('\n');
-        break;
-      case 'sysctl':
-        if (rawVal.includes('net.ipv4')) {
-          output = `net.ipv4.conf.all.rp_filter = 1 (Enforces Reverse Path Filtering)
+          } else {
+            output = `Usage: fail2ban-client status`;
+          }
+          break;
+        case 'auditd':
+          output = auditLogs.slice(-10).join('\n');
+          break;
+        case 'sysctl':
+          if (rawVal.includes('net.ipv4')) {
+            output = `net.ipv4.conf.all.rp_filter = 1 (Enforces Reverse Path Filtering)
 net.ipv4.conf.all.accept_source_route = 0 (Disables IP Source Routing)
 net.ipv4.conf.all.accept_redirects = 0 (Disables ICMP Redirects)
 net.ipv4.conf.all.secure_redirects = 0
 net.ipv4.conf.default.accept_redirects = 0
 net.ipv4.tcp_syncookies = 1 (Enables SYN Flood Mitigation)
 net.ipv4.tcp_rfc1337 = 1 (Protects against TIME-WAIT assassination)`;
-        } else {
-          output = `net.ipv4.conf.all.rp_filter = 1
+          } else {
+            output = `net.ipv4.conf.all.rp_filter = 1
 net.ipv4.conf.all.accept_source_route = 0
 kernel.kptr_restrict = 2 (Blocks kernel address leaks)
 kernel.yama.ptrace_scope = 1 (Hardens process memory probing)
 fs.protected_symlinks = 1`;
-        }
-        break;
-      case 'gpg':
-        if (args[1] === '-c') {
-          const content = args.slice(2).join(' ');
-          if (!content) {
-            output = `Usage: gpg -c [message_to_encrypt]`;
-          } else {
-            const b64 = btoa(unescape(encodeURIComponent(content)));
-            output = `-----BEGIN PPG SIGNED MESSAGE-----
+          }
+          break;
+        case 'gpg':
+          if (args[1] === '-c') {
+            const content = args.slice(2).join(' ');
+            if (!content) {
+              output = `Usage: gpg -c [message_to_encrypt]`;
+            } else {
+              const b64 = btoa(unescape(encodeURIComponent(content)));
+              output = `-----BEGIN PPG SIGNED MESSAGE-----
 Hash: SHA256
 
 Symmetric Cipher: AES-256
 Salted Payload: ${b64.slice(0, 12)}X9F..${b64.slice(-8)}==
 -----END PPG SIGNED MESSAGE-----`;
+            }
+          } else {
+            output = `Usage: gpg -c [plaintext_string]`;
           }
-        } else {
-          output = `Usage: gpg -c [plaintext_string]`;
+          break;
+        default:
+          output = `bash: command not found: ${cmd}. Type 'help' to review authorized diagnostics toolkits.`;
+      }
+      
+      if (output) {
+        const cssClass = output.includes('not found') || output.includes('Usage:') ? 'warning' : 'output';
+        history.innerHTML += `<div class="terminal-line ${cssClass}">${output.replace(/\n/g, '<br>')}</div>`;
+      }
+      
+      const terminalContainer = input.parentElement.parentElement;
+      terminalContainer.scrollTop = terminalContainer.scrollHeight;
+    };
+
+    const args = rawVal.split(' ');
+    const cmd = args[0].toLowerCase();
+    const isSensitive = ['ufw', 'aa-enforce', 'auditd', 'fail2ban-client', 'gpg'].includes(cmd);
+
+    if (isSensitive) {
+      interceptAction(
+        'terminal',
+        cmd === 'gpg' ? 'vault' : 'ultimate',
+        `run_command_${cmd}`,
+        runCmd,
+        () => {
+          history.innerHTML += `<div class="terminal-line error">[XEN BLOCK] Hypervisor interdiction: Permission denied. Command execution blocked.</div>`;
+          const terminalContainer = input.parentElement.parentElement;
+          terminalContainer.scrollTop = terminalContainer.scrollHeight;
         }
-        break;
-      default:
-        output = `bash: command not found: ${cmd}. Type 'help' to review authorized diagnostics toolkits.`;
+      );
+    } else {
+      runCmd();
     }
-    
-    if (output) {
-      const cssClass = output.includes('not found') || output.includes('Usage:') ? 'warning' : 'output';
-      history.innerHTML += `<div class="terminal-line ${cssClass}">${output.replace(/\n/g, '<br>')}</div>`;
-    }
-    
-    const terminalContainer = input.parentElement.parentElement;
-    terminalContainer.scrollTop = terminalContainer.scrollHeight;
   }
 }
 
@@ -1147,35 +1236,46 @@ function runVaultEncrypt() {
     return;
   }
 
-  let cipher = '';
-  if (algo === 'aes') {
-    const salt = btoa(key).slice(0, 6);
-    cipher = `U2VjLU9T-AES256-${salt}-${btoa(plaintext)}`;
-    outputPanel.className = "vault-result-panel active";
-  } else if (algo === 'kyber') {
-    // Post-Quantum Kyber-1024 simulation
-    const seed = Math.floor(Math.random() * 899999) + 100000;
-    const ct = btoa(plaintext).slice(0, 16);
-    cipher = `[PQC-ML-KEM-1024] Lattice encapsulation active. 
+  interceptAction(
+    'vault',
+    'ultimate',
+    `seal_crypt_payload_${algo.toUpperCase()}`,
+    () => {
+      let cipher = '';
+      if (algo === 'aes') {
+        const salt = btoa(key).slice(0, 6);
+        cipher = `U2VjLU9T-AES256-${salt}-${btoa(plaintext)}`;
+        outputPanel.className = "vault-result-panel active";
+      } else if (algo === 'kyber') {
+        // Post-Quantum Kyber-1024 simulation
+        const seed = Math.floor(Math.random() * 899999) + 100000;
+        const ct = btoa(plaintext).slice(0, 16);
+        cipher = `[PQC-ML-KEM-1024] Lattice encapsulation active. 
 Shared Secret Key: HASH-SHA3-256(0x9E2B...F8A0)
 Ciphertext Block:
 0x8C${seed}F2..${ct}..87BA2A==`;
-    outputPanel.className = "vault-result-panel quantum-glow";
-  } else if (algo === 'dilithium') {
-    // Post-Quantum Dilithium-5 digital signature verification simulation
-    const sig = btoa(`Dilithium-Sig-Verify-${plaintext}`).slice(0, 24);
-    cipher = `[PQC-ML-DSA-5] Mathematical matrix signature seal generated.
+        outputPanel.className = "vault-result-panel quantum-glow";
+      } else if (algo === 'dilithium') {
+        // Post-Quantum Dilithium-5 digital signature verification simulation
+        const sig = btoa(`Dilithium-Sig-Verify-${plaintext}`).slice(0, 24);
+        cipher = `[PQC-ML-DSA-5] Mathematical matrix signature seal generated.
 Public Key Ref: Dilithium-5_matrix_seed_0xF890B2
 Quantum-Proof Signature Block:
 SIG_DILITHIUM5_0x${sig}..a9d2..==`;
-    outputPanel.className = "vault-result-panel quantum-glow";
-  } else {
-    cipher = plaintext.replace(/[a-zA-Z]/g, c => String.fromCharCode((c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26));
-    outputPanel.className = "vault-result-panel active";
-  }
+        outputPanel.className = "vault-result-panel quantum-glow";
+      } else {
+        cipher = plaintext.replace(/[a-zA-Z]/g, c => String.fromCharCode((c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26));
+        outputPanel.className = "vault-result-panel active";
+      }
 
-  outputPanel.textContent = cipher;
-  logAudit(`Cryptographic payload generated using algorithm: ${algo.toUpperCase()}`);
+      outputPanel.textContent = cipher;
+      logAudit(`Cryptographic payload generated using algorithm: ${algo.toUpperCase()}`);
+    },
+    () => {
+      outputPanel.textContent = "[XEN BLOCK] Hypervisor interdiction: Encryption action denied.";
+      outputPanel.className = "vault-result-panel";
+    }
+  );
 }
 
 function runVaultDecrypt() {
@@ -1196,49 +1296,60 @@ function runVaultDecrypt() {
     return;
   }
 
-  let plain = '';
-  try {
-    if (algo === 'aes') {
-      const parts = ciphertext.split('-');
-      if (parts[0] !== 'U2VjLU9T' || parts[1] !== 'AES256') {
-        throw new Error("Invalid format");
-      }
-      
-      const salt = btoa(key).slice(0, 6);
-      if (parts[2] !== salt) {
-        outputPanel.textContent = "Error: AES Decryption Failed. Key mismatch or integrity check failed.";
-        outputPanel.className = "vault-result-panel";
-        return;
-      }
-      plain = atob(parts[3]);
-      outputPanel.className = "vault-result-panel active";
-    } else if (algo === 'kyber') {
-      if (!ciphertext.includes('[PQC-ML-KEM-1024]')) {
-        outputPanel.textContent = "Error: Target is not a valid Kyber encapsulated block.";
-        outputPanel.className = "vault-result-panel";
-        return;
-      }
-      // Decode simulated ciphertext block
-      const lines = ciphertext.split('\n');
-      const ctLine = lines[lines.length - 1];
-      const match = ctLine.match(/\.\.(.+)\.\./);
-      if (match && match[1]) {
-        plain = atob(match[1]);
-      } else {
-        plain = "Decrypted Shared Secret Key matches (Integrity Verified)";
-      }
-      outputPanel.className = "vault-result-panel quantum-glow";
-    } else {
-      plain = ciphertext.replace(/[a-zA-Z]/g, c => String.fromCharCode((c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26));
-      outputPanel.className = "vault-result-panel active";
-    }
+  interceptAction(
+    'vault',
+    'ultimate',
+    `unseal_crypt_payload_${algo.toUpperCase()}`,
+    () => {
+      let plain = '';
+      try {
+        if (algo === 'aes') {
+          const parts = ciphertext.split('-');
+          if (parts[0] !== 'U2VjLU9T' || parts[1] !== 'AES256') {
+            throw new Error("Invalid format");
+          }
+          
+          const salt = btoa(key).slice(0, 6);
+          if (parts[2] !== salt) {
+            outputPanel.textContent = "Error: AES Decryption Failed. Key mismatch or integrity check failed.";
+            outputPanel.className = "vault-result-panel";
+            return;
+          }
+          plain = atob(parts[3]);
+          outputPanel.className = "vault-result-panel active";
+        } else if (algo === 'kyber') {
+          if (!ciphertext.includes('[PQC-ML-KEM-1024]')) {
+            outputPanel.textContent = "Error: Target is not a valid Kyber encapsulated block.";
+            outputPanel.className = "vault-result-panel";
+            return;
+          }
+          // Decode simulated ciphertext block
+          const lines = ciphertext.split('\n');
+          const ctLine = lines[lines.length - 1];
+          const match = ctLine.match(/\.\.(.+)\.\./);
+          if (match && match[1]) {
+            plain = atob(match[1]);
+          } else {
+            plain = "Decrypted Shared Secret Key matches (Integrity Verified)";
+          }
+          outputPanel.className = "vault-result-panel quantum-glow";
+        } else {
+          plain = ciphertext.replace(/[a-zA-Z]/g, c => String.fromCharCode((c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26));
+          outputPanel.className = "vault-result-panel active";
+        }
 
-    outputPanel.textContent = plain;
-    logAudit(`Decryption query completed successfully for cipher payload.`);
-  } catch (e) {
-    outputPanel.textContent = "Error: Could not decode payload. Check algorithm details.";
-    outputPanel.className = "vault-result-panel";
-  }
+        outputPanel.textContent = plain;
+        logAudit(`Decryption query completed successfully for cipher payload.`);
+      } catch (e) {
+        outputPanel.textContent = "Error: Could not decode payload. Check algorithm details.";
+        outputPanel.className = "vault-result-panel";
+      }
+    },
+    () => {
+      outputPanel.textContent = "[XEN BLOCK] Hypervisor interdiction: Decryption action denied.";
+      outputPanel.className = "vault-result-panel";
+    }
+  );
 }
 
 // SOC 2 COMPLIANCE CENTER LOGIC
@@ -1788,6 +1899,343 @@ function toggleUltimateControl(key, checkbox) {
   syncComplianceDials();
 }
 
+// XEN HYPERVISOR SANDBOXING ENGINE
+function interceptAction(sourceApp, targetApp, actionType, onAllow, onDeny) {
+  const sourceZone = systemState.hypervisor.zones[sourceApp] || 'personal';
+  const targetZone = systemState.hypervisor.zones[targetApp] || 'personal';
+  
+  let shouldIntercept = false;
+  
+  if (sourceZone === 'untrusted') {
+    shouldIntercept = true;
+  } else if (sourceZone !== targetZone) {
+    shouldIntercept = true;
+  } else if (actionType === 'crypt_export' || actionType === 'admin_cmd') {
+    shouldIntercept = true;
+  }
+  
+  if (!shouldIntercept) {
+    onAllow();
+    return;
+  }
+  
+  // Setup pending action queue
+  systemState.hypervisor.pendingAction = {
+    sourceApp,
+    targetApp,
+    actionType,
+    onAllow,
+    onDeny,
+    sourceZone,
+    targetZone
+  };
+  
+  // Show prompt overlay
+  const overlay = document.getElementById('hypervisor-overlay');
+  const body = document.getElementById('hypervisor-body');
+  
+  if (overlay && body) {
+    const srcLabel = `[${sourceApp.toUpperCase()} (${sourceZone.toUpperCase()})]`;
+    const tgtLabel = `[${targetApp.toUpperCase()} (${targetZone.toUpperCase()})]`;
+    
+    let description = `<strong>Security Alert:</strong> The application ${srcLabel} is requesting to perform a cross-domain action: <strong>${actionType}</strong> on ${tgtLabel}.<br><br>`;
+    
+    if (sourceZone === 'untrusted') {
+      description += `<span style="color: var(--sec-red);">⚠️ Warning: Source domain is UNTRUSTED (Red). Executing this action could compromise other zones.</span>`;
+    } else {
+      description += `<span style="color: var(--sec-yellow);">ℹ️ Notice: The hypervisor requires administrator permission to bridge these zones.</span>`;
+    }
+    
+    body.innerHTML = description;
+    overlay.classList.remove('hidden');
+    
+    addHypervisorLog(`INTERCEPT: ${sourceApp} (${sourceZone}) -> ${targetApp} (${targetZone}) [${actionType}] - Prompting Administrator`);
+  } else {
+    // Fallback if overlay not found
+    onAllow();
+  }
+}
+
+function allowHypervisorAccess() {
+  const overlay = document.getElementById('hypervisor-overlay');
+  if (overlay) overlay.classList.add('hidden');
+  
+  const pending = systemState.hypervisor.pendingAction;
+  if (pending) {
+    addHypervisorLog(`ALLOW: Authorized action [${pending.actionType}] from ${pending.sourceApp} to ${pending.targetApp}`);
+    logAudit(`Hypervisor approved cross-domain action [${pending.actionType}] from ${pending.sourceApp} (${pending.sourceZone}) to ${pending.targetApp} (${pending.targetZone})`);
+    
+    if (pending.onAllow) pending.onAllow();
+    systemState.hypervisor.pendingAction = null;
+  }
+}
+
+function denyHypervisorAccess() {
+  const overlay = document.getElementById('hypervisor-overlay');
+  if (overlay) overlay.classList.add('hidden');
+  
+  const pending = systemState.hypervisor.pendingAction;
+  if (pending) {
+    addHypervisorLog(`BLOCK: Rejected action [${pending.actionType}] from ${pending.sourceApp} to ${pending.targetApp}`);
+    logAudit(`Hypervisor BLOCKED cross-domain action [${pending.actionType}] from ${pending.sourceApp} (${pending.sourceZone}) to ${pending.targetApp} (${pending.targetZone})`);
+    
+    if (pending.onDeny) pending.onDeny();
+    systemState.hypervisor.pendingAction = null;
+  }
+}
+
+function addHypervisorLog(msg) {
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+  const logMsg = `[${timeStr}] ${msg}`;
+  systemState.hypervisor.logs.push(logMsg);
+  
+  const logsPanel = document.getElementById('hypervisor-logs-list');
+  if (logsPanel) {
+    const isAlert = msg.includes('BLOCK') || msg.includes('INTERCEPT');
+    const isAllow = msg.includes('ALLOW');
+    const cssClass = isAlert ? 'alert' : (isAllow ? 'allow' : 'info');
+    
+    logsPanel.innerHTML += `<div class="hyp-log-row ${cssClass}">${logMsg}</div>`;
+    logsPanel.scrollTop = logsPanel.scrollHeight;
+  }
+}
+
+function changeWindowZone(appId, selectElement) {
+  const zone = selectElement.value;
+  systemState.hypervisor.zones[appId] = zone;
+  
+  const win = document.getElementById(`window-${appId}`);
+  if (win) {
+    win.classList.remove('zone-untrusted', 'zone-work', 'zone-personal', 'zone-secure');
+    win.classList.add(`zone-${zone}`);
+  }
+  
+  selectElement.className = `window-zone-select sel-${zone}`;
+  
+  logAudit(`Hypervisor shifted domain context for window [${appId}] to [${zone.toUpperCase()}]`);
+  addHypervisorLog(`DOMAIN_SHIFT: Window [${appId}] moved to zone [${zone.toUpperCase()}]`);
+  
+  const managerPanel = document.getElementById('hypervisor-vm-list-container');
+  if (managerPanel) {
+    updateHypervisorManagerUI();
+  }
+}
+
+function toggleHypRule(key, checkbox) {
+  systemState.hypervisor.rules[key] = checkbox.checked;
+  addHypervisorLog(`RULE_UPDATE: Inter-VM policy '${key}' set to ${checkbox.checked ? 'ENABLED' : 'DISABLED'}`);
+  logAudit(`Xen hypervisor policy update: '${key}' set to ${checkbox.checked ? 'ENABLED' : 'DISABLED'}`);
+}
+
+function copyVaultToVMClipboard() {
+  const ciphertext = document.getElementById('vault-ciphertext-output').textContent;
+  if (!ciphertext || ciphertext.startsWith('Payload will appear') || ciphertext.includes('Error') || ciphertext.includes('BLOCK')) {
+    return;
+  }
+  
+  const zone = systemState.hypervisor.zones['vault'] || 'personal';
+  
+  systemState.hypervisor.clipboard = {
+    text: ciphertext,
+    sourceZone: zone,
+    sourceApp: 'vault'
+  };
+  
+  addHypervisorLog(`COPY: Saved Vault output to hypervisor clipboard (Zone: ${zone.toUpperCase()})`);
+  logAudit(`Copied secure text from Crypt Vault in zone ${zone.toUpperCase()} to VM clipboard.`);
+  
+  // Flash feedback in Vault
+  const outputPanel = document.getElementById('vault-ciphertext-output');
+  const oldText = outputPanel.textContent;
+  outputPanel.textContent = "COPIED TO VM CLIPBOARD SUCCESSFULLY!";
+  setTimeout(() => {
+    outputPanel.textContent = oldText;
+  }, 1000);
+}
+
+function pasteVaultFromVMClipboard() {
+  const clipboard = systemState.hypervisor.clipboard;
+  if (!clipboard || !clipboard.text) {
+    alert("VM Clipboard is empty.");
+    return;
+  }
+  
+  const targetZone = systemState.hypervisor.zones['vault'] || 'personal';
+  
+  interceptAction(
+    clipboard.sourceApp || 'unknown',
+    'vault',
+    'clipboard_paste',
+    () => {
+      const input = document.getElementById('vault-ciphertext-input');
+      if (input) {
+        input.value = clipboard.text;
+        addHypervisorLog(`PASTE: Transferred clipboard data from ${clipboard.sourceZone.toUpperCase()} to VAULT (${targetZone.toUpperCase()})`);
+      }
+    },
+    () => {
+      addHypervisorLog(`PASTE_BLOCKED: Clipboard data transfer rejected.`);
+    }
+  );
+}
+
+function pasteTerminalFromVMClipboard() {
+  const clipboard = systemState.hypervisor.clipboard;
+  if (!clipboard || !clipboard.text) {
+    const win = document.getElementById('window-terminal');
+    if (win) {
+      const history = win.querySelector('.terminal-history');
+      history.innerHTML += `<div class="terminal-line warning">[Hypervisor Info] VM Clipboard is empty.</div>`;
+      const terminalContainer = win.querySelector('.terminal-input').parentElement.parentElement;
+      terminalContainer.scrollTop = terminalContainer.scrollHeight;
+    }
+    return;
+  }
+  
+  const targetZone = systemState.hypervisor.zones['terminal'] || 'work';
+  
+  interceptAction(
+    clipboard.sourceApp || 'unknown',
+    'terminal',
+    'clipboard_paste_to_terminal',
+    () => {
+      const win = document.getElementById('window-terminal');
+      if (win) {
+        const input = win.querySelector('.terminal-input');
+        if (input) {
+          input.value += clipboard.text;
+          addHypervisorLog(`PASTE: Transferred clipboard data from ${clipboard.sourceZone.toUpperCase()} to TERMINAL (${targetZone.toUpperCase()})`);
+        }
+      }
+    },
+    () => {
+      const win = document.getElementById('window-terminal');
+      if (win) {
+        const history = win.querySelector('.terminal-history');
+        history.innerHTML += `<div class="terminal-line error">[XEN BLOCK] Hypervisor paste interdiction: Clipboard data transfer denied.</div>`;
+        const terminalContainer = win.querySelector('.terminal-input').parentElement.parentElement;
+        terminalContainer.scrollTop = terminalContainer.scrollHeight;
+      }
+    }
+  );
+}
+
+function getHypervisorContent() {
+  setTimeout(updateHypervisorManagerUI, 100);
+  return `
+    <div class="app-hypervisor-container">
+      <div class="hypervisor-header">
+        <div class="hypervisor-title-block">
+          <h3>Tomb Hypervisor VM Manager</h3>
+          <p>Xen hypervisor sandboxing controls. Manage security zones, view VM telemetry, and enforce Dom0 isolation policies.</p>
+        </div>
+        <div class="hypervisor-stats">
+          <div class="hypervisor-stat-pill">
+            <div class="val">4</div>
+            <div class="lbl">Active VMs</div>
+          </div>
+          <div class="hypervisor-stat-pill">
+            <div class="val" id="hyp-cpu-usage">12%</div>
+            <div class="lbl">Hypervisor CPU</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="hypervisor-main">
+        <div class="hypervisor-panel">
+          <h4>Security Isolation Domains (VMs)</h4>
+          <div class="vm-list" id="hypervisor-vm-list-container">
+          </div>
+        </div>
+        
+        <div class="hypervisor-panel">
+          <h4>Inter-VM Security Policies</h4>
+          <div class="hypervisor-rules">
+            <div class="rule-row">
+              <div class="rule-info">
+                <span class="rule-name">Inter-Domain Drag & Drop</span>
+                <span class="rule-desc">Intercept any file drag and drop events across color zones</span>
+              </div>
+              <label class="aa-switch">
+                <input type="checkbox" id="hyp-rule-dnd" ${systemState.hypervisor.rules.interAppDnd ? 'checked' : ''} onchange="toggleHypRule('interAppDnd', this)">
+                <span class="aa-slider"></span>
+              </label>
+            </div>
+            
+            <div class="rule-row">
+              <div class="rule-info">
+                <span class="rule-name">Cross-Zone Clipboard Copy</span>
+                <span class="rule-desc">Require authorization to copy text out of a secure zone</span>
+              </div>
+              <label class="aa-switch">
+                <input type="checkbox" id="hyp-rule-copy" ${systemState.hypervisor.rules.crossCopy ? 'checked' : ''} onchange="toggleHypRule('crossCopy', this)">
+                <span class="aa-slider"></span>
+              </label>
+            </div>
+            
+            <div class="rule-row">
+              <div class="rule-info">
+                <span class="rule-name">Keys and Crypt Export Protection</span>
+                <span class="rule-desc">Block exporting vault keys to red/untrusted domains</span>
+              </div>
+              <label class="aa-switch">
+                <input type="checkbox" id="hyp-rule-keys" ${systemState.hypervisor.rules.vaultExport ? 'checked' : ''} onchange="toggleHypRule('vaultExport', this)">
+                <span class="aa-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="hypervisor-logs" id="hypervisor-logs-list">
+      </div>
+    </div>
+  `;
+}
+
+function updateHypervisorManagerUI() {
+  const container = document.getElementById('hypervisor-vm-list-container');
+  if (!container) return;
+  
+  const vms = [
+    { id: 'untrusted', name: 'untrusted (Red Zone)', desc: 'Web browser, unverified downloads, networking open', zone: 'untrusted', cpu: '6%', ram: '1.2 GB / 4 GB' },
+    { id: 'work', name: 'work (Yellow Zone)', desc: 'Terminal, developer workspaces, local networks', zone: 'work', cpu: '4%', ram: '2.0 GB / 8 GB' },
+    { id: 'personal', name: 'personal (Blue Zone)', desc: 'Crypt Vault, files, password manager', zone: 'personal', cpu: '1%', ram: '0.8 GB / 4 GB' },
+    { id: 'secure', name: 'secure (Green Zone)', desc: 'Auditors, seL4 Microkernel root control panel', zone: 'secure', cpu: '1%', ram: '0.5 GB / 2 GB' }
+  ];
+  
+  container.innerHTML = vms.map(vm => {
+    const isOpen = Object.entries(systemState.hypervisor.zones).some(([appId, zone]) => {
+      return zone === vm.zone && document.getElementById(`window-${appId}`) !== null;
+    });
+    
+    return `
+      <div class="vm-card ${vm.zone}">
+        <div class="vm-info">
+          <span class="vm-name">${vm.name}</span>
+          <span class="vm-desc">${vm.desc}</span>
+        </div>
+        <div class="vm-status">
+          <span class="vm-badge ${isOpen ? 'running' : 'stopped'}">${isOpen ? 'RUNNING' : 'STOPPED'}</span>
+          <span class="vm-resources">${isOpen ? `CPU: ${vm.cpu} | RAM: ${vm.ram}` : 'Idle'}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  const logsList = document.getElementById('hypervisor-logs-list');
+  if (logsList) {
+    logsList.innerHTML = systemState.hypervisor.logs.map(log => {
+      const isAlert = log.includes('BLOCK') || log.includes('INTERCEPT');
+      const isAllow = log.includes('ALLOW');
+      const cssClass = isAlert ? 'alert' : (isAllow ? 'allow' : 'info');
+      return `<div class="hyp-log-row ${cssClass}">${log}</div>`;
+    }).join('');
+    logsList.scrollTop = logsList.scrollHeight;
+  }
+}
+
 
 // INTERACTIVE ONBOARDING TOUR
 const tourSteps = [
@@ -1903,3 +2351,19 @@ function triggerOSAction(action) {
     `;
   }
 }
+
+// Mobile Viewport and Gesture optimization (Android & iOS)
+document.addEventListener('touchstart', (e) => {
+  if (e.touches.length > 1) {
+    e.preventDefault();
+  }
+}, { passive: false });
+
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+  const now = (new Date()).getTime();
+  if (now - lastTouchEnd <= 300) {
+    e.preventDefault();
+  }
+  lastTouchEnd = now;
+}, false);

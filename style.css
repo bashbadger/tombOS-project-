@@ -1985,4 +1985,392 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   box-shadow: 0 0 10px rgba(0, 229, 255, 0.15);
 }
 
+/* Qubes-style Security Zones */
+.os-window.zone-untrusted {
+  border: 2px solid var(--sec-red) !important;
+}
+.os-window.zone-untrusted.active {
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.7), 0 0 15px var(--sec-red-glow) !important;
+}
+
+.os-window.zone-work {
+  border: 2px solid var(--sec-yellow) !important;
+}
+.os-window.zone-work.active {
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.7), 0 0 15px rgba(255, 204, 0, 0.3) !important;
+}
+
+.os-window.zone-personal {
+  border: 2px solid #007AFF !important;
+}
+.os-window.zone-personal.active {
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 122, 255, 0.3) !important;
+}
+
+.os-window.zone-secure {
+  border: 2px solid var(--sec-green) !important;
+}
+.os-window.zone-secure.active {
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.7), 0 0 15px var(--sec-green-glow) !important;
+}
+
+/* Zone Dropdown Selector in Titlebar */
+.window-zone-select {
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 4px;
+  margin-left: 10px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  vertical-align: middle;
+}
+
+.window-zone-select:hover {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.window-zone-select option {
+  background: #1e0015;
+  color: #fff;
+}
+
+.window-zone-select.sel-untrusted {
+  border-color: var(--sec-red);
+  color: #ff5f56;
+}
+.window-zone-select.sel-work {
+  border-color: var(--sec-yellow);
+  color: var(--sec-yellow);
+}
+.window-zone-select.sel-personal {
+  border-color: #007AFF;
+  color: #5ac8fa;
+}
+.window-zone-select.sel-secure {
+  border-color: var(--sec-green);
+  color: var(--sec-green);
+}
+
+/* Hypervisor VM Manager App CSS */
+.app-hypervisor-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: rgba(30, 0, 21, 0.85);
+  font-family: var(--font-ui);
+  padding: 16px;
+  color: #f2f1f0;
+  gap: 15px;
+}
+
+.hypervisor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.hypervisor-title-block h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.hypervisor-title-block p {
+  font-size: 12px;
+  color: var(--ubuntu-light-grey);
+}
+
+.hypervisor-stats {
+  display: flex;
+  gap: 15px;
+}
+
+.hypervisor-stat-pill {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 6px 12px;
+  text-align: center;
+}
+
+.hypervisor-stat-pill .val {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sec-green);
+}
+
+.hypervisor-stat-pill .lbl {
+  font-size: 10px;
+  color: var(--ubuntu-light-grey);
+  text-transform: uppercase;
+}
+
+.hypervisor-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  flex: 1;
+  min-height: 0;
+}
+
+.hypervisor-panel {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.hypervisor-panel h4 {
+  font-size: 13px;
+  color: #fff;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+}
+
+.vm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vm-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 4px solid #ccc;
+  border-radius: 4px;
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.vm-card.untrusted { border-left-color: var(--sec-red); }
+.vm-card.work { border-left-color: var(--sec-yellow); }
+.vm-card.personal { border-left-color: #007AFF; }
+.vm-card.secure { border-left-color: var(--sec-green); }
+
+.vm-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.vm-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.vm-desc {
+  font-size: 10px;
+  color: var(--ubuntu-light-grey);
+}
+
+.vm-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.vm-badge {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+.vm-badge.running { background: rgba(74, 246, 38, 0.15); color: var(--sec-green); }
+.vm-badge.stopped { background: rgba(255, 255, 255, 0.1); color: var(--ubuntu-light-grey); }
+
+.vm-resources {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--ubuntu-light-grey);
+}
+
+.hypervisor-rules {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rule-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.rule-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.rule-name {
+  font-weight: 600;
+  color: #fff;
+}
+
+.rule-desc {
+  font-size: 10px;
+  color: var(--ubuntu-light-grey);
+}
+
+.hypervisor-logs {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  max-height: 100px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.hyp-log-row {
+  margin-bottom: 3px;
+  line-height: 1.4;
+}
+
+.hyp-log-row.alert { color: var(--sec-red); }
+.hyp-log-row.allow { color: var(--sec-green); }
+.hyp-log-row.info { color: #5ac8fa; }
+
+/* Responsive Media Queries for Mobile & Tablet (iOS & Android) compatibility */
+@media (max-width: 768px) {
+  #dock {
+    width: 48px !important;
+  }
+  .dock-inner {
+    gap: 8px !important;
+    padding: 5px 0 !important;
+  }
+  .dock-item {
+    width: 36px !important;
+    height: 36px !important;
+  }
+  .dock-svg-icon {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  
+  #desktop {
+    margin-left: 48px !important;
+    width: calc(100% - 48px) !important;
+  }
+
+  .os-window {
+    top: 28px !important;
+    left: 48px !important;
+    width: calc(100% - 48px) !important;
+    height: calc(100% - 28px) !important;
+    border-radius: 0 !important;
+    min-width: unset !important;
+    min-height: unset !important;
+    box-shadow: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-right: none !important;
+  }
+  
+  .window-titlebar {
+    height: 32px !important;
+    padding: 0 6px !important;
+  }
+  
+  .window-title {
+    max-width: 65% !important;
+  }
+  
+  .window-title span {
+    font-size: 11px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .window-zone-select {
+    font-size: 9px !important;
+    margin-left: 4px !important;
+    padding: 0px 2px !important;
+    max-width: 60px !important;
+  }
+  
+  .window-controls {
+    gap: 4px !important;
+  }
+  
+  .window-btn {
+    width: 22px !important;
+    height: 22px !important;
+    border-radius: 4px !important;
+    font-size: 10px !important;
+    background-color: rgba(255,255,255,0.1) !important;
+    color: #fff !important;
+  }
+  
+  .window-btn.close { color: var(--sec-red) !important; }
+  .window-btn.maximize { display: none !important; } /* Not needed on mobile since we auto-maximize */
+  
+  /* Form components and layouts stacking */
+  .ids-grid, .ultimate-grid, .soc2-grid, .hypervisor-main, .vault-row, .compliance-grid {
+    grid-template-columns: 1fr !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  
+  .ids-panel, .ultimate-card, .soc2-card, .hypervisor-panel, .globalcom-panel {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  
+  .app-readme-container, .app-terminal-container, .app-ids-container, .app-apparmor-container, .app-cis-container, .app-vault-container, .app-soc2-container, .app-globalcom-container, .app-ultimate-container, .app-hypervisor-container {
+    padding: 10px !important;
+    font-size: 12.5px !important;
+    overflow-y: auto !important;
+  }
+
+  .terminal-chips-wrapper {
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+  
+  .terminal-chip {
+    padding: 3px 6px !important;
+    font-size: 10px !important;
+  }
+
+  .tour-card {
+    position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 90% !important;
+    max-width: 320px !important;
+    z-index: 100000 !important;
+  }
+}
+
 
