@@ -2175,6 +2175,10 @@ function getHypervisorContent() {
             <div class="lbl">Active VMs</div>
           </div>
           <div class="hypervisor-stat-pill">
+            <div class="val">3.0 GB</div>
+            <div class="lbl">Total VM RAM</div>
+          </div>
+          <div class="hypervisor-stat-pill">
             <div class="val" id="hyp-cpu-usage">12%</div>
             <div class="lbl">Hypervisor CPU</div>
           </div>
@@ -2238,10 +2242,10 @@ function updateHypervisorManagerUI() {
   if (!container) return;
   
   const vms = [
-    { id: 'untrusted', name: 'untrusted (Red Zone)', desc: 'Web browser, unverified downloads, networking open', zone: 'untrusted', cpu: '6%', ram: '1.2 GB / 4 GB' },
-    { id: 'work', name: 'work (Yellow Zone)', desc: 'Terminal, developer workspaces, local networks', zone: 'work', cpu: '4%', ram: '2.0 GB / 8 GB' },
-    { id: 'personal', name: 'personal (Blue Zone)', desc: 'Crypt Vault, files, password manager', zone: 'personal', cpu: '1%', ram: '0.8 GB / 4 GB' },
-    { id: 'secure', name: 'secure (Green Zone)', desc: 'Auditors, seL4 Microkernel root control panel', zone: 'secure', cpu: '1%', ram: '0.5 GB / 2 GB' }
+    { id: 'untrusted', name: 'untrusted (Red Zone)', desc: 'Web browser, unverified downloads, networking open', zone: 'untrusted', cpu: '6%', ram: '0.5 GB / 1.0 GB' },
+    { id: 'work', name: 'work (Yellow Zone)', desc: 'Terminal, developer workspaces, local networks', zone: 'work', cpu: '4%', ram: '0.8 GB / 1.0 GB' },
+    { id: 'personal', name: 'personal (Blue Zone)', desc: 'Crypt Vault, files, password manager', zone: 'personal', cpu: '1%', ram: '0.4 GB / 0.6 GB' },
+    { id: 'secure', name: 'secure (Green Zone)', desc: 'Auditors, seL4 Microkernel root control panel', zone: 'secure', cpu: '1%', ram: '0.2 GB / 0.4 GB' }
   ];
   
   container.innerHTML = vms.map(vm => {

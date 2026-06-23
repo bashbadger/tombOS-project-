@@ -31,4 +31,4 @@ clean:
 	rm -f *.o kernel.bin
 
 run: kernel.bin
-	qemu-system-i386 -kernel kernel.bin
+	qemu-system-i386 -kernel kernel.bin -m 3072
