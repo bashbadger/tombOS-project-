@@ -2867,11 +2867,15 @@ function renderLearnedRules() {
     return `<div style="color: rgba(255,255,255,0.4); font-style: italic; font-size: 11px;">No rules loaded. Submit a rule above to teach the agent.</div>`;
   }
   return systemState.teacher.rules.map((rule, idx) => {
+    const parts = rule.split(' | ');
+    const ruleText = parts[0].replace(/^"|"$/g, ''); 
+    const hashPart = parts[1] || '';
+    const hashText = hashPart.replace('Verification Hash: [', '').replace(']', '');
     return `
       <div style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 6px; font-size: 11px; line-height: 1.4;">
         <span style="color: var(--sec-green); font-weight: bold; display: block; margin-bottom: 2px;">[LEARNED RULE #${systemState.teacher.rules.length - idx}]</span>
-        <div style="color: #fff; margin-bottom: 4px;">${rule.split(' | ')[0]}</div>
-        <div style="color: rgba(255,255,255,0.3); font-size: 9.5px; word-break: break-all; font-family: var(--font-mono);">Hash: ${rule.split(' | ')[1].replace('Verification Hash: [', '').replace(']', '')}</div>
+        <div style="color: #fff; margin-bottom: 4px;">"${escapeHTML(ruleText)}"</div>
+        <div style="color: rgba(255,255,255,0.3); font-size: 9.5px; word-break: break-all; font-family: var(--font-mono);">Hash: ${escapeHTML(hashText)}</div>
       </div>
     `;
   }).join('');
@@ -2887,13 +2891,13 @@ function renderTranslationFeed() {
     return `
       <div class="translate-row" style="margin-bottom: 8px;">
         <div class="translate-source" style="display: flex; justify-content: space-between; align-items: center;">
-          <span>${t.lang} Alert (IP: ${t.src})</span>
+          <span>${escapeHTML(t.lang)} Alert (IP: ${escapeHTML(t.src)})</span>
           <span style="color: var(--sec-green); font-family: var(--font-mono); font-size: 9px;">VERIFIED</span>
         </div>
-        <div class="translate-text-original">${t.original}</div>
-        <div class="translate-text-english">${t.english}</div>
+        <div class="translate-text-original">${escapeHTML(t.original)}</div>
+        <div class="translate-text-english">${escapeHTML(t.english)}</div>
         <div style="font-size: 9px; color: rgba(255,255,255,0.25); margin-top: 5px; word-break: break-all; font-family: var(--font-mono);">
-          Hash: ${t.hash}
+          Hash: ${escapeHTML(t.hash)}
         </div>
       </div>
     `;
