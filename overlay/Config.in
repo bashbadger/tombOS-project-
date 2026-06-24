@@ -1,0 +1,8 @@
+menu "External packages"
+
+source "package/vscodium/Config.in"
+source "package/mongodb/Config.in"
+source "package/cassandra/Config.in"
+source "package/ceph/Config.in"
+
+endmenu
