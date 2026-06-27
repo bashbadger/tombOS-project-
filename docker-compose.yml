@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # Core security services (Wazuh, Security Onion, Zeek, Suricata, etc.)
+  security-stack:
+    image: ghcr.io/tombos/security-stack:latest
+    container_name: security-stack
+    restart: unless-stopped
+    volumes:
+      - ./data/security:/var/lib/security
+    networks:
+      - tombos-net
+
+  # Analytics stack (Grafana, Prometheus, Elastic, Loki, Superset, Metabase)
+  analytics-stack:
+    image: ghcr.io/tombos/analytics-stack:latest
+    container_name: analytics-stack
+    restart: unless-stopped
+    depends_on:
+      - security-stack
+    volumes:
+      - ./data/analytics:/var/lib/analytics
+    networks:
+      - tombos-net
+
+  # GrapheneOS hardening service (runs before other services start)
+  grapheneos_hardening:
+    image: ghcr.io/tombos/grapheneos-harden:latest
+    container_name: grapheneos_hardening
+    entrypoint: ["/scripts/grapheneos/apply_hardening.sh"]
+    volumes:
+      - ./scripts/grapheneos:/scripts/grapheneos
+      - ./external/grapheneos:/external/grapheneos
+    networks:
+      - tombos-net
+    depends_on:
+      - security-stack
+
+  # Tokenization service for PCI‑DSS compliance
+  tokenizer:
+    build:
+      context: ./services/tokenizer
+    container_name: tokenizer
+    restart: unless-stopped
+    networks:
+      - tombos-net
+
+networks:
+  tombos-net:
+    driver: bridge

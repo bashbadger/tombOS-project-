@@ -1,0 +1,4994 @@
+// Tomb OS Security Desktop Simulator Logic
+
+// System States
+const systemState = {
+  features: {
+    ufw: true,
+    apparmor: true,
+    audit: true,
+    fail2ban: true,
+    ips: false,
+    secureLogin: false
+  },
+  apps: {
+    browser: { name: "Web Browser", secured: true, desc: "Restricted filesystem access, sandboxed chromium core" },
+    filemanager: { name: "File Explorer", secured: true, desc: "Restricted write permissions to system folders" },
+    pdfviewer: { name: "PDF Viewer", secured: true, desc: "Isolated environment, JS execution disabled" },
+    ssh: { name: "SSH Service", secured: true, desc: "Key-based authentication enforced, port 22 Hardened" }
+  },
+  soc2: {
+    mfa: false,
+    backup: false,
+    encryption: false
+  },
+  globalcom: {
+    activeTab: 'eu',
+    gdprForgotten: false,
+    doNotSell: false,
+    localResidency: false,
+    piplAssessment: false,
+    lgpdMapping: false
+  },
+  ultimate: {
+    sel4: false,
+    tpm: false,
+    immutable: false,
+    zerotrust: false,
+    sdcardMode: false,
+    autoUpdate: false
+  },
+  env: {
+    PRODUCTIVITY_ZONE: 'work',
+    NOTES_APP: '/usr/bin/tomb-notes',
+    VAULT_APP: '/usr/bin/tomb-vault',
+    IMPORTER_APP: '/usr/bin/tomb-importer',
+    BROWSER_APP: '/usr/bin/chromium',
+    ACADEMY_APP: '/usr/bin/tomb-academy',
+    IDS_APP: '/usr/bin/tomb-ids',
+    CONTROLCENTER_APP: '/usr/bin/tomb-controlcenter',
+    PQC_KEY_BROKER: 'https://keybroker.tomb-os.sec/v1',
+    COMPLIANCE_MODE: 'STRICT_GDPR_CCPA_DPDP'
+  },
+  theme: {
+    accent: '#E95420',
+    darkBase: '#2C001E',
+    secondary: '#5E2750',
+    wallpaper: 'gradient-aubergine',
+    opacity: 0.65,
+    blur: 15,
+    fontFamily: 'outfit',
+    fontSize: '100%',
+    dockPosition: 'left',
+    dockIconSize: 'medium',
+    borderWidth: '1px',
+    borderStyle: 'solid'
+  },
+  tour: {
+    step: 0,
+    active: false
+  },
+  render: {
+    isPlaying: false,
+    playProgress: 0,
+    isRendering: false,
+    renderProgress: 0,
+    activeScene: "Scene 1: System Boot & Kernel Audits",
+    intervalId: null
+  },
+  teacher: {
+    activeTab: 'translator',
+    rules: [
+      "When firewall blocks an IP, log target to IDS console.",
+      "Always restrict USB driver loading on system VMs."
+    ],
+    translations: []
+  },
+  learning: {
+    activeTab: 'lessons',
+    completedExercises: [],
+    selectedLesson: 0,
+    exerciseFeedback: ''
+  },
+  notes: {
+    activeNoteId: 'n1',
+    list: [
+      { id: 'n1', title: '🛡️ Security Audit Checklist', content: '1. Verify ufw status is ACTIVE.\n2. Ensure AppArmor profiles are enforcing.\n3. Run sysctl -a to check SYN cookies.\n4. Audit root login attempts via auditd logs.' },
+      { id: 'n2', title: '⚡ Terminal Cheat Sheet', content: 'ls -la       # List all files with permissions\nwhoami       # Show current user context\nufw status   # Check firewall rules\naa-status    # Inspect AppArmor containment' }
+    ]
+  },
+  hypervisor: {
+    zones: {
+      terminal: 'work',
+      ids: 'work',
+      apparmor: 'secure',
+      cis: 'secure',
+      soc2: 'secure',
+      globalcom: 'secure',
+      vault: 'personal',
+      ultimate: 'secure',
+      readme: 'personal',
+      hypervisor: 'secure',
+      render: 'work',
+      teacher: 'secure',
+      learning: 'work',
+      notes: 'personal'
+    },
+    rules: {
+      interAppDnd: true,
+      crossCopy: true,
+      immutableRoot: true,
+      firmwareLock: false
+    },
+    logs: [
+      "Xen hypervisor v4.17 initialized.",
+      "Domain-0 control panel loaded.",
+      "Security isolation policy loaded: App containment strict."
+    ],
+    pendingAction: null,
+    pendingTimer: null
+  },
+  threatLevel: "SECURE", // SECURE, WARNING, THREAT_DETECTED
+  network: 'wifi',
+  uptime: 0,
+  activeWindow: null,
+  windowCount: 0,
+  blockedIPs: ["198.51.100.42", "203.0.113.88"],
+  // VERSION TRACKING
+  version: "1.0.0",
+  lastUpdated: "2026-06-23",
+  changeLog: [
+    "2026-06-23: Added auto‑deny timeout and overlay pointer‑events adjustment.",
+    "2026-06-20: Initial implementation of hypervisor interception and UI components."
+  ]
+};
+
+// Simulated Security Logs for auditd
+let auditLogs = [
+  "Jun 23 00:01:10 tomb-os auditd[412]: Audit daemon started successfully",
+  "Jun 23 00:01:15 tomb-os kernel: [    0.000000] AppArmor: AppArmor initialized",
+  "Jun 23 00:02:04 tomb-os ufw[618]: [UFW BLOCK] IN=eth0 OUT= MAC=00:11:22:33:44:55 SRC=198.51.100.42 DST=10.0.2.15 PROTO=TCP SPT=44211 DPT=22",
+  "Jun 23 00:03:42 tomb-os fail2ban.actions[812]: [ssh] Ban 198.51.100.42"
+];
+
+// Simulated IDS Event Queue
+const idsEventTemplates = [
+  { tag: "alert", msg: "SQL Injection attempt detected in HTTP GET /login", src: "185.220.101.5", type: "Web attack" },
+  { tag: "warn", msg: "Port scan detected on ports: 21, 22, 23, 80", src: "45.143.203.14", type: "Reconnaissance" },
+  { tag: "alert", msg: "Brute-force SSH attack: 5 failed logins in 10s", src: "91.240.118.66", type: "Authentication" },
+  { tag: "info", msg: "AppArmor blocked unauthorized read on /etc/shadow by chromium-browser", src: "localhost", type: "MAC Policy" },
+  { tag: "warn", msg: "ICMP flood packet volume exceeded threshold", src: "192.168.1.102", type: "DoS Attempt" }
+];
+
+let idsActiveLogs = [];
+
+// Boot Screen Simulation
+window.addEventListener('DOMContentLoaded', () => {
+  const bootScreen = document.getElementById('boot-screen');
+  const bootStatus = document.querySelector('.boot-status');
+  const bootProgressFill = document.querySelector('.boot-progress-fill');
+  const desktopWrapper = document.getElementById('desktop-wrapper');
+  const loginScreen = document.getElementById('login-screen');
+
+  const bootSteps = [
+    { progress: 10, text: "Initializing Linux 6.13.0-hardened-lts kernel..." },
+    { progress: 25, text: "Loading AppArmor MAC kernel profiles..." },
+    { progress: 40, text: "Activating Netfilter IPTables firewall..." },
+    { progress: 55, text: "Starting auditd (Linux Audit Daemon)..." },
+    { progress: 75, text: "Starting fail2ban intrusion prevention agent..." },
+    { progress: 90, text: "Starting GNOME Desktop Environment..." },
+    { progress: 100, text: "Welcome to TOMB OS 1.0!" }
+  ];
+
+  let currentStep = 0;
+  function runBootLoader() {
+    if (currentStep < bootSteps.length) {
+      const step = bootSteps[currentStep];
+      bootProgressFill.style.width = `${step.progress}%`;
+      bootStatus.textContent = step.text;
+      currentStep++;
+      setTimeout(runBootLoader, 400 + Math.random() * 250);
+    } else {
+      setTimeout(() => {
+        bootScreen.classList.add('fade-out');
+        desktopWrapper.classList.remove('hidden');
+        setTimeout(() => {
+          bootScreen.classList.add('hidden');
+          openWindow('readme');
+        }, 800);
+      }, 300);
+    }
+  }
+
+  runBootLoader();
+  updateTime();
+  setInterval(updateTime, 1000);
+  setInterval(incrementUptime, 60000);
+  setupIDSFeed();
+  initializeTheme();
+  initDockDragAndDrop();
+});
+
+// Drag and Drop Rearrange Dock Apps
+function initDockDragAndDrop() {
+  const dockInner = document.querySelector('.dock-inner');
+  if (!dockInner) return;
+
+  const items = dockInner.querySelectorAll('.dock-item');
+  items.forEach(item => {
+    item.setAttribute('draggable', 'true');
+
+    item.addEventListener('dragstart', (e) => {
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', item.getAttribute('data-app') || '');
+    });
+
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+    });
+  });
+
+  dockInner.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const draggingItem = dockInner.querySelector('.dragging');
+    if (!draggingItem) return;
+
+    const siblings = [...dockInner.querySelectorAll('.dock-item:not(.dragging)')];
+    const nextSibling = siblings.find(sibling => {
+      const box = sibling.getBoundingClientRect();
+      return e.clientY <= box.top + box.height / 2;
+    });
+
+    if (nextSibling) {
+      dockInner.insertBefore(draggingItem, nextSibling);
+    } else {
+      dockInner.appendChild(draggingItem);
+    }
+  });
+}
+
+// Update System Clock
+function updateTime() {
+  const liveTimeEl = document.getElementById('live-time');
+  if (liveTimeEl) {
+    const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    liveTimeEl.textContent = new Date().toLocaleString('en-US', options);
+  }
+}
+
+// Uptime Counter
+function incrementUptime() {
+  systemState.uptime++;
+  const uptimeEl = document.getElementById('uptime-counter');
+  if (uptimeEl) {
+    uptimeEl.textContent = `${systemState.uptime}m`;
+  }
+}
+
+// Toggle Quick Settings
+function toggleQuickSettings() {
+  const qs = document.getElementById('quick-settings');
+  qs.classList.toggle('hidden');
+}
+
+// Close popup on click outside
+window.addEventListener('click', (e) => {
+  const qs = document.getElementById('quick-settings');
+  const shield = document.getElementById('security-badge');
+  const indicators = document.querySelector('.system-indicators');
+  
+  if (qs && !qs.classList.contains('hidden')) {
+    if (!qs.contains(e.target) && !shield.contains(e.target) && !indicators.contains(e.target)) {
+      qs.classList.add('hidden');
+    }
+  }
+});
+
+// Toggle Security Feature from Quick Settings
+function toggleSecurityFeature(feature) {
+  systemState.features[feature] = !systemState.features[feature];
+  
+  const iconWrapper = document.getElementById(`qs-${feature}-icon`);
+  if (iconWrapper) {
+    if (systemState.features[feature]) {
+      iconWrapper.classList.add('active');
+    } else {
+      iconWrapper.classList.remove('active');
+    }
+  }
+
+  if (feature === 'apparmor') {
+    Object.keys(systemState.apps).forEach(app => {
+      systemState.apps[app].secured = systemState.features.apparmor;
+    });
+    updateAppArmorUI();
+  }
+
+  logAudit(`System security configuration altered. Feature '${feature}' set to ${systemState.features[feature] ? 'ENABLED' : 'DISABLED'}`);
+  updateSecurityShield();
+  syncComplianceDials();
+}
+
+// Update Topbar Badge
+function updateSecurityShield() {
+  const badge = document.getElementById('security-badge');
+  const badgeText = badge.querySelector('.badge-text');
+  
+  const ufwActive = systemState.features.ufw;
+  const aaActive = systemState.features.apparmor;
+  const auditActive = systemState.features.audit;
+  const f2bActive = systemState.features.fail2ban;
+  
+  // Cross-system security framework logic integration
+  if (!ufwActive && systemState.features.ips) {
+    addHypervisorLog("FIREWALL_OFF: Enforcing local VM-level egress limits to compensate for disabled UFW.");
+  }
+  
+  if (!aaActive && systemState.ultimate.sel4) {
+    logAudit("[seL4 core] System protection downgraded: AppArmor sandboxing is inactive. Mathematical formal proofs compromised.");
+  }
+  
+  if (!auditActive) {
+    logAudit("[WARNING] Audit logging daemon is stopped. Administrative compliance integrity lost.");
+  }
+  
+  if (systemState.threatLevel === "THREAT_DETECTED") {
+    badge.className = "status-shield threat-detected";
+    badgeText.textContent = "THREAT LEVEL HIGH";
+    return;
+  }
+
+  const activeCount = [ufwActive, aaActive, auditActive, f2bActive].filter(Boolean).length;
+
+  if (activeCount === 4) {
+    systemState.threatLevel = "SECURE";
+    badge.className = "status-shield";
+    badgeText.textContent = "SECURE";
+    badgeText.style.color = "var(--sec-green)";
+  } else if (activeCount >= 2) {
+    systemState.threatLevel = "WARNING";
+    badge.className = "status-shield";
+    badgeText.textContent = "HARDENING DEGRADED";
+    badgeText.style.color = "var(--sec-yellow)";
+  } else {
+    systemState.threatLevel = "WARNING";
+    badge.className = "status-shield threat-detected";
+    badgeText.textContent = "CRITICAL WARNING";
+    badgeText.style.color = "var(--sec-red)";
+  }
+}
+
+// Log message to auditd
+function logAudit(message) {
+  const now = new Date();
+  const timeStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + " " + now.toLocaleTimeString('en-US', { hour12: false });
+  const hash = generateInteractionHash();
+  auditLogs.push(`${timeStr} tomb-os admin-events: ${message} | INTEGRITY_KEY: [${hash}]`);
+}
+
+// Sync compliance metrics dynamically
+function syncComplianceDials() {
+  const soc2ScoreEl = document.getElementById('soc2-score-display');
+  if (soc2ScoreEl) {
+    const s2 = calculateSOC2Score();
+    soc2ScoreEl.textContent = `${s2}%`;
+  }
+  const globalScoreEl = document.querySelector('.globalcom-score-val');
+  if (globalScoreEl) {
+    const gc = calculateGlobalComplianceScore();
+    globalScoreEl.textContent = `${gc}%`;
+    globalScoreEl.style.color = gc > 80 ? 'var(--sec-green)' : (gc > 50 ? 'var(--sec-yellow)' : 'var(--sec-red)');
+  }
+  const ultimateScoreEl = document.getElementById('ultimate-score-display');
+  if (ultimateScoreEl) {
+    const ult = calculateUltimateScore();
+    ultimateScoreEl.textContent = `${ult}%`;
+    ultimateScoreEl.style.color = ult > 90 ? 'var(--sec-green)' : (ult > 50 ? 'var(--sec-yellow)' : 'var(--sec-red)');
+  }
+}
+
+// Window Management Configuration
+const windowConfig = {
+  readme: {
+    title: "README_SECURITY.md",
+    width: 600,
+    height: 460,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM13 9V3.5L18.5 9H13z" fill="#E95420"/></svg>`,
+    getContent: () => `
+      <div class="app-readme-container">
+        <h1>Tomb OS 1.0 LTS (Ultimate Security Edition)</h1>
+        <p>Welcome to the secure desktop of Tomb OS. This system has been fortified with top-tier kernel security frameworks to defend against advanced threats.</p>
+        
+        <h2>Active Security Frameworks:</h2>
+        <ul>
+          <li><strong>AppArmor (Mandatory Access Control)</strong>: Enforces strict sandboxing constraints on high-risk applications (e.g. browsers, SSH).</li>
+          <li><strong>Uncomplicated Firewall (UFW)</strong>: Rejects unauthorized inbound network packets and blocks suspicious ports.</li>
+          <li><strong>auditd (Audit Framework)</strong>: Logs all administrative events, privilege escalations, and system calls to a secure audit journal.</li>
+          <li><strong>Fail2Ban (IPS)</strong>: Monitors server authentication logs and dynamically blacklists offending brute-force IPs.</li>
+        </ul>
+        
+        <h2>Quick Start Commands (Open Terminal):</h2>
+        <ul>
+          <li><code>ufw status</code> - Inspect current firewall filters.</li>
+          <li><code>aa-status</code> - Check sandboxed application containment status.</li>
+          <li><code>auditd</code> - Dump audit daemon logs.</li>
+          <li><code>gpg -c [filename]</code> - Encrypt text files with symmetrical AES encryption.</li>
+        </ul>
+        <p><em>Use the left dock to open the Terminal, Intrusion Detection System (IDS), AppArmor controller, CIS Auditor, and Crypt Vault.</em></p>
+      </div>
+    `
+  },
+  controlcenter: {
+    title: "Tomb Control Center & Application Launcher",
+    width: 740,
+    height: 520,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z" fill="#E95420"/></svg>`,
+    getContent: () => getControlCenterContent()
+  },
+  browser: {
+    title: "Chromium Web Browser (Sandboxed)",
+    width: 760,
+    height: 520,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="10" fill="none" stroke="#E95420" stroke-width="1.8"/><circle cx="12" cy="12" r="4" fill="#E95420"/><path d="M12 2a10 10 0 0 1 8.66 5M12 22a10 10 0 0 1-8.66-5M2.34 7a10 10 0 0 1 8.66 15" stroke="#E95420" stroke-width="1.8" fill="none"/></svg>`,
+    getContent: () => getBrowserContent()
+  },
+  notes: {
+    title: "Tomb Secure Notes & Notepad",
+    width: 680,
+    height: 480,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" fill="#E95420"/></svg>`,
+    getContent: () => getNotesContent()
+  },
+  importer: {
+    title: "Cross-Platform Data Migration & Importer (Google, Windows, Mac)",
+    width: 720,
+    height: 500,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="#E95420"/></svg>`,
+    getContent: () => getImporterContent()
+  },
+  terminal: {
+    title: "sec-admin@tomb-os: ~",
+    width: 650,
+    height: 440,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><rect width="20" height="16" x="2" y="4" rx="2" fill="none" stroke="#FFF" stroke-width="1.5" /><path d="M6 8l4 4-4 4M12 15h6" stroke="#4AF626" stroke-width="1.5" stroke-linecap="round" fill="none" /></svg>`,
+    getContent: () => `
+      <div class="app-terminal-container" onclick="focusTerminalInput(this)">
+        <div class="terminal-welcome">
+          Welcome to TOMB OS 1.0 LTS (GNU/Linux 6.13.0-tomb-hardened x86_64)
+          <br>* AppArmor state: Active (Enforcing profiles)
+          <br>* Firewall state: Active (UFW rules loaded)
+          <br>* System auditd daemon: running
+          <br>Type 'help' to review list of authorized diagnostic commands.
+        </div>
+        <div class="terminal-history"></div>
+        <div class="terminal-input-line">
+          <span class="terminal-prompt" id="terminal-prompt-label">sec-admin@tomb-os:~$</span>
+          <input type="text" class="terminal-input" autofocus onkeydown="handleTerminalCommand(event, this)" spellcheck="false" aria-label="Terminal input prompt" />
+        </div>
+        <div class="terminal-chips-wrapper">
+          <div class="terminal-chip-label">Quick Commands:</div>
+          <button class="terminal-chip" onclick="runTerminalChipCommand('ufw status')">ufw status</button>
+          <button class="terminal-chip" onclick="runTerminalChipCommand('aa-status')">aa-status</button>
+          <button class="terminal-chip" onclick="runTerminalChipCommand('fail2ban-client status')">fail2ban status</button>
+          <button class="terminal-chip" onclick="runTerminalChipCommand('auditd')">auditd</button>
+          <button class="terminal-chip" onclick="runTerminalChipCommand('sysctl -a')">sysctl -a</button>
+          <button class="terminal-chip" onclick="runTerminalChipCommand('help')">help</button>
+          <button class="terminal-chip" style="background: rgba(166, 255, 0, 0.15); border-color: #a6ff00;" onclick="runTerminalChipCommand('ssh-e2ee 192.168.1.150')">ssh-e2ee (E2EE Remote)</button>
+          <button class="terminal-chip" style="background: rgba(255, 204, 0, 0.15); border-color: var(--sec-yellow);" onclick="pasteTerminalFromVMClipboard()">Paste VM Clipboard</button>
+        </div>
+      </div>
+    `
+  },
+  ids: {
+    title: "Intrusion Detection System (Snort/Suricata Visualizer)",
+    width: 650,
+    height: 480,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 2L2 7v6c0 5.52 4.48 10 10 10s10-4.48 10-10V7l-10-5zm0 18c-4.41 0-8-3.59-8-8V8.38l8-4 8 4V12c0 4.41-3.59 8-8 8z" fill="#E95420"/></svg>`,
+    getContent: () => `
+      <div class="app-ids-container">
+        <div class="ids-grid">
+          <div class="ids-panel">
+            <h4>Live Network Intrusions / Sec</h4>
+            <div class="ids-canvas-wrapper">
+              <canvas id="ids-chart" class="ids-canvas"></canvas>
+            </div>
+          </div>
+          <div class="ids-panel">
+            <h4>System Threat Metrics</h4>
+            <div class="ids-stats-grid">
+              <div class="ids-stat-card">
+                <div class="ids-stat-val" id="stats-total-alerts">0</div>
+                <div class="ids-stat-label">Alerts Logged</div>
+              </div>
+              <div class="ids-stat-card" style="border-left-color: var(--sec-green)">
+                <div class="ids-stat-val" id="stats-blocked-ips">2</div>
+                <div class="ids-stat-label">Banned IPs</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="ids-log-section">
+          <div class="ids-log-header">
+            <span class="ids-log-title">IDS Security Events Log (Suricata Engine)</span>
+            <div class="ids-controls">
+              <button class="ids-btn" id="ips-toggle-btn" onclick="toggleIPS()" aria-label="Toggle Intrusion Prevention Shield">Enable IPS Shield</button>
+              <button class="ids-btn sec-off" onclick="clearIDSLogs()" aria-label="Clear Console Output">Clear Console</button>
+            </div>
+          </div>
+          <div class="ids-log-list" id="ids-logs-wrapper"></div>
+        </div>
+      </div>
+    `
+  },
+  apparmor: {
+    title: "AppArmor Security Profiles",
+    width: 580,
+    height: 420,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 2L3 6v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V6l-9-4z" fill="#E95420"/></svg>`,
+    getContent: () => {
+      let appCards = '';
+      Object.keys(systemState.apps).forEach(key => {
+        const app = systemState.apps[key];
+        appCards += `
+          <div class="aa-card">
+            <div class="aa-card-left">
+              <span class="aa-card-title">${app.name}</span>
+              <span class="aa-card-desc">${app.desc}</span>
+            </div>
+            <div class="aa-card-right">
+              <span class="aa-badge ${app.secured ? 'enforce' : 'complain'}" id="aa-badge-${key}">
+                ${app.secured ? 'ENFORCE' : 'COMPLAIN / UNCONFINED'}
+              </span>
+              <label class="aa-switch">
+                <input type="checkbox" ${app.secured ? 'checked' : ''} onchange="toggleAppArmorProfile('${key}', this)" aria-label="AppArmor Enforcing Switch for ${app.name}">
+                <span class="aa-slider"></span>
+              </label>
+            </div>
+          </div>
+        `;
+      });
+
+      return `
+        <div class="app-apparmor-container">
+          <div class="apparmor-header">
+            <div class="aa-stats">
+              <div class="aa-stat-item">
+                <span class="aa-stat-lbl">Profiles Loaded</span>
+                <span class="aa-stat-val" id="aa-total-profiles">4</span>
+              </div>
+              <div class="aa-stat-item" style="margin-left: 20px;">
+                <span class="aa-stat-lbl">Enforcing Mode</span>
+                <span class="aa-stat-val" id="aa-enforcing-profiles">4</span>
+              </div>
+            </div>
+            <button class="ids-btn" onclick="enforceAllAppArmor()" aria-label="Enforce All Sandbox rules">Enforce All Sandbox rules</button>
+          </div>
+          <div class="aa-list" id="aa-app-list">
+            ${appCards}
+          </div>
+        </div>
+      `;
+    }
+  },
+  cis: {
+    title: "CIS Tomb OS Hardening Benchmark Auditor",
+    width: 600,
+    height: 480,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="#E95420"/></svg>`,
+    getContent: () => `
+      <div class="app-cis-container">
+        <div class="cis-header">
+          <div class="cis-intro">
+            <h3>CIS Benchmarks Auditor</h3>
+            <p>Audits local Tomb OS configuration settings against the Center for Internet Security Hardening standards.</p>
+            <button class="cis-btn-scan" onclick="runCISAudit()" aria-label="Run Security Compliance Audit">Run Security Compliance Audit</button>
+          </div>
+          <div class="cis-score-panel">
+            <div>
+              <div class="cis-score-circle" id="cis-score-dial">0%</div>
+              <div class="cis-score-dial-label" style="font-size:11px; margin-top:4px; text-align:center; color:var(--ubuntu-light-grey);">Compliance Rating</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cis-body">
+          <div class="cis-scan-overlay hidden" id="cis-loader">
+            <div class="cis-spinner"></div>
+            <div style="color: #fff; font-family: var(--font-mono); font-size: 13px;">Analyzing configs & file policies...</div>
+          </div>
+          <div class="cis-list" id="cis-results-list">
+            <div style="text-align: center; color: var(--ubuntu-light-grey); font-size: 13px; padding-top: 40px;">
+              Launch audit scan to view results.
+            </div>
+          </div>
+        </div>
+      </div>
+    `
+  },
+  vault: {
+    title: "Cryptographic Vault Manager (2-Way Encryption)",
+    width: 580,
+    height: 490,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" fill="#E95420" /></svg>`,
+    getContent: () => `
+      <div class="app-vault-container">
+        <div class="vault-tabs">
+          <button class="vault-tab active" onclick="switchVaultTab(this, 'encrypt')">Encrypt Text</button>
+          <button class="vault-tab" onclick="switchVaultTab(this, 'decrypt')">Decrypt Text</button>
+          <button class="vault-tab" onclick="switchVaultTab(this, 'file')">📁 2-Way File Encryption</button>
+        </div>
+        <div class="vault-body" id="vault-panel-encrypt">
+          <div class="vault-group">
+            <label for="vault-plaintext">Plaintext Secret</label>
+            <textarea class="vault-textarea" id="vault-plaintext" placeholder="Type sensitive message to encrypt..."></textarea>
+          </div>
+          <div class="vault-row">
+            <div class="vault-group">
+              <label for="vault-algo">Encryption Algorithm</label>
+              <select class="vault-select" id="vault-algo" onchange="toggleVaultAlgoDetails(this.value)">
+                <option value="aes">AES-256 (Symmetric)</option>
+                <option value="kyber">Kyber-1024 (Lattice-Based PQC)</option>
+                <option value="dilithium">Dilithium-5 (Digital Signature PQC)</option>
+                <option value="rot13">ROT13 (Obfuscation)</option>
+              </select>
+            </div>
+            <div class="vault-group">
+              <label for="vault-key" id="vault-key-label">Secret Encryption Key</label>
+              <input type="text" autocomplete="off" class="vault-input" id="vault-key" placeholder="Enter keyphrase..." />
+            </div>
+          </div>
+          <button class="vault-btn-action" onclick="runVaultEncrypt()">Generate Sealed Payload</button>
+          <div class="vault-group" style="margin-top: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label style="margin: 0;">Ciphertext Result</label>
+              <button class="vault-btn-action" style="font-size: 10px; padding: 2px 6px; background: rgba(0, 122, 255, 0.2); border: 1px solid #007AFF; margin: 0; width: auto;" onclick="copyVaultToVMClipboard()">Copy to VM Clipboard</button>
+            </div>
+            <div class="vault-result-panel" id="vault-ciphertext-output">Payload will appear here...</div>
+          </div>
+        </div>
+
+        <div class="vault-body hidden" id="vault-panel-decrypt">
+          <div class="vault-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label for="vault-ciphertext-input" style="margin: 0;">Ciphertext Payload</label>
+              <button class="vault-btn-action" style="font-size: 10px; padding: 2px 6px; background: rgba(0, 122, 255, 0.2); border: 1px solid #007AFF; margin: 0; width: auto;" onclick="pasteVaultFromVMClipboard()">Paste from VM Clipboard</button>
+            </div>
+            <textarea class="vault-textarea" id="vault-ciphertext-input" placeholder="Paste Base64 payload..."></textarea>
+          </div>
+          <div class="vault-row">
+            <div class="vault-group">
+              <label for="vault-algo-decrypt">Encryption Algorithm</label>
+              <select class="vault-select" id="vault-algo-decrypt">
+                <option value="aes">AES-256 (Symmetric)</option>
+                <option value="kyber">Kyber-1024 (PQC)</option>
+                <option value="rot13">ROT13 (Obfuscation)</option>
+              </select>
+            </div>
+            <div class="vault-group">
+              <label for="vault-key-decrypt">Secret Decryption Key</label>
+              <input type="text" autocomplete="off" class="vault-input" id="vault-key-decrypt" placeholder="Enter keyphrase..." />
+            </div>
+          </div>
+          <button class="vault-btn-action" onclick="runVaultDecrypt()">Decrypt Payload</button>
+          <div class="vault-group" style="margin-top: 10px;">
+            <label>Recovered Plaintext</label>
+            <div class="vault-result-panel" id="vault-plaintext-output">Recovered data will appear here...</div>
+          </div>
+        </div>
+
+        <div class="vault-body hidden" id="vault-panel-file">
+          <div style="background: rgba(0,0,0,0.2); border: 1px dashed var(--ubuntu-orange); border-radius: 8px; padding: 16px; text-align: center; margin-bottom: 14px;">
+            <div style="font-size: 24px; margin-bottom: 6px;">📁</div>
+            <div style="font-weight: 600; font-size: 13px; color: #fff;">2-Way Symmetric File Encryption Pipeline</div>
+            <div style="font-size: 11px; color: var(--ubuntu-light-grey); margin-top: 4px;">Select a system file to encrypt or decrypt with AES-256 / PQC lattice keys</div>
+          </div>
+
+          <div class="vault-row">
+            <div class="vault-group">
+              <label for="vault-file-select">Target System File</label>
+              <select class="vault-select" id="vault-file-select">
+                <option value="confidential_report.pdf">📄 confidential_report.pdf (1.2 MB)</option>
+                <option value="shadow_passwords.txt">🔑 shadow_passwords.txt (4.2 KB)</option>
+                <option value="database_backup.sql">💾 database_backup.sql (48.5 MB)</option>
+                <option value="api_tokens.json">🔐 api_tokens.json (1.8 KB)</option>
+              </select>
+            </div>
+            <div class="vault-group">
+              <label for="vault-file-key">Master Passkey / Keyphrase</label>
+              <input type="text" autocomplete="off" class="vault-input" id="vault-file-key" value="TombOS_MasterKey_2026" placeholder="Enter secret key..." />
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button class="vault-btn-action" style="flex: 1; background: var(--ubuntu-orange);" onclick="runVaultFileEncrypt()">🔒 Encrypt File (2-Way)</button>
+            <button class="vault-btn-action" style="flex: 1; background: rgba(0,122,255,0.3); border: 1px solid #007AFF;" onclick="runVaultFileDecrypt()">🔓 Decrypt File (2-Way)</button>
+          </div>
+
+          <div class="vault-group" style="margin-top: 12px;">
+            <label>2-Way File Operation Result</label>
+            <div class="vault-result-panel" id="vault-file-output">Select a file and action above...</div>
+          </div>
+        </div>
+      </div>
+    `
+  },
+  soc2: {
+    title: "SOC 2 Trust Services Compliance Auditor",
+    width: 620,
+    height: 480,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><rect x="2" y="2" width="20" height="20" rx="3" fill="#E95420"/><circle cx="12" cy="12" r="5" fill="none" stroke="#FFF" stroke-width="1.8"/><path d="M12 9v6M9 12h6" stroke="#FFF" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+    getContent: () => getSOC2Content()
+  },
+  globalcom: {
+    title: "Global Data Protection & Regulatory Compliance Hub",
+    width: 680,
+    height: 480,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" fill="#E95420"/></svg>`,
+    getContent: () => getGlobalComplianceContent()
+  },
+  ultimate: {
+    title: "Ultimate Hardening Center (ZTA, seL4, TPM)",
+    width: 640,
+    height: 500,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 2L3 6v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V6l-9-4zm0 6c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm5 8H7v-1.5c0-1.66 3.33-2.5 5-2.5s5 .84 5 2.5V16z" fill="#E95420" /></svg>`,
+    getContent: () => getUltimateContent()
+  },
+  hypervisor: {
+    title: "Tomb Hypervisor VM Manager",
+    width: 650,
+    height: 460,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" fill="none" stroke="#E95420" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    getContent: () => getHypervisorContent()
+  },
+  render: {
+    title: "Tomb Render (Video Production Studio)",
+    width: 700,
+    height: 520,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" fill="#E95420"/></svg>`,
+    getContent: () => getRenderContent()
+  },
+  teacher: {
+    title: "Tomb AI Teacher & Translator Hub",
+    width: 650,
+    height: 500,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-.83 0-1.5-.67-1.5-1.5S11.17 14 12 14s1.5.67 1.5 1.5S12.83 17 12 17zm1-5.5h-2v-4h2v4z" fill="#E95420"/></svg>`,
+    getContent: () => getTeacherContent()
+  },
+  learning: {
+    title: "Tomb Accredited Computer Science & Software Engineering Academy",
+    width: 760,
+    height: 560,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z" fill="#E95420"/></svg>`,
+    getContent: () => getLearningContent()
+  },
+  theme: {
+    title: "Tomb UI Customization Center",
+    width: 630,
+    height: 500,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3a9 9 0 0 0-9 9 9 9 0 0 0 9 9 1.5 1.5 0 0 0 1.5-1.5c0-.39-.15-.75-.4-1.01a1.48 1.48 0 0 1-.4-1.03c0-.82.68-1.5 1.5-1.5H16a5 5 0 0 0 5-5c0-4.42-4.03-8-9-8z" fill="#E95420"/></svg>`,
+    getContent: () => getThemeContent()
+  }
+};
+
+// Get or assign unique IP for a window VM sandbox
+function getWindowIp(appId) {
+  if (!systemState.windowIps) {
+    systemState.windowIps = {};
+  }
+  if (!systemState.windowIps[appId]) {
+    const currentZone = systemState.hypervisor.zones[appId] || 'personal';
+    let subnet = 1;
+    if (currentZone === 'untrusted') subnet = 10;
+    else if (currentZone === 'work') subnet = 20;
+    else if (currentZone === 'personal') subnet = 30;
+    else if (currentZone === 'secure') subnet = 40;
+    
+    let ip;
+    do {
+      const host = 10 + Math.floor(Math.random() * 240);
+      ip = `10.137.${subnet}.${host}`;
+    } while (Object.values(systemState.windowIps).includes(ip));
+    
+    systemState.windowIps[appId] = ip;
+  }
+  return systemState.windowIps[appId];
+}
+
+// Open Window API
+function openWindow(appId) {
+  const container = document.getElementById('windows-container');
+  const dot = document.getElementById(`dot-${appId}`);
+  
+  if (dot) dot.classList.remove('hidden');
+
+  let win = document.getElementById(`window-${appId}`);
+  if (win) {
+    if (win.classList.contains('minimized')) {
+      win.classList.remove('minimized');
+    }
+    focusWindow(win);
+    return;
+  }
+
+  const config = windowConfig[appId];
+  if (!config) return;
+  systemState.windowCount++;
+  
+  win = document.createElement('div');
+  win.id = `window-${appId}`;
+  
+  // Qubes zone styling setup
+  const currentZone = systemState.hypervisor.zones[appId] || 'personal';
+  win.className = `os-window active zone-${currentZone}`;
+  
+  const desktopWidth = document.getElementById('desktop').clientWidth;
+  const desktopHeight = document.getElementById('desktop').clientHeight;
+  const left = Math.max(80, (desktopWidth - config.width) / 2 + (systemState.windowCount * 20) % 100);
+  const top = Math.max(40, (desktopHeight - config.height) / 2 + (systemState.windowCount * 20) % 100);
+  
+  win.style.width = `${config.width}px`;
+  win.style.height = `${config.height}px`;
+  win.style.left = `${left}px`;
+  win.style.top = `${top}px`;
+  
+  const winIp = getWindowIp(appId);
+  
+  win.innerHTML = `
+    <div class="window-titlebar" onmousedown="dragStart(event, '${appId}')" ontouchstart="dragStart(event, '${appId}')" ondblclick="maximizeWindow('${appId}')">
+      <div class="window-title">
+        <span class="window-title-icon">${config.icon}</span>
+        <span>${config.title} <span class="window-ip-badge" style="font-family: var(--font-mono); font-size: 10px; opacity: 0.8; background: rgba(255,255,255,0.08); padding: 1px 5px; border-radius: 3px; margin-left: 6px;">IP: ${winIp}</span></span>
+        <select class="window-zone-select sel-${currentZone}" onchange="changeWindowZone('${appId}', this)" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()">
+          <option value="untrusted" ${currentZone === 'untrusted' ? 'selected' : ''}>[Red] Untrusted</option>
+          <option value="work" ${currentZone === 'work' ? 'selected' : ''}>[Yellow] Work</option>
+          <option value="personal" ${currentZone === 'personal' ? 'selected' : ''}>[Blue] Personal</option>
+          <option value="secure" ${currentZone === 'secure' ? 'selected' : ''}>[Green] Secure System</option>
+        </select>
+      </div>
+      <div class="window-controls">
+        <button class="window-btn minimize" onclick="minimizeWindow('${appId}', event)" title="Minimize" aria-label="Minimize Window">─</button>
+        <button class="window-btn maximize" onclick="maximizeWindow('${appId}', event)" title="Maximize" aria-label="Maximize Window">⬜</button>
+        <button class="window-btn close" onclick="closeWindow('${appId}', event)" title="Close" aria-label="Close Window">✕</button>
+      </div>
+    </div>
+    <div class="window-content">
+      ${config.getContent()}
+    </div>
+  `;
+
+  win.addEventListener('mousedown', () => focusWindow(win));
+  win.addEventListener('touchstart', () => focusWindow(win));
+  container.appendChild(win);
+  focusWindow(win);
+
+  if (appId === 'ids') {
+    initIDSCanvas();
+  }
+}
+
+// Window Operations
+function focusWindow(targetWin) {
+  if (systemState.activeWindow === targetWin) return;
+  document.querySelectorAll('.os-window').forEach(w => {
+    w.classList.remove('active');
+  });
+  targetWin.classList.add('active');
+  systemState.activeWindow = targetWin;
+}
+
+function closeWindow(appId, e) {
+  if (e) e.stopPropagation();
+  const win = document.getElementById(`window-${appId}`);
+  if (win) win.remove();
+  const dot = document.getElementById(`dot-${appId}`);
+  if (dot) dot.classList.add('hidden');
+  
+  if (appId === 'render') {
+    resetRenderPlay();
+  }
+}
+
+function minimizeWindow(appId, e) {
+  if (e) e.stopPropagation();
+  const win = document.getElementById(`window-${appId}`);
+  if (win) win.classList.add('minimized');
+}
+
+function maximizeWindow(appId, e) {
+  if (e) e.stopPropagation();
+  const win = document.getElementById(`window-${appId}`);
+  if (win) win.classList.toggle('maximized');
+}
+
+// Drag & Drop (Touch and Mouse compatible)
+let dragElement = null;
+let dragX = 0;
+let dragY = 0;
+
+function dragStart(e, appId) {
+  const win = document.getElementById(`window-${appId}`);
+  if (win.classList.contains('maximized')) return;
+
+  focusWindow(win);
+  dragElement = win;
+  
+  const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+  const clientY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+  
+  dragX = clientX - win.offsetLeft;
+  dragY = clientY - win.offsetTop;
+
+  if (e.type === 'touchstart') {
+    document.addEventListener('touchmove', dragMove, { passive: false });
+    document.addEventListener('touchend', dragEnd);
+  } else {
+    document.addEventListener('mousemove', dragMove);
+    document.addEventListener('mouseup', dragEnd);
+  }
+}
+
+function dragMove(e) {
+  if (!dragElement) return;
+  const desktopWidth = document.getElementById('desktop').clientWidth;
+  const desktopHeight = document.getElementById('desktop').clientHeight;
+  
+  const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+  const clientY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+  
+  let left = clientX - dragX;
+  let top = clientY - dragY;
+  
+  left = Math.max(58, Math.min(left, desktopWidth - 100));
+  top = Math.max(28, Math.min(top, desktopHeight - 40));
+
+  dragElement.style.left = `${left}px`;
+  dragElement.style.top = `${top}px`;
+  
+  if (e.cancelable) {
+    e.preventDefault(); // Prevent scrolling the browser window while dragging
+  }
+}
+
+function dragEnd() {
+  dragElement = null;
+  document.removeEventListener('mousemove', dragMove);
+  document.removeEventListener('mouseup', dragEnd);
+  document.removeEventListener('touchmove', dragMove);
+  document.removeEventListener('touchend', dragEnd);
+}
+
+// ACCESSIBILITY: Terminal Suggestions runner
+function runTerminalChipCommand(cmdText) {
+  const win = document.getElementById('window-terminal');
+  if (!win) return;
+  const input = win.querySelector('.terminal-input');
+  if (input) {
+    input.value = cmdText;
+    const event = new KeyboardEvent('keydown', { key: 'Enter' });
+    Object.defineProperty(event, 'target', { value: input });
+    handleTerminalCommand(event, input);
+  }
+}
+
+function focusTerminalInput(container) {
+  const input = container.querySelector('.terminal-input');
+  if (input) input.focus();
+}
+
+// Terminal Commands handler
+function handleTerminalCommand(e, input) {
+  if (e.key === 'Enter') {
+    const rawVal = input.value.trim();
+    input.value = '';
+    
+    if (!rawVal) return;
+    const history = input.parentElement.previousElementSibling;
+    
+    const promptText = systemState.remoteConnected ? `sec-admin@remote-node [E2EE]:~$` : `sec-admin@tomb-os:~$`;
+    const promptColor = systemState.remoteConnected ? 'var(--sec-yellow)' : '#4AF626';
+    history.innerHTML += `<div class="terminal-line"><span class="terminal-prompt" style="color: ${promptColor};">${promptText}</span> <span style="color: #fff;">${escapeHTML(rawVal)}</span></div>`;
+    
+    const runCmd = () => {
+      // E2EE REMOTE ENCRYPTION TRACE
+      if (systemState.remoteConnected) {
+        const transHash = generateInteractionHash();
+        history.innerHTML += `<div class="terminal-line info" style="font-size: 10px; color: var(--sec-yellow); font-family: var(--font-mono); margin-bottom: 3px;">[E2EE Channel] Encrypted Payload: ${transHash}</div>`;
+      }
+
+      // IMMUTABLE FILESYSTEM CONSTRAINT CHECK
+      if (systemState.ultimate.immutable) {
+        const isWriteCmd = rawVal.match(/^(gpg|touch|rm|mkdir|mv|cp|dd|sudo\s+touch|sudo\s+rm|sudo\s+mkdir)/i);
+        if (isWriteCmd) {
+          history.innerHTML += `<div class="terminal-line error">[AppArmor/Immutable Core BLOCK] Root filesystem overlay is locked read-only. File write and directory creation requests on '/usr' and '/' sectors are prohibited.</div>`;
+          const terminalContainer = input.parentElement.parentElement;
+          terminalContainer.scrollTop = terminalContainer.scrollHeight;
+          logAudit(`Unauthorized write command '${rawVal}' blocked by Immutable Core Overlay.`);
+          return;
+        }
+      }
+
+      const args = rawVal.split(' ');
+      const cmd = args[0].toLowerCase();
+      let output = '';
+      
+      switch (cmd) {
+        case 'help':
+          output = `Available Diagnostics & Productivity Toolkit Commands:
+  help                       - Show this documentation index.
+  env | cat .env             - Inspect environmental variables linked to productivity apps.
+  export KEY=VALUE           - Update environment variables live in .env configuration.
+  tomb-notes | notes         - Launch Tomb Secure Notes app directly from terminal.
+  tomb-vault | vault         - Launch Cryptographic Key Vault from terminal.
+  tomb-importer | importer   - Launch Cross-Platform Data Importer from terminal.
+  chromium | browser         - Launch Sandboxed Chromium Browser from terminal.
+  tomb-academy | academy     - Launch Security Academy & Linux CLI Learning Environment.
+  build-iso | update-iso     - Build and compile updated bootable Tomb OS ISO image.
+  whoami                     - Inspect active administrative context.
+  ifconfig                   - Display active VM network interface config.
+  ufw status | enable        - Configure Firewall status parameters.
+  aa-status                  - Inspect active AppArmor confinement state.
+  auditd                     - Print Linux Audit Daemon security logs.
+  gpg -c [text]              - Run symmetric AES encryption pipeline.
+  ssh-e2ee [remote_ip]       - Establish E2EE remote terminal session.
+  clear                      - Purge terminal lines.`;
+          break;
+        case 'env':
+          output = `# Tomb OS Linked Productivity Environment (.env)
+` + Object.entries(systemState.env).map(([k, v]) => `${k}=${v}`).join('\n');
+          break;
+        case 'cat':
+          if (args[1] === '.env' || args[1] === '/etc/tomb.env') {
+            output = `# Tomb OS Linked Productivity Environment (.env)
+` + Object.entries(systemState.env).map(([k, v]) => `${k}=${v}`).join('\n');
+          } else {
+            output = `cat: ${escapeHTML(args[1] || '')}: No such file or directory. Try 'cat .env'`;
+          }
+          break;
+        case 'export':
+          const expPair = args.slice(1).join(' ');
+          if (expPair.includes('=')) {
+            const [k, v] = expPair.split('=');
+            systemState.env[k.trim()] = v.trim();
+            output = `[ENV UPDATED] Set ${k.trim()}=${v.trim()} in active system .env configuration.`;
+            logAudit(`Environment variable updated via CLI: ${k.trim()}`);
+          } else {
+            output = `Usage: export KEY=VALUE (e.g. export PRODUCTIVITY_ZONE=secure)`;
+          }
+          break;
+        case 'tomb-notes':
+        case 'notes':
+          openWindow('notes');
+          output = `[CLI LAUNCH] Executing ${systemState.env.NOTES_APP} ... Opening Tomb Secure Notes window!`;
+          logAudit(`Productivity app launched from terminal: tomb-notes`);
+          break;
+        case 'tomb-vault':
+        case 'vault':
+          openWindow('vault');
+          output = `[CLI LAUNCH] Executing ${systemState.env.VAULT_APP} ... Opening Cryptographic Key Vault window!`;
+          logAudit(`Productivity app launched from terminal: tomb-vault`);
+          break;
+        case 'tomb-importer':
+        case 'importer':
+          openWindow('importer');
+          output = `[CLI LAUNCH] Executing ${systemState.env.IMPORTER_APP} ... Opening Data Importer window!`;
+          logAudit(`Productivity app launched from terminal: tomb-importer`);
+          break;
+        case 'chromium':
+        case 'browser':
+          openWindow('browser');
+          output = `[CLI LAUNCH] Executing ${systemState.env.BROWSER_APP} ... Opening Sandboxed Chromium Browser!`;
+          logAudit(`Productivity app launched from terminal: chromium`);
+          break;
+        case 'tomb-academy':
+        case 'academy':
+        case 'learning':
+          openWindow('learning');
+          output = `[CLI LAUNCH] Executing ${systemState.env.ACADEMY_APP} ... Opening Security Academy!`;
+          logAudit(`Productivity app launched from terminal: tomb-academy`);
+          break;
+        case 'tomb-controlcenter':
+        case 'controlcenter':
+          openWindow('controlcenter');
+          output = `[CLI LAUNCH] Executing ${systemState.env.CONTROLCENTER_APP} ... Opening Control Center App Launcher!`;
+          break;
+        case 'build-iso':
+        case 'update-iso':
+        case 'tomb-iso':
+          const isoHash = generateInteractionHash();
+          output = `[ISO BUILD DAEMON] Initiating bootable Tomb OS ISO compilation...
+▶ Bundling Xen Dom0 Hypervisor & seL4 Microkernel binaries...
+▶ Compiling Kyber-1024 / Dilithium-5 Post-Quantum Cryptography engines...
+▶ Integrating Global Compliance Hub (GDPR, CCPA, DPDP, PIPL, LGPD)...
+▶ Packaging Control Center, Tomb Notes, 2-Way File Encryption & Importer tools...
+✅ SUCCESS: Bootable ISO Image updated successfully!
+Output File: /tombos/tombos_secure_amd64.iso (Size: 4.8 GB)
+SHA256 Checksum: [${isoHash}]
+Ready for live SD card / USB flashing or deployment.`;
+          logAudit("Updated bootable Tomb OS ISO image: tombos_secure_amd64.iso");
+          break;
+        case 'whoami':
+          output = `sec-admin (System Administrator, UID: 0 - root context active)`;
+          break;
+        case 'tomb-upgrade':
+          if (systemState.network === 'wifi') {
+            output = `[SECURITY BLOCK] Tomb OS Upgrade Agent aborted.
+Reason: Active network interface is Wi-Fi (wlan0).
+To prevent Man-in-the-Middle (MITM) package tampering, compliant updates and installations are restricted to secure wired Ethernet (eth0) interfaces.
+Please connect a physical network cable and switch your interface in Quick Settings.`;
+            logAudit("Attempted manual OSS upgrade blocked due to Wi-Fi connection.");
+            break;
+          }
+          const hash1 = generateInteractionHash();
+          const hash2 = generateInteractionHash();
+          const hash3 = generateInteractionHash();
+          output = `[TOMB-UPGRADE] Initiating secure synchronization with upstream OSS databases...
+[TOMB-UPGRADE] Contacting mirrors: security.tomb-os.org
+[TOMB-UPGRADE] Fetching compliant open-source frameworks:
+  - AppArmor security profiles: v3.1.2-tomb (Up to date)
+    -> Verified signature key: [${hash1}]
+  - UFW Netfilter tables: v0.36-compliant (Update available!)
+    -> Compiling new UFW packet filters...
+    -> Verified signature key: [${hash2}]
+  - Suricata intrusion signatures: v7.0.3-hardened (Update available!)
+    -> Merging Snort-compliant signatures...
+    -> Verified signature key: [${hash3}]
+[TOMB-UPGRADE] System upgraded successfully. Open source security engines expanded and verified.`;
+          logAudit("Manual OSS framework security upgrade executed.");
+          break;
+        case 'ssh-e2ee':
+          const remoteIp = args[1];
+          if (!remoteIp) {
+            output = `Usage: ssh-e2ee [remote_ip_address]`;
+          } else {
+            systemState.remoteConnected = remoteIp;
+            const hash = generateInteractionHash();
+            output = `[E2EE HANDSHAKE] Generating local Ephemeral Kyber-1024 / Dilithium keys...
+[E2EE HANDSHAKE] Exchanging public key certificates with remote node ${escapeHTML(remoteIp)}...
+[E2EE HANDSHAKE] Derived shared secret via quantum-resistant Kyber ECDH exchange.
+[E2EE SESSION] Channel active. Cipher suite: AES-256-GCM.
+[E2EE SESSION] E2EE Handshake key: [${hash}]
+[E2EE SESSION] Remote Terminal control active. Type 'exit' to disconnect.`;
+            
+            const promptLabel = document.getElementById('terminal-prompt-label');
+            if (promptLabel) {
+              promptLabel.textContent = `sec-admin@remote-node [E2EE]:~$`;
+              promptLabel.style.color = 'var(--sec-yellow)';
+            }
+            logAudit(`Established End-to-End Encrypted Remote session to ${remoteIp}.`);
+          }
+          break;
+        case 'exit':
+          if (systemState.remoteConnected) {
+            output = `Disconnecting remote terminal session from ${escapeHTML(systemState.remoteConnected)}...
+Session encryption terminated securely.`;
+            systemState.remoteConnected = false;
+            
+            const promptLabel = document.getElementById('terminal-prompt-label');
+            if (promptLabel) {
+              promptLabel.textContent = `sec-admin@tomb-os:~$`;
+              promptLabel.style.color = '#4AF626';
+            }
+            logAudit(`Terminated encrypted remote session.`);
+          } else {
+            closeWindow('terminal');
+            return;
+          }
+          break;
+        case 'clear':
+          history.innerHTML = '';
+          return;
+        case 'ufw':
+          if (args[1] === 'status') {
+            output = `Status: ${systemState.features.ufw ? 'active' : 'inactive'}
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), disabled (routed)
+
+To                         Action      From
+--                         ------      ----
+22/tcp (SSH/Hardened)      LIMIT       Anywhere
+443/tcp (HTTPS)            ALLOW       Anywhere
+80/tcp (HTTP-redirect)     ALLOW       Anywhere`;
+          } else if (args[1] === 'enable') {
+            systemState.features.ufw = true;
+            const ufwIcon = document.getElementById('qs-ufw-icon');
+            if (ufwIcon) ufwIcon.classList.add('active');
+            output = `Firewall is active and enabled on system startup`;
+            logAudit("UFW Firewall status set to: ACTIVE");
+            updateSecurityShield();
+            syncComplianceDials();
+          } else if (args[1] === 'disable') {
+            systemState.features.ufw = false;
+            const ufwIcon = document.getElementById('qs-ufw-icon');
+            if (ufwIcon) ufwIcon.classList.remove('active');
+            output = `Firewall stopped and disabled on system startup`;
+            logAudit("UFW Firewall status set to: INACTIVE (WARNING)");
+            updateSecurityShield();
+            syncComplianceDials();
+          } else {
+            output = `Usage: ufw status | enable | disable`;
+          }
+          break;
+        case 'aa-status':
+          const loaded = Object.keys(systemState.apps).length;
+          const enforced = Object.values(systemState.apps).filter(a => a.secured).length;
+          output = `apparmor module is loaded.
+${loaded} profiles are loaded.
+${enforced} profiles are in enforce mode.
+   /usr/bin/chromium-browser
+   /usr/bin/evince-pdf-viewer
+   /usr/bin/nautilus-file-manager
+   /usr/sbin/sshd
+${loaded - enforced} profiles are in complain mode.`;
+          break;
+        case 'aa-enforce':
+          const target = args[1];
+          if (!target) {
+            output = `Usage: aa-enforce [browser | filemanager | pdfviewer | ssh]`;
+          } else if (systemState.apps[target]) {
+            systemState.apps[target].secured = true;
+            updateAppArmorUI();
+            output = `Setting AppArmor profile for /usr/bin/${target} to Enforcing mode.`;
+            logAudit(`AppArmor containment profile for ${target} set to ENFORCE.`);
+            syncComplianceDials();
+          } else {
+            output = `AppArmor profile target '/usr/bin/${target}' not found.`;
+          }
+          break;
+        case 'fail2ban-client':
+          if (args[1] === 'status') {
+            output = `Status
+|- Number of jail:      1
+\`- Jail list:           sshd
+   |- Status for jail:   sshd
+   |- Filter
+   |  |- Currently failed: 1
+   |  \`- Total failed:     38
+   \`- Actions
+      |- Currently banned: ${systemState.blockedIPs.length}
+      \`- Banned IP list:  ${systemState.blockedIPs.join(', ')}`;
+          } else {
+            output = `Usage: fail2ban-client status`;
+          }
+          break;
+        case 'auditd':
+          output = auditLogs.slice(-10).join('\n');
+          break;
+        case 'sysctl':
+          if (rawVal.includes('net.ipv4')) {
+            output = `net.ipv4.conf.all.rp_filter = 1 (Enforces Reverse Path Filtering)
+net.ipv4.conf.all.accept_source_route = 0 (Disables IP Source Routing)
+net.ipv4.conf.all.accept_redirects = 0 (Disables ICMP Redirects)
+net.ipv4.conf.all.secure_redirects = 0
+net.ipv4.conf.default.accept_redirects = 0
+net.ipv4.tcp_syncookies = 1 (Enables SYN Flood Mitigation)
+net.ipv4.tcp_rfc1337 = 1 (Protects against TIME-WAIT assassination)`;
+          } else {
+            output = `net.ipv4.conf.all.rp_filter = 1
+net.ipv4.conf.all.accept_source_route = 0
+kernel.kptr_restrict = 2 (Blocks kernel address leaks)
+kernel.yama.ptrace_scope = 1 (Hardens process memory probing)
+fs.protected_symlinks = 1`;
+          }
+          break;
+        case 'ifconfig':
+        case 'ip':
+          const terminalIp = getWindowIp('terminal');
+          output = `eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet ${terminalIp}  netmask 255.255.255.0  broadcast 10.137.2.255
+        inet6 fe80::5054:ff:fe8c:da12  prefixlen 64  scopeid 0x20<link>
+        ether 52:54:00:8c:da:12  txqueuelen 1000  (Ethernet)
+        RX packets 4531  bytes 342152 (342.1 KB)
+        TX packets 2102  bytes 189412 (189.4 KB)
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)`;
+          break;
+        case 'reboot':
+          if (args[1] === '--bios') {
+            executeRebootToBios();
+            return;
+          } else {
+            output = `Rebooting Tomb OS...`;
+            setTimeout(() => location.reload(), 1000);
+          }
+          break;
+        case 'reboot-bios':
+        case 'bios':
+        case 'brute-bios':
+          executeRebootToBios();
+          return;
+        case 'gpg':
+          if (args[1] === '-c') {
+            const content = args.slice(2).join(' ');
+            if (!content) {
+              output = `Usage: gpg -c [message_to_encrypt]`;
+            } else {
+              const b64 = btoa(unescape(encodeURIComponent(content)));
+              output = `-----BEGIN PPG SIGNED MESSAGE-----
+Hash: SHA256
+
+Symmetric Cipher: AES-256
+Salted Payload: ${b64.slice(0, 12)}X9F..${b64.slice(-8)}==
+-----END PPG SIGNED MESSAGE-----`;
+            }
+          } else {
+            output = `Usage: gpg -c [plaintext_string]`;
+          }
+          break;
+        default:
+          output = `bash: command not found: ${cmd}. Type 'help' to review authorized diagnostics toolkits.`;
+      }
+      
+      if (output) {
+        const cssClass = output.includes('not found') || output.includes('Usage:') ? 'warning' : 'output';
+        history.innerHTML += `<div class="terminal-line ${cssClass}">${output.replace(/\n/g, '<br>')}</div>`;
+      }
+      
+      const terminalContainer = input.parentElement.parentElement;
+      terminalContainer.scrollTop = terminalContainer.scrollHeight;
+    };
+
+    const args = rawVal.split(' ');
+    const cmd = args[0].toLowerCase();
+    const isBiosCmd = (cmd === 'reboot' && args[1] === '--bios') || ['reboot-bios', 'bios', 'brute-bios'].includes(cmd);
+    const isSensitive = ['ufw', 'aa-enforce', 'auditd', 'fail2ban-client', 'gpg'].includes(cmd) || isBiosCmd;
+
+    if (isSensitive) {
+      let targetDomain = 'ultimate';
+      let actionName = `run_command_${cmd}`;
+      if (cmd === 'gpg') {
+        targetDomain = 'vault';
+      } else if (isBiosCmd) {
+        targetDomain = 'firmware';
+        actionName = 'reboot_to_bios';
+      }
+
+      interceptAction(
+        'terminal',
+        targetDomain,
+        actionName,
+        runCmd,
+        () => {
+          history.innerHTML += `<div class="terminal-line error">[XEN BLOCK] Hypervisor interdiction: Permission denied. Command execution blocked.</div>`;
+          const terminalContainer = input.parentElement.parentElement;
+          terminalContainer.scrollTop = terminalContainer.scrollHeight;
+        }
+      );
+    } else {
+      runCmd();
+    }
+  }
+}
+
+function escapeHTML(str) {
+  return str.replace(/[&<>'"]/g, 
+    tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag)
+  );
+}
+
+// APP: Intrusion Detection System
+let idsChartInterval = null;
+let idsAttackInterval = null;
+let alertCount = 0;
+const chartData = Array(30).fill(0);
+
+function initIDSCanvas() {
+  const canvas = document.getElementById('ids-chart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  canvas.width = canvas.parentElement.clientWidth;
+  canvas.height = canvas.parentElement.clientHeight;
+
+  if (idsChartInterval) clearInterval(idsChartInterval);
+  
+  idsChartInterval = setInterval(() => {
+    if (!ctx) return;
+    
+    ctx.fillStyle = '#0a0006';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.strokeStyle = 'rgba(233, 84, 32, 0.06)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < canvas.width; i += 20) {
+      ctx.beginPath();
+      ctx.moveTo(i, 0);
+      ctx.lineTo(i, canvas.height);
+      ctx.stroke();
+    }
+    for (let i = 0; i < canvas.height; i += 20) {
+      ctx.beginPath();
+      ctx.moveTo(0, i);
+      ctx.lineTo(canvas.width, i);
+      ctx.stroke();
+    }
+
+    chartData.shift();
+    let latest = Math.floor(Math.random() * 15) + 5;
+    if (systemState.threatLevel === "THREAT_DETECTED") {
+      latest += 45;
+    } else if (systemState.features.ips) {
+      latest = Math.max(2, latest - 10);
+    }
+    chartData.push(latest);
+
+    ctx.strokeStyle = systemState.threatLevel === "THREAT_DETECTED" ? 'var(--sec-red)' : 'var(--sec-green)';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    
+    const sliceWidth = canvas.width / (chartData.length - 1);
+    for (let i = 0; i < chartData.length; i++) {
+      const x = i * sliceWidth;
+      const y = canvas.height - (chartData[i] / 80) * canvas.height;
+      if (i === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    }
+    ctx.stroke();
+
+    ctx.fillStyle = systemState.threatLevel === "THREAT_DETECTED" 
+      ? 'rgba(255, 59, 48, 0.08)' 
+      : 'rgba(74, 246, 38, 0.08)';
+    ctx.lineTo(canvas.width, canvas.height);
+    ctx.lineTo(0, canvas.height);
+    ctx.fill();
+    
+  }, 180);
+}
+
+function triggerIntegratedDefense(event) {
+  // Fail2Ban detects high-risk alerts and acts
+  if (systemState.features.fail2ban && event.tag === 'alert') {
+    if (!systemState.blockedIPs.includes(event.src) && event.src !== 'localhost') {
+      systemState.blockedIPs.push(event.src);
+      
+      logAudit(`[Fail2Ban IPS] Intercepted signature '${event.type}' from IP: ${event.src}. Adding host to blacklist.`);
+      addHypervisorLog(`IPS BAN: Fail2Ban blocked malicious IP ${event.src} on ports 22, 80, 443`);
+      
+      // If UFW is active, sync the block rule directly to UFW logs!
+      if (systemState.features.ufw) {
+        logAudit(`[UFW Firewall] Loaded active REJECT packet filter rule for banned IP: ${event.src}`);
+      }
+    }
+  }
+
+  // AppArmor sandbox violations logged to auditd
+  if (systemState.features.apparmor && event.type === 'MAC Policy') {
+    logAudit(`[AppArmor sandbox violation] Blocked unauthorized resource query by chromium-browser`);
+    addHypervisorLog(`MAC AUDIT: AppArmor blocked Chromium browser accessing secure directory '/etc/shadow'`);
+  }
+}
+
+function setupIDSFeed() {
+  if (idsAttackInterval) clearInterval(idsAttackInterval);
+
+  idsAttackInterval = setInterval(() => {
+    const triggerChance = Math.random();
+    if (triggerChance > 0.45) {
+      const template = idsEventTemplates[Math.floor(Math.random() * idsEventTemplates.length)];
+      
+      let alertMsg = template.msg;
+      let alertTag = template.tag;
+      
+      // Invoke integrated defense framework bridge
+      triggerIntegratedDefense(template);
+      
+      // Translate incoming system messages dynamically
+      if (template.tag === 'alert' || template.tag === 'warn') {
+        if (typeof translateIncomingMessage === 'function') {
+          translateIncomingMessage(template);
+        }
+      }
+      
+      if (systemState.features.ips && template.tag === 'alert') {
+        alertMsg = `[IPS BLOCKED] ${template.msg} from IP ${template.src}`;
+        alertTag = 'info';
+      } else {
+        if (template.tag === 'alert') {
+          if (!systemState.features.ufw && !systemState.features.ips) {
+            systemState.threatLevel = "THREAT_DETECTED";
+            updateSecurityShield();
+          }
+        }
+      }
+
+      const logList = document.getElementById('ids-logs-wrapper');
+      if (logList) {
+        const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+        const row = document.createElement('div');
+        row.className = 'ids-log-item';
+        row.innerHTML = `
+          <span class="ids-log-time">${time}</span>
+          <span class="ids-log-tag ${alertTag}">${alertTag.toUpperCase()}</span>
+          <span class="ids-log-msg">${alertMsg}</span>
+        `;
+        
+        logList.insertBefore(row, logList.firstChild);
+        if (logList.childElementCount > 40) {
+          logList.removeChild(logList.lastChild);
+        }
+
+        if (alertTag === 'alert') {
+          alertCount++;
+          const alertCounter = document.getElementById('stats-total-alerts');
+          if (alertCounter) alertCounter.textContent = alertCount;
+        }
+      }
+    }
+  }, 2200);
+}
+
+function toggleIPS() {
+  systemState.features.ips = !systemState.features.ips;
+  const btn = document.getElementById('ips-toggle-btn');
+  if (btn) {
+    if (systemState.features.ips) {
+      btn.textContent = "IPS Active (Filtering)";
+      btn.classList.add('sec-off');
+      logAudit("IDS Shield Intrusion Prevention Module activated.");
+    } else {
+      btn.textContent = "Enable IPS Shield";
+      btn.classList.remove('sec-off');
+      logAudit("IDS Shield Intrusion Prevention Module deactivated.");
+    }
+  }
+
+  const ipsToggle = document.getElementById('soc2-ips-toggle');
+  if (ipsToggle) {
+    ipsToggle.checked = systemState.features.ips;
+  }
+
+  if (systemState.features.ips && systemState.threatLevel === "THREAT_DETECTED") {
+    systemState.threatLevel = "SECURE";
+    updateSecurityShield();
+  }
+  syncComplianceDials();
+}
+
+function clearIDSLogs() {
+  const logList = document.getElementById('ids-logs-wrapper');
+  if (logList) logList.innerHTML = '';
+}
+
+// APP: AppArmor profiles
+function toggleAppArmorProfile(appKey, checkbox) {
+  systemState.apps[appKey].secured = checkbox.checked;
+  const badge = document.getElementById(`aa-badge-${appKey}`);
+  if (badge) {
+    if (checkbox.checked) {
+      badge.textContent = "ENFORCE";
+      badge.className = "aa-badge enforce";
+    } else {
+      badge.textContent = "COMPLAIN / UNCONFINED";
+      badge.className = "aa-badge complain";
+    }
+  }
+  updateAppArmorStats();
+  logAudit(`AppArmor configuration toggled for ${systemState.apps[appKey].name}. Action: ${checkbox.checked ? 'ENFORCED' : 'COMPLAIN'}`);
+  updateSecurityShield();
+  syncComplianceDials();
+}
+
+function enforceAllAppArmor() {
+  Object.keys(systemState.apps).forEach(key => {
+    systemState.apps[key].secured = true;
+  });
+  updateAppArmorUI();
+  updateAppArmorStats();
+  logAudit("AppArmor forced ENFORCE policy on all environment components.");
+  updateSecurityShield();
+  syncComplianceDials();
+}
+
+function updateAppArmorUI() {
+  Object.keys(systemState.apps).forEach(key => {
+    const app = systemState.apps[key];
+    const badge = document.getElementById(`aa-badge-${key}`);
+    const input = document.querySelector(`#window-apparmor input[onchange*="${key}"]`);
+    
+    if (badge) {
+      if (app.secured) {
+        badge.textContent = "ENFORCE";
+        badge.className = "aa-badge enforce";
+      } else {
+        badge.textContent = "COMPLAIN / UNCONFINED";
+        badge.className = "aa-badge complain";
+      }
+    }
+    if (input) input.checked = app.secured;
+  });
+  updateAppArmorStats();
+}
+
+function updateAppArmorStats() {
+  const enforcedCount = Object.values(systemState.apps).filter(a => a.secured).length;
+  const enforceVal = document.getElementById('aa-enforcing-profiles');
+  if (enforceVal) enforceVal.textContent = enforcedCount;
+}
+
+// APP: CIS Hardening scanning
+function runCISAudit() {
+  const loader = document.getElementById('cis-loader');
+  const results = document.getElementById('cis-results-list');
+  const dial = document.getElementById('cis-score-dial');
+  
+  if (!loader) return;
+  loader.classList.remove('hidden');
+
+  setTimeout(() => {
+    loader.classList.add('hidden');
+    
+    const audits = [
+      { code: "CIS 1.1.1", name: "Ensure Uncomplicated Firewall (UFW) is active", status: systemState.features.ufw },
+      { code: "CIS 1.1.2", name: "Ensure AppArmor is enabled in kernel config", status: systemState.features.apparmor },
+      { code: "CIS 1.1.3", name: "Ensure system audit daemon (auditd) is active", status: systemState.features.audit },
+      { code: "CIS 1.1.4", name: "Verify SSH Logins restricted to SSH Keys", status: systemState.apps.ssh.secured },
+      { code: "CIS 1.1.5", name: "Disable root access via remote SSH link", status: true },
+      { code: "CIS 1.1.6", name: "Enforce password hashing algorithm to SHA-512", status: true },
+      { code: "CIS 1.1.7", name: "Configure Reverse Path Filter verification in sysctl.conf", status: systemState.features.ufw }
+    ];
+
+    let passedCount = audits.filter(a => a.status).length;
+    let percentage = Math.round((passedCount / audits.length) * 100);
+    
+    results.innerHTML = '';
+    audits.forEach(audit => {
+      const row = document.createElement('div');
+      row.className = 'cis-item-row';
+      row.innerHTML = `
+        <div class="cis-item-left">
+          <span class="cis-item-code">${audit.code}</span>
+          <span class="cis-item-name">${audit.name}</span>
+        </div>
+        <span class="cis-item-status ${audit.status ? 'pass' : 'fail'}">${audit.status ? 'PASSED' : 'FAILED'}</span>
+      `;
+      results.appendChild(row);
+    });
+
+    dial.textContent = `${percentage}%`;
+    dial.style.borderColor = percentage > 80 ? 'var(--sec-green)' : (percentage > 50 ? 'var(--sec-yellow)' : 'var(--sec-red)');
+    dial.style.color = percentage > 80 ? 'var(--sec-green)' : (percentage > 50 ? 'var(--sec-yellow)' : 'var(--sec-red)');
+
+    logAudit(`CIS Hardening audit scan complete. Systems compliance rated at: ${percentage}%`);
+  }, 1200);
+}
+
+// APP: Cryptographic key vault
+function toggleVaultAlgoDetails(val) {
+  const keyLabel = document.getElementById('vault-key-label');
+  const keyInput = document.getElementById('vault-key');
+  if (val === 'kyber') {
+    keyLabel.textContent = "Generated Lattice Keypair";
+    keyInput.value = "Kyber-1024_lattice_pubkey_0x82A1B";
+    keyInput.disabled = true;
+  } else if (val === 'dilithium') {
+    keyLabel.textContent = "ML-DSA Signatures Matrix Seed";
+    keyInput.value = "Dilithium-5_matrix_seed_0xF890B2";
+    keyInput.disabled = true;
+  } else {
+    keyLabel.textContent = "Secret Encryption Key";
+    keyInput.value = "";
+    keyInput.disabled = false;
+  }
+}
+
+function switchVaultTab(tabEl, tabId) {
+  document.querySelectorAll('#window-vault .vault-tab').forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+
+  const panels = document.querySelectorAll('#window-vault .vault-body');
+  panels.forEach(p => p.classList.add('hidden'));
+  const targetPanel = document.getElementById(`vault-panel-${tabId}`);
+  if (targetPanel) targetPanel.classList.remove('hidden');
+}
+
+function runVaultEncrypt() {
+  const plaintext = document.getElementById('vault-plaintext').value;
+  const key = document.getElementById('vault-key').value;
+  const algo = document.getElementById('vault-algo').value;
+  const outputPanel = document.getElementById('vault-ciphertext-output');
+
+  if (!plaintext) {
+    outputPanel.textContent = "Error: Input plaintext is required.";
+    outputPanel.className = "vault-result-panel";
+    return;
+  }
+
+  if (algo === 'aes' && !key) {
+    outputPanel.textContent = "Error: Symmetrical key required for AES encoding.";
+    outputPanel.className = "vault-result-panel";
+    return;
+  }
+
+  interceptAction(
+    'vault',
+    'ultimate',
+    `seal_crypt_payload_${algo.toUpperCase()}`,
+    () => {
+      let cipher = '';
+      if (algo === 'aes') {
+        const salt = btoa(key).slice(0, 6);
+        cipher = `U2VjLU9T-AES256-${salt}-${btoa(plaintext)}`;
+        outputPanel.className = "vault-result-panel active";
+      } else if (algo === 'kyber') {
+        // Post-Quantum Kyber-1024 simulation
+        const seed = Math.floor(Math.random() * 899999) + 100000;
+        const ct = btoa(plaintext).slice(0, 16);
+        cipher = `[PQC-ML-KEM-1024] Lattice encapsulation active. 
+Shared Secret Key: HASH-SHA3-256(0x9E2B...F8A0)
+Ciphertext Block:
+0x8C${seed}F2..${ct}..87BA2A==`;
+        outputPanel.className = "vault-result-panel quantum-glow";
+      } else if (algo === 'dilithium') {
+        // Post-Quantum Dilithium-5 digital signature verification simulation
+        const sig = btoa(`Dilithium-Sig-Verify-${plaintext}`).slice(0, 24);
+        cipher = `[PQC-ML-DSA-5] Mathematical matrix signature seal generated.
+Public Key Ref: Dilithium-5_matrix_seed_0xF890B2
+Quantum-Proof Signature Block:
+SIG_DILITHIUM5_0x${sig}..a9d2..==`;
+        outputPanel.className = "vault-result-panel quantum-glow";
+      } else {
+        cipher = plaintext.replace(/[a-zA-Z]/g, c => String.fromCharCode((c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26));
+        outputPanel.className = "vault-result-panel active";
+      }
+
+      outputPanel.textContent = cipher;
+      logAudit(`Cryptographic payload generated using algorithm: ${algo.toUpperCase()}`);
+    },
+    () => {
+      outputPanel.textContent = "[XEN BLOCK] Hypervisor interdiction: Encryption action denied.";
+      outputPanel.className = "vault-result-panel";
+    }
+  );
+}
+
+function runVaultDecrypt() {
+  const ciphertext = document.getElementById('vault-ciphertext-input').value;
+  const key = document.getElementById('vault-key-decrypt').value;
+  const algo = document.getElementById('vault-algo-decrypt').value;
+  const outputPanel = document.getElementById('vault-plaintext-output');
+
+  if (!ciphertext) {
+    outputPanel.textContent = "Error: Ciphertext input required.";
+    outputPanel.className = "vault-result-panel";
+    return;
+  }
+
+  if (algo === 'aes' && !key) {
+    outputPanel.textContent = "Error: Passkey required for AES decoding.";
+    outputPanel.className = "vault-result-panel";
+    return;
+  }
+
+  interceptAction(
+    'vault',
+    'ultimate',
+    `unseal_crypt_payload_${algo.toUpperCase()}`,
+    () => {
+      let plain = '';
+      try {
+        if (algo === 'aes') {
+          const parts = ciphertext.split('-');
+          if (parts[0] !== 'U2VjLU9T' || parts[1] !== 'AES256') {
+            throw new Error("Invalid format");
+          }
+          
+          const salt = btoa(key).slice(0, 6);
+          if (parts[2] !== salt) {
+            outputPanel.textContent = "Error: AES Decryption Failed. Key mismatch or integrity check failed.";
+            outputPanel.className = "vault-result-panel";
+            return;
+          }
+          plain = atob(parts[3]);
+          outputPanel.className = "vault-result-panel active";
+        } else if (algo === 'kyber') {
+          if (!ciphertext.includes('[PQC-ML-KEM-1024]')) {
+            outputPanel.textContent = "Error: Target is not a valid Kyber encapsulated block.";
+            outputPanel.className = "vault-result-panel";
+            return;
+          }
+          // Decode simulated ciphertext block
+          const lines = ciphertext.split('\n');
+          const ctLine = lines[lines.length - 1];
+          const match = ctLine.match(/\.\.(.+)\.\./);
+          if (match && match[1]) {
+            plain = atob(match[1]);
+          } else {
+            plain = "Decrypted Shared Secret Key matches (Integrity Verified)";
+          }
+          outputPanel.className = "vault-result-panel quantum-glow";
+        } else {
+          plain = ciphertext.replace(/[a-zA-Z]/g, c => String.fromCharCode((c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26));
+          plain = ciphertext.replace(/[a-zA-Z]/g, c => String.fromCharCode((c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26));
+          outputPanel.className = "vault-result-panel active";
+        }
+
+        outputPanel.textContent = plain;
+        logAudit(`Decryption query completed successfully for cipher payload.`);
+      } catch (e) {
+        outputPanel.textContent = "Error: Could not decode payload. Check algorithm details.";
+        outputPanel.className = "vault-result-panel";
+      }
+    },
+    () => {
+      outputPanel.textContent = "[XEN BLOCK] Hypervisor interdiction: Decryption action denied.";
+      outputPanel.className = "vault-result-panel";
+    }
+  );
+}
+
+function runVaultFileEncrypt() {
+  const fileName = document.getElementById('vault-file-select').value;
+  const key = document.getElementById('vault-file-key').value;
+  const outputPanel = document.getElementById('vault-file-output');
+
+  if (!key) {
+    outputPanel.textContent = "Error: Master passkey required for file encryption.";
+    outputPanel.className = "vault-result-panel";
+    return;
+  }
+
+  const handshakeId = 'KB-' + Math.floor(Math.random() * 899999 + 100000);
+  outputPanel.className = "vault-result-panel quantum-glow";
+  outputPanel.textContent = `[KEY BROKER INTERMEDIARY HANDSHAKE INITIATED]
+Handshake Channel ID: ${handshakeId} (Authenticated PQC Key Broker Intermediary)
+Step 1: Establishing authenticated key exchange channel to transfer master keys...
+Step 2: Key exchange verified. Executing AES-256 2-Way symmetric sealing on '${fileName}'...
+
+🔒 ENCRYPTION COMPLETE:
+Output File: /home/sec-admin/vault/${fileName}.tomb-enc
+Encrypted File Hash: SHA256(0x7A90..F21B)
+Keybroker Transfer Logged to Audit Daemon.`;
+
+  logAudit(`2-Way File Encryption executed for '${fileName}' via Key Broker Intermediary channel [${handshakeId}]`);
+}
+
+function runVaultFileDecrypt() {
+  const fileName = document.getElementById('vault-file-select').value;
+  const key = document.getElementById('vault-file-key').value;
+  const outputPanel = document.getElementById('vault-file-output');
+
+  if (!key) {
+    outputPanel.textContent = "Error: Master passkey required for file decryption.";
+    outputPanel.className = "vault-result-panel";
+    return;
+  }
+
+  const handshakeId = 'KB-' + Math.floor(Math.random() * 899999 + 100000);
+  outputPanel.className = "vault-result-panel active";
+  outputPanel.textContent = `[KEY BROKER INTERMEDIARY HANDSHAKE INITIATED]
+Handshake Channel ID: ${handshakeId} (Authenticated PQC Key Broker Intermediary)
+Step 1: Authenticating key transfer intermediary channel...
+Step 2: Decrypting 2-Way binary stream using key '${key.slice(0, 4)}***'...
+
+🔓 DECRYPTION COMPLETE:
+Restored Original File: /home/sec-admin/vault/${fileName}
+Integrity Verification: PASS (Match 100%)
+File Unsealed & Ready for Use.`;
+
+  logAudit(`2-Way File Decryption executed for '${fileName}' via Key Broker Intermediary channel [${handshakeId}]`);
+}
+
+// SOC 2 COMPLIANCE CENTER LOGIC
+function calculateSOC2Score() {
+  let score = 20;
+  if (systemState.features.ufw) score += 20;
+  if (systemState.features.apparmor) score += 20;
+  if (systemState.soc2.mfa) score += 15;
+  if (systemState.soc2.encryption) score += 15;
+  if (systemState.soc2.backup) score += 10;
+  return score;
+}
+
+function getSOC2Content() {
+  const score = calculateSOC2Score();
+  return `
+    <div class="app-soc2-container">
+      <div class="soc2-header">
+        <div class="soc2-title-block">
+          <h3>SOC 2 Trust Services Center</h3>
+          <p>Audits administrative access protocols, system availability parameters, and confidentiality locks.</p>
+        </div>
+        <div class="soc2-score-dial">
+          <div>
+            <div class="soc2-dial-value" id="soc2-score-display">${score}%</div>
+            <div class="soc2-dial-label">Criteria Readiness</div>
+          </div>
+        </div>
+      </div>
+      <div class="soc2-grid">
+        <div class="soc2-card">
+          <div class="soc2-card-header">
+            <span class="soc2-card-id">CC6.1 (Access Control)</span>
+            <span class="soc2-card-status ${systemState.soc2.mfa ? 'compliant' : 'non-compliant'}" id="soc2-status-mfa">${systemState.soc2.mfa ? 'COMPLIANT' : 'FAIL'}</span>
+          </div>
+          <span class="soc2-card-name">Multi-Factor Authentication</span>
+          <span class="soc2-card-desc">Enforce multi-factor authentication (MFA) challenges for administrative shell logins.</span>
+          <div class="soc2-action-area">
+            <span class="soc2-toggle-label">Enforce admin MFA</span>
+            <label class="aa-switch">
+              <input type="checkbox" ${systemState.soc2.mfa ? 'checked' : ''} onchange="toggleSOC2Control('mfa', this)" aria-label="Enforce admin Multi-Factor Authentication">
+              <span class="aa-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="soc2-card">
+          <div class="soc2-card-header">
+            <span class="soc2-card-id">CC6.3 (Confidentiality)</span>
+            <span class="soc2-card-status ${systemState.soc2.encryption ? 'compliant' : 'non-compliant'}" id="soc2-status-encryption">${systemState.soc2.encryption ? 'COMPLIANT' : 'FAIL'}</span>
+          </div>
+          <span class="soc2-card-name">Volume Encryption</span>
+          <span class="soc2-card-desc">Enforce LUKS full-disk partition encryption to shield confidentiality at rest.</span>
+          <div class="soc2-action-area">
+            <span class="soc2-toggle-label">Enable LUKS encryption</span>
+            <label class="aa-switch">
+              <input type="checkbox" ${systemState.soc2.encryption ? 'checked' : ''} onchange="toggleSOC2Control('encryption', this)" aria-label="Enable LUKS volume encryption">
+              <span class="aa-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="soc2-card">
+          <div class="soc2-card-header">
+            <span class="soc2-card-id">CC2.1 (Availability)</span>
+            <span class="soc2-card-status ${systemState.soc2.backup ? 'compliant' : 'non-compliant'}" id="soc2-status-backup">${systemState.soc2.backup ? 'COMPLIANT' : 'FAIL'}</span>
+          </div>
+          <span class="soc2-card-name">Redundant Backups</span>
+          <span class="soc2-card-desc">Automate offsite daily incremental system snapshot transfers with integrity checks.</span>
+          <div class="soc2-action-area">
+            <span class="soc2-toggle-label">Activate offsite backups</span>
+            <label class="aa-switch">
+              <input type="checkbox" ${systemState.soc2.backup ? 'checked' : ''} onchange="toggleSOC2Control('backup', this)" aria-label="Activate offsite daily backup nodes">
+              <span class="aa-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="soc2-card">
+          <div class="soc2-card-header">
+            <span class="soc2-card-id">CC7.2 (Incident Response)</span>
+            <span class="soc2-card-status ${systemState.features.ips ? 'compliant' : 'non-compliant'}" id="soc2-status-ips">${systemState.features.ips ? 'COMPLIANT' : 'FAIL'}</span>
+          </div>
+          <span class="soc2-card-name">Intrusion Prevention (IPS)</span>
+          <span class="soc2-card-desc">Enable active Suricata/Snort network traffic drop rules for real-time risk mitigation.</span>
+          <div class="soc2-action-area">
+            <span class="soc2-toggle-label">IPS Shield active</span>
+            <label class="aa-switch">
+              <input type="checkbox" id="soc2-ips-toggle" ${systemState.features.ips ? 'checked' : ''} onchange="toggleSOC2IPSControl(this)" aria-label="IPS active mode status toggle">
+              <span class="aa-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="soc2-report-footer">
+        <span>Current status: <strong>${score === 100 ? 'Audit Ready' : 'Hardening Required'}</strong></span>
+        <button class="ids-btn" onclick="downloadSOC2Report()" aria-label="Generate Audit Readiness PDF">Generate Audit Readiness PDF</button>
+      </div>
+    </div>
+  `;
+}
+
+function toggleSOC2Control(key, checkbox) {
+  systemState.soc2[key] = checkbox.checked;
+  const badge = document.getElementById(`soc2-status-${key}`);
+  if (badge) {
+    badge.textContent = checkbox.checked ? 'COMPLIANT' : 'FAIL';
+    badge.className = `soc2-card-status ${checkbox.checked ? 'compliant' : 'non-compliant'}`;
+  }
+  logAudit(`SOC 2 security audit framework control update: '${key}' set to ${checkbox.checked ? 'COMPLIANT' : 'FAIL'}`);
+  syncComplianceDials();
+}
+
+function toggleSOC2IPSControl(checkbox) {
+  toggleIPS();
+  const badge = document.getElementById('soc2-status-ips');
+  if (badge) {
+    badge.textContent = checkbox.checked ? 'COMPLIANT' : 'FAIL';
+    badge.className = `soc2-card-status ${checkbox.checked ? 'compliant' : 'non-compliant'}`;
+  }
+}
+
+function downloadSOC2Report() {
+  const score = calculateSOC2Score();
+  const reportText = `===========================================
+Tomb OS 1.0 SOC 2 Readiness Report
+Generated: ${new Date().toUTCString()}
+Compliance Index: ${score}%
+===========================================
+- CC6.1 Multi-Factor Auth: ${systemState.soc2.mfa ? 'COMPLIANT' : 'NON-COMPLIANT'}
+- CC6.3 Full Disk Encryption: ${systemState.soc2.encryption ? 'COMPLIANT' : 'NON-COMPLIANT'}
+- CC2.1 Offsite Daily Backups: ${systemState.soc2.backup ? 'COMPLIANT' : 'NON-COMPLIANT'}
+- CC7.2 Network Intrusion Shield: ${systemState.features.ips ? 'COMPLIANT' : 'NON-COMPLIANT'}
+- UFW Packet Filter: ${systemState.features.ufw ? 'ACTIVE' : 'INACTIVE'}
+- AppArmor MAC Containment: ${systemState.features.apparmor ? 'ACTIVE' : 'INACTIVE'}
+
+Result: ${score === 100 ? 'COMPLIANT AUDIT COMPLETED' : 'REMEDIATION ACTIONS REQUIRED'}
+===========================================`;
+
+  const blob = new Blob([reportText], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'soc2_audit_readiness_report.txt';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  logAudit("SOC 2 audit compliance packet downloaded by administrator.");
+}
+
+// GLOBAL REGULATORY COMPLIANCE LOGIC
+function calculateGlobalComplianceScore() {
+  let score = 10;
+  if (systemState.globalcom.gdprForgotten) score += 20;
+  if (systemState.features.audit) score += 15;
+  if (systemState.globalcom.doNotSell) score += 15;
+  if (systemState.features.ips) score += 10;
+  if (systemState.globalcom.localResidency) score += 10;
+  if (systemState.globalcom.piplAssessment) score += 10;
+  if (systemState.globalcom.lgpdMapping) score += 10;
+  return score;
+}
+
+function getGlobalComplianceContent() {
+  return renderGlobalComplianceWrapper();
+}
+
+function renderGlobalComplianceWrapper() {
+  const score = calculateGlobalComplianceScore();
+  let content = '';
+  
+  if (systemState.globalcom.activeTab === 'eu') {
+    content = `
+      <div class="globalcom-intro-panel">
+        <div class="globalcom-intro-text">
+          <h3>GDPR - European Union</h3>
+          <p>General Data Protection Regulation. Protects user privacy, data portability, and enforces rights of erasure.</p>
+        </div>
+      </div>
+      <div class="globalcom-controls-list">
+        <div class="globalcom-control-row">
+          <div class="globalcom-control-info">
+            <span class="globalcom-control-title">Right to Erasure (Article 17)</span>
+            <span class="globalcom-control-desc">Implement a automated flow to purge sensitive user telemetry and logs on request.</span>
+          </div>
+          <label class="aa-switch">
+            <input type="checkbox" ${systemState.globalcom.gdprForgotten ? 'checked' : ''} onchange="toggleGlobalControl('gdprForgotten', this)" aria-label="Toggle GDPR Right to Erasure">
+            <span class="aa-slider"></span>
+          </label>
+        </div>
+        <div class="globalcom-control-row">
+          <div class="globalcom-control-info">
+            <span class="globalcom-control-title">Data Minimization (Article 5)</span>
+            <span class="globalcom-control-desc">Restrict default log retention bounds for network requests to 30 days.</span>
+          </div>
+          <label class="aa-switch">
+            <input type="checkbox" ${systemState.features.audit ? 'checked' : ''} onchange="toggleGlobalAuditSync(this)" aria-label="Toggle GDPR Data Minimization logs">
+            <span class="aa-slider"></span>
+          </label>
+        </div>
+      </div>
+    `;
+  } else if (systemState.globalcom.activeTab === 'us') {
+    content = `
+      <div class="globalcom-intro-panel">
+        <div class="globalcom-intro-text">
+          <h3>CCPA / CPRA - United States (California)</h3>
+          <p>California Consumer Privacy Act. Gives users rights to opt-out of data sale, sharing, and commercial monetization.</p>
+        </div>
+      </div>
+      <div class="globalcom-controls-list">
+        <div class="globalcom-control-row">
+          <div class="globalcom-control-info">
+            <span class="globalcom-control-title">Do Not Sell My Personal Info</span>
+            <span class="globalcom-control-desc">Inject headers into outbound HTTP queries blocking backend analytics tracking.</span>
+          </div>
+          <label class="aa-switch">
+            <input type="checkbox" ${systemState.globalcom.doNotSell ? 'checked' : ''} onchange="toggleGlobalControl('doNotSell', this)" aria-label="Toggle Do Not Sell California Personal Info">
+            <span class="aa-slider"></span>
+          </label>
+        </div>
+      </div>
+    `;
+  } else if (systemState.globalcom.activeTab === 'ca') {
+    content = `
+      <div class="globalcom-intro-panel">
+        <div class="globalcom-intro-text">
+          <h3>PIPEDA - Canada</h3>
+          <p>Personal Information Protection and Electronic Documents Act. Governs how private-sector organizations collect data.</p>
+        </div>
+      </div>
+      <div class="globalcom-controls-list">
+        <div class="globalcom-control-row">
+          <div class="globalcom-control-info">
+            <span class="globalcom-control-title">Breach Notification Automation</span>
+            <span class="globalcom-control-desc">Integrate fail-safe alerts that report IDS incident alerts to the compliance coordinator.</span>
+          </div>
+          <label class="aa-switch">
+            <input type="checkbox" ${systemState.features.ips ? 'checked' : ''} onchange="toggleGlobalIPSSync(this)" aria-label="Toggle Breach Notification Automation">
+            <span class="aa-slider"></span>
+          </label>
+        </div>
+      </div>
+    `;
+  } else if (systemState.globalcom.activeTab === 'in') {
+    content = `
+      <div class="globalcom-intro-panel">
+        <div class="globalcom-intro-text">
+          <h3>DPDP - India</h3>
+          <p>Digital Personal Data Protection Act. Mandates strict localization of data residency and processing criteria.</p>
+        </div>
+      </div>
+      <div class="globalcom-controls-list">
+        <div class="globalcom-control-row">
+          <div class="globalcom-control-info">
+            <span class="globalcom-control-title">Localized Data Residency</span>
+            <span class="globalcom-control-desc">Enforce network iptables rules routing simulated cloud queries to regional host nodes.</span>
+          </div>
+          <label class="aa-switch">
+            <input type="checkbox" ${systemState.globalcom.localResidency ? 'checked' : ''} onchange="toggleGlobalControl('localResidency', this)" aria-label="Toggle Localized Data Residency under DPDP">
+            <span class="aa-slider"></span>
+          </label>
+        </div>
+      </div>
+    `;
+  } else if (systemState.globalcom.activeTab === 'cn') {
+    content = `
+      <div class="globalcom-intro-panel">
+        <div class="globalcom-intro-text">
+          <h3>PIPL - China</h3>
+          <p>Personal Information Protection Law. Oversees algorithmic recommendation restrictions and security assessments.</p>
+        </div>
+      </div>
+      <div class="globalcom-controls-list">
+        <div class="globalcom-control-row">
+          <div class="globalcom-control-info">
+            <span class="globalcom-control-title">Algorithmic Recommendation Filter</span>
+            <span class="globalcom-control-desc">Inject strict content filtering templates into the sandboxed Web Browser profile.</span>
+          </div>
+          <label class="aa-switch">
+            <input type="checkbox" ${systemState.globalcom.piplAssessment ? 'checked' : ''} onchange="toggleGlobalControl('piplAssessment', this)" aria-label="Toggle Algorithmic Recommendation filtering under PIPL">
+            <span class="aa-slider"></span>
+          </label>
+        </div>
+      </div>
+    `;
+  } else if (systemState.globalcom.activeTab === 'br') {
+    content = `
+      <div class="globalcom-intro-panel">
+        <div class="globalcom-intro-text">
+          <h3>LGPD - Brazil</h3>
+          <p>Lei Geral de Proteção de Dados. Regulates personal data processing, requiring a defined legal basis registry.</p>
+        </div>
+      </div>
+      <div class="globalcom-controls-list">
+        <div class="globalcom-control-row">
+          <div class="globalcom-control-info">
+            <span class="globalcom-control-title">DPO Legal Processing Registry</span>
+            <span class="globalcom-control-desc">Generate auditd mappings registering processing activities to valid legal bases.</span>
+          </div>
+          <label class="aa-switch">
+            <input type="checkbox" ${systemState.globalcom.lgpdMapping ? 'checked' : ''} onchange="toggleGlobalControl('lgpdMapping', this)" aria-label="Toggle LGPD Legal Processing Registry mappings">
+            <span class="aa-slider"></span>
+          </label>
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="app-globalcom-container">
+      <div class="globalcom-sidebar">
+        <span class="globalcom-sidebar-title">Jurisdictions</span>
+        <div class="globalcom-tab ${systemState.globalcom.activeTab === 'eu' ? 'active' : ''}" onclick="switchGlobalTab('eu')">
+          <span>EU (GDPR)</span>
+          <span class="globalcom-tab-status ${systemState.globalcom.gdprForgotten && systemState.features.audit ? 'pass' : 'fail'}"></span>
+        </div>
+        <div class="globalcom-tab ${systemState.globalcom.activeTab === 'us' ? 'active' : ''}" onclick="switchGlobalTab('us')">
+          <span>USA (CCPA)</span>
+          <span class="globalcom-tab-status ${systemState.globalcom.doNotSell ? 'pass' : 'fail'}"></span>
+        </div>
+        <div class="globalcom-tab ${systemState.globalcom.activeTab === 'ca' ? 'active' : ''}" onclick="switchGlobalTab('ca')">
+          <span>Canada (PIPEDA)</span>
+          <span class="globalcom-tab-status ${systemState.features.ips ? 'pass' : 'fail'}"></span>
+        </div>
+        <div class="globalcom-tab ${systemState.globalcom.activeTab === 'in' ? 'active' : ''}" onclick="switchGlobalTab('in')">
+          <span>India (DPDP)</span>
+          <span class="globalcom-tab-status ${systemState.globalcom.localResidency ? 'pass' : 'fail'}"></span>
+        </div>
+        <div class="globalcom-tab ${systemState.globalcom.activeTab === 'cn' ? 'active' : ''}" onclick="switchGlobalTab('cn')">
+          <span>China (PIPL)</span>
+          <span class="globalcom-tab-status ${systemState.globalcom.piplAssessment ? 'pass' : 'fail'}"></span>
+        </div>
+        <div class="globalcom-tab ${systemState.globalcom.activeTab === 'br' ? 'active' : ''}" onclick="switchGlobalTab('br')">
+          <span>Brazil (LGPD)</span>
+          <span class="globalcom-tab-status ${systemState.globalcom.lgpdMapping ? 'pass' : 'fail'}"></span>
+        </div>
+      </div>
+      <div class="globalcom-content">
+        <div class="globalcom-intro-panel">
+          <div class="globalcom-intro-text">
+            <h3>Global Compliance Score</h3>
+            <p>Weighted readiness ratio across all active global data protection jurisdictions.</p>
+          </div>
+          <div class="globalcom-score-dial">
+            <span class="globalcom-score-val" style="color: ${score > 80 ? 'var(--sec-green)' : (score > 50 ? 'var(--sec-yellow)' : 'var(--sec-red)')}">${score}%</span>
+          </div>
+        </div>
+        
+        <div id="globalcom-tab-content">
+          ${content}
+        </div>
+        
+        <div class="globalcom-compliance-logs" id="globalcom-logs">
+          <div class="globalcom-log-line success">[INIT] Regional data controller compliance listener active.</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function switchGlobalTab(tabId) {
+  systemState.globalcom.activeTab = tabId;
+  const win = document.getElementById('window-globalcom');
+  if (win) {
+    const contentArea = win.querySelector('.window-content');
+    if (contentArea) {
+      contentArea.innerHTML = renderGlobalComplianceWrapper();
+    }
+  }
+}
+
+function toggleGlobalControl(key, checkbox) {
+  systemState.globalcom[key] = checkbox.checked;
+  logAudit(`Global compliance protocol update for '${key}' set to ${checkbox.checked ? 'ENABLED' : 'DISABLED'}`);
+  
+  const logs = document.getElementById('globalcom-logs');
+  if (logs) {
+    const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+    const line = document.createElement('div');
+    line.className = checkbox.checked ? 'globalcom-log-line success' : 'globalcom-log-line warning';
+    line.textContent = `[${time}] Regulatory control '${key}' ${checkbox.checked ? 'Enabled' : 'Disabled'} and applied.`;
+    logs.appendChild(line);
+    logs.scrollTop = logs.scrollHeight;
+  }
+  
+  syncComplianceDials();
+  const activeTab = systemState.globalcom.activeTab;
+  switchGlobalTab(activeTab);
+}
+
+function toggleGlobalAuditSync(checkbox) {
+  toggleSecurityFeature('audit');
+  toggleGlobalControl('audit_sync', checkbox);
+}
+
+function toggleGlobalIPSSync(checkbox) {
+  toggleIPS();
+  toggleGlobalControl('ips_sync', checkbox);
+}
+
+
+// ULTIMATE SECURITY HARDENING LOGIC
+function calculateUltimateScore() {
+  let score = 0;
+  if (systemState.ultimate.sel4) score += 25;
+  if (systemState.ultimate.tpm) score += 25;
+  if (systemState.ultimate.immutable) score += 25;
+  if (systemState.ultimate.zerotrust) score += 25;
+  return score;
+}
+
+function getUltimateContent() {
+  return renderUltimateWrapper();
+}
+
+function renderUltimateWrapper() {
+  const score = calculateUltimateScore();
+  return `
+    <div class="app-ultimate-container">
+      <div class="ultimate-header">
+        <div class="ultimate-title-block">
+          <h3>Ultimate Hardening Center</h3>
+          <p>Configure mathematically proven microkernels, read-only system structures, and hardware attestation locks.</p>
+        </div>
+        <div class="ultimate-badge-panel">
+          <div>
+            <div class="ultimate-badge-val" id="ultimate-score-display" style="color: ${score > 90 ? 'var(--sec-green)' : (score > 50 ? 'var(--sec-yellow)' : 'var(--sec-red)')}">${score}%</div>
+            <div class="ultimate-badge-lbl">Ultimate Protection</div>
+          </div>
+        </div>
+      </div>
+      <div class="ultimate-grid">
+        <div class="ultimate-card">
+          <div class="ultimate-card-header">
+            <span class="ultimate-card-tag">MICROKERNEL</span>
+            <span class="ultimate-card-status ${systemState.ultimate.sel4 ? 'enforced' : 'inactive'}" id="ultimate-status-sel4">${systemState.ultimate.sel4 ? 'FORMALLY VERIFIED' : 'STANDARD KERNEL'}</span>
+          </div>
+          <span class="ultimate-card-title">seL4 Math Proof Containment</span>
+          <span class="ultimate-card-desc">Enforce compile-time mathematical proofs certifying absolute isolation between drivers and system cores.</span>
+          <div class="ultimate-card-action">
+            <span class="ultimate-action-lbl">Run seL4 Kernel</span>
+            <label class="aa-switch">
+              <input type="checkbox" ${systemState.ultimate.sel4 ? 'checked' : ''} onchange="toggleUltimateControl('sel4', this)" aria-label="Enforce seL4 Formally Verified Microkernel">
+              <span class="aa-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="ultimate-card">
+          <div class="ultimate-card-header">
+            <span class="ultimate-card-tag">PHYSICAL</span>
+            <span class="ultimate-card-status ${systemState.ultimate.tpm ? 'enforced' : 'inactive'}" id="ultimate-status-tpm">${systemState.ultimate.tpm ? 'ATTESTATION ACTIVE' : 'UNSECURED MEMORY'}</span>
+          </div>
+          <span class="ultimate-card-title">TPM 2.0 & Enclave Shield</span>
+          <span class="ultimate-card-desc">Cryptographically lock critical credentials to hardware TPM chips and virtualize RAM using Secure Enclaves.</span>
+          <div class="ultimate-card-action">
+            <span class="ultimate-action-lbl">Lock TPM keyrings</span>
+            <label class="aa-switch">
+              <input type="checkbox" ${systemState.ultimate.tpm ? 'checked' : ''} onchange="toggleUltimateControl('tpm', this)" aria-label="Activate TPM 2.0 and Secure Enclave">
+              <span class="aa-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="ultimate-card">
+          <div class="ultimate-card-header">
+            <span class="ultimate-card-tag">FILESYSTEM</span>
+            <span class="ultimate-card-status ${systemState.ultimate.immutable ? 'enforced' : 'inactive'}" id="ultimate-status-immutable">${systemState.ultimate.immutable ? 'READONLY SYSTEM' : 'WRITABLE OVERLAY'}</span>
+          </div>
+          <span class="ultimate-card-title">Immutable Core File System</span>
+          <span class="ultimate-card-desc">Mount system binary directories (/bin, /sbin, /lib) as read-only. Block all runtime root write calls.</span>
+          <div class="ultimate-card-action">
+            <span class="ultimate-action-lbl">Enable Immutability</span>
+            <label class="aa-switch">
+              <input type="checkbox" ${systemState.ultimate.immutable ? 'checked' : ''} onchange="toggleUltimateControl('immutable', this)" aria-label="Enable Immutable Core System overlay">
+              <span class="aa-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="ultimate-card">
+          <div class="ultimate-card-header">
+            <span class="ultimate-card-tag">ZTNA</span>
+            <span class="ultimate-card-status ${systemState.ultimate.zerotrust ? 'enforced' : 'inactive'}" id="ultimate-status-zerotrust">${systemState.ultimate.zerotrust ? 'ZERO TRUST ACTIVE' : 'OPEN COMMS'}</span>
+          </div>
+          <span class="ultimate-card-title">Zero Trust Micro-Segmentation</span>
+          <span class="ultimate-card-desc">Enforce continuous authentication between internal subsystems. Require signed verification keys for API requests.</span>
+          <div class="ultimate-card-action">
+            <span class="ultimate-action-lbl">Enforce Zero Trust</span>
+            <label class="aa-switch">
+              <input type="checkbox" ${systemState.ultimate.zerotrust ? 'checked' : ''} onchange="toggleUltimateControl('zerotrust', this)" aria-label="Enforce continuous Zero Trust validation">
+              <span class="aa-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="ultimate-card">
+          <div class="ultimate-card-header">
+            <span class="ultimate-card-tag">SD-CARD</span>
+            <span class="ultimate-card-status ${systemState.ultimate.sdcardMode ? 'enforced' : 'inactive'}" id="ultimate-status-sdcardMode">${systemState.ultimate.sdcardMode ? 'LIVE SD BOOT' : 'HARD DRIVE BOOT'}</span>
+          </div>
+          <span class="ultimate-card-title">Live SD Card Storage Containment</span>
+          <span class="ultimate-card-desc">Lock and run all operating system components directly from external SD card media. Zero write-caching to main disks.</span>
+          <div class="ultimate-card-action">
+            <span class="ultimate-action-lbl">Run from Live SD Card</span>
+            <label class="aa-switch">
+              <input type="checkbox" ${systemState.ultimate.sdcardMode ? 'checked' : ''} onchange="toggleUltimateControl('sdcardMode', this)" aria-label="Activate SD Card Live boot containment">
+              <span class="aa-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="ultimate-card">
+          <div class="ultimate-card-header">
+            <span class="ultimate-card-tag">AUTO-UPGRADES</span>
+            <span class="ultimate-card-status ${systemState.ultimate.autoUpdate ? 'enforced' : 'inactive'}" id="ultimate-status-autoUpdate">${systemState.ultimate.autoUpdate ? 'AUTO UPDATES ACTIVE' : 'MANUAL UPDATES ONLY'}</span>
+          </div>
+          <span class="ultimate-card-title">Compliant OSS Framework Auto-Updates</span>
+          <span class="ultimate-card-desc">Automatically fetch, cryptographically verify, and apply patches for open-source frameworks (AppArmor, UFW, Snort/Suricata).</span>
+          <div class="ultimate-card-action">
+            <span class="ultimate-action-lbl">Auto-Upgrade OSS Frameworks</span>
+            <label class="aa-switch">
+              <input type="checkbox" ${systemState.ultimate.autoUpdate ? 'checked' : ''} onchange="toggleUltimateControl('autoUpdate', this)" aria-label="Activate open source security auto updates">
+              <span class="aa-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="ultimate-interactive-logs" id="ultimate-logs">
+        <div class="ultimate-log-row info">[SECURE ENGINE] Monitoring advanced containment vectors...</div>
+      </div>
+    </div>
+  `;
+}
+
+function toggleUltimateControl(key, checkbox) {
+  systemState.ultimate[key] = checkbox.checked;
+  
+  const statusBadge = document.getElementById(`ultimate-status-${key}`);
+  if (statusBadge) {
+    if (key === 'sel4') {
+      statusBadge.textContent = checkbox.checked ? 'FORMALLY VERIFIED' : 'STANDARD KERNEL';
+    } else if (key === 'tpm') {
+      statusBadge.textContent = checkbox.checked ? 'ATTESTATION ACTIVE' : 'UNSECURED MEMORY';
+    } else if (key === 'immutable') {
+      statusBadge.textContent = checkbox.checked ? 'READONLY SYSTEM' : 'WRITABLE OVERLAY';
+    } else if (key === 'zerotrust') {
+      statusBadge.textContent = checkbox.checked ? 'ZERO TRUST ACTIVE' : 'OPEN COMMS';
+    } else if (key === 'sdcardMode') {
+      statusBadge.textContent = checkbox.checked ? 'LIVE SD BOOT' : 'HARD DRIVE BOOT';
+    } else if (key === 'autoUpdate') {
+      statusBadge.textContent = checkbox.checked ? 'AUTO UPDATES ACTIVE' : 'MANUAL UPDATES ONLY';
+    }
+    statusBadge.className = `ultimate-card-status ${checkbox.checked ? 'enforced' : 'inactive'}`;
+  }
+
+  logAudit(`Ultimate security control update: '${key}' set to ${checkbox.checked ? 'ENABLED' : 'DISABLED'}`);
+  
+  const logs = document.getElementById('ultimate-logs');
+  if (logs) {
+    const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+    const row = document.createElement('div');
+    row.className = checkbox.checked ? 'ultimate-log-row verified' : 'ultimate-log-row alert';
+    
+    let msg = '';
+    if (key === 'sel4') {
+      msg = checkbox.checked 
+        ? `[seL4 Verification Engine] Executed mathematical proofs. 0 buffer overflows or memory leaks possible in core kernel threads.` 
+        : `[seL4 Warning] Switched to standard monolithic kernel. Mathematical isolation guarantees disabled.`;
+    } else if (key === 'tpm') {
+      msg = checkbox.checked 
+        ? `[TPM 2.0 / Secure Enclave] Encrypted RAM sectors. Secure Enclave (Intel SGX / AMD SEV) is shielding memory buffers from root/hypervisor snooping.`
+        : `[TPM/Enclave warning] Memory keys cleared. System RAM is raw-writable.`;
+    } else if (key === 'immutable') {
+      msg = checkbox.checked 
+        ? `[Immutable Filesystem] Mounted /bin, /lib, /sbin read-only. File system write overlay locked.`
+        : `[Immutable Filesystem warning] Writable filesystem mounted. Root overlay unlocked.`;
+    } else if (key === 'zerotrust') {
+      msg = checkbox.checked 
+        ? `[Zero Trust Access] SUB-SYSTEM SEGMENTATION ENFORCED. App-to-app communications require SHA-256 micro-key signatures.`
+        : `[Zero Trust warning] SUB-SYSTEM SEGMENTATION DISABLED. Open inter-process communication allowed.`;
+    } else if (key === 'sdcardMode') {
+      msg = checkbox.checked
+        ? `[Live SD Boot] Isolated systems storage containment active on block /dev/sdb1. Zero disk caching enabled.`
+        : `[Live SD Boot Warning] Storage shifted back to internal monolithic hard disk. Live containment disabled.`;
+    } else if (key === 'autoUpdate') {
+      msg = checkbox.checked
+        ? `[Auto-Upgrades] Enabled. Periodically downloading cryptographically-signed compliance tables, Suricata IPS signature rules, and AppArmor profiles.`
+        : `[Auto-Upgrades] Disabled. OSS framework updates must be initiated manually via terminal commands.`;
+    }
+    
+    const hash = generateInteractionHash();
+    row.textContent = `[${time}] ${msg} | Verification Key: ${hash}`;
+    logs.appendChild(row);
+    logs.scrollTop = logs.scrollHeight;
+  }
+
+  // Trigger background upgrade intervals
+  if (key === 'autoUpdate') {
+    if (checkbox.checked) {
+      if (typeof startOSSAutoUpgrades === 'function') startOSSAutoUpgrades();
+    } else {
+      if (typeof stopOSSAutoUpgrades === 'function') stopOSSAutoUpgrades();
+    }
+  }
+
+  syncComplianceDials();
+}
+
+// XEN HYPERVISOR SANDBOXING ENGINE
+function interceptAction(sourceApp, targetApp, actionType, onAllow, onDeny) {
+  onAllow();
+}
+
+function allowHypervisorAccess() {
+
+  const overlay = document.getElementById('hypervisor-overlay');
+  if (overlay) overlay.classList.add('hidden');
+  
+  // Clear pending timer
+  if (systemState.hypervisor.pendingTimer) {
+    clearTimeout(systemState.hypervisor.pendingTimer);
+    systemState.hypervisor.pendingTimer = null;
+  }
+
+  const pending = systemState.hypervisor.pendingAction;
+  if (pending) {
+    addHypervisorLog(`ALLOW: Authorized action [${pending.actionType}] from ${pending.sourceApp} to ${pending.targetApp}`);
+    logAudit(`Hypervisor approved cross-domain action [${pending.actionType}] from ${pending.sourceApp} (${pending.sourceZone}) to ${pending.targetApp} (${pending.targetZone})`);
+    
+    if (pending.onAllow) pending.onAllow();
+    systemState.hypervisor.pendingAction = null;
+  }
+}
+
+function denyHypervisorAccess() {
+  const overlay = document.getElementById('hypervisor-overlay');
+  if (overlay) overlay.classList.add('hidden');
+  // Clear pending timer
+  if (systemState.hypervisor.pendingTimer) {
+    clearTimeout(systemState.hypervisor.pendingTimer);
+    systemState.hypervisor.pendingTimer = null;
+  }
+  
+  const pending = systemState.hypervisor.pendingAction;
+  if (pending) {
+    addHypervisorLog(`BLOCK: Rejected action [${pending.actionType}] from ${pending.sourceApp} to ${pending.targetApp}`);
+    logAudit(`Hypervisor BLOCKED cross-domain action [${pending.actionType}] from ${pending.sourceApp} (${pending.sourceZone}) to ${pending.targetApp} (${pending.targetZone})`);
+    
+    if (pending.onDeny) pending.onDeny();
+    systemState.hypervisor.pendingAction = null;
+  }
+}
+
+function addHypervisorLog(msg) {
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+  const logMsg = `[${timeStr}] ${msg}`;
+  systemState.hypervisor.logs.push(logMsg);
+  
+  const logsPanel = document.getElementById('hypervisor-logs-list');
+  if (logsPanel) {
+    const isAlert = msg.includes('BLOCK') || msg.includes('INTERCEPT');
+    const isAllow = msg.includes('ALLOW');
+    const cssClass = isAlert ? 'alert' : (isAllow ? 'allow' : 'info');
+    
+    logsPanel.innerHTML += `<div class="hyp-log-row ${cssClass}">${logMsg}</div>`;
+    logsPanel.scrollTop = logsPanel.scrollHeight;
+  }
+}
+
+function changeWindowZone(appId, selectElement) {
+  const zone = selectElement.value;
+  systemState.hypervisor.zones[appId] = zone;
+  
+  const win = document.getElementById(`window-${appId}`);
+  if (win) {
+    win.classList.remove('zone-untrusted', 'zone-work', 'zone-personal', 'zone-secure');
+    win.classList.add(`zone-${zone}`);
+    
+    // Regenerate IP address on subnet corresponding to new zone
+    if (systemState.windowIps) {
+      delete systemState.windowIps[appId];
+    }
+    const newIp = getWindowIp(appId);
+    const ipBadge = win.querySelector('.window-ip-badge');
+    if (ipBadge) {
+      ipBadge.textContent = `IP: ${newIp}`;
+    }
+  }
+  
+  selectElement.className = `window-zone-select sel-${zone}`;
+  
+  logAudit(`Hypervisor shifted domain context for window [${appId}] to [${zone.toUpperCase()}]`);
+  addHypervisorLog(`DOMAIN_SHIFT: Window [${appId}] moved to zone [${zone.toUpperCase()}]`);
+  
+  const managerPanel = document.getElementById('hypervisor-vm-list-container');
+  if (managerPanel) {
+    updateHypervisorManagerUI();
+  }
+}
+
+function toggleHypRule(key, checkbox) {
+  systemState.hypervisor.rules[key] = checkbox.checked;
+  addHypervisorLog(`RULE_UPDATE: Inter-VM policy '${key}' set to ${checkbox.checked ? 'ENABLED' : 'DISABLED'}`);
+  logAudit(`Xen hypervisor policy update: '${key}' set to ${checkbox.checked ? 'ENABLED' : 'DISABLED'}`);
+}
+
+function copyVaultToVMClipboard() {
+  const ciphertext = document.getElementById('vault-ciphertext-output').textContent;
+  if (!ciphertext || ciphertext.startsWith('Payload will appear') || ciphertext.includes('Error') || ciphertext.includes('BLOCK')) {
+    return;
+  }
+  
+  const zone = systemState.hypervisor.zones['vault'] || 'personal';
+  
+  systemState.hypervisor.clipboard = {
+    text: ciphertext,
+    sourceZone: zone,
+    sourceApp: 'vault'
+  };
+  
+  addHypervisorLog(`COPY: Saved Vault output to hypervisor clipboard (Zone: ${zone.toUpperCase()})`);
+  logAudit(`Copied secure text from Crypt Vault in zone ${zone.toUpperCase()} to VM clipboard.`);
+  
+  // Flash feedback in Vault
+  const outputPanel = document.getElementById('vault-ciphertext-output');
+  const oldText = outputPanel.textContent;
+  outputPanel.textContent = "COPIED TO VM CLIPBOARD SUCCESSFULLY!";
+  setTimeout(() => {
+    outputPanel.textContent = oldText;
+  }, 1000);
+}
+
+function pasteVaultFromVMClipboard() {
+  const clipboard = systemState.hypervisor.clipboard;
+  if (!clipboard || !clipboard.text) {
+    alert("VM Clipboard is empty.");
+    return;
+  }
+  
+  const targetZone = systemState.hypervisor.zones['vault'] || 'personal';
+  
+  interceptAction(
+    clipboard.sourceApp || 'unknown',
+    'vault',
+    'clipboard_paste',
+    () => {
+      const input = document.getElementById('vault-ciphertext-input');
+      if (input) {
+        input.value = clipboard.text;
+        addHypervisorLog(`PASTE: Transferred clipboard data from ${clipboard.sourceZone.toUpperCase()} to VAULT (${targetZone.toUpperCase()})`);
+      }
+    },
+    () => {
+      addHypervisorLog(`PASTE_BLOCKED: Clipboard data transfer rejected.`);
+    }
+  );
+}
+
+function pasteTerminalFromVMClipboard() {
+  const clipboard = systemState.hypervisor.clipboard;
+  if (!clipboard || !clipboard.text) {
+    const win = document.getElementById('window-terminal');
+    if (win) {
+      const history = win.querySelector('.terminal-history');
+      history.innerHTML += `<div class="terminal-line warning">[Hypervisor Info] VM Clipboard is empty.</div>`;
+      const terminalContainer = win.querySelector('.terminal-input').parentElement.parentElement;
+      terminalContainer.scrollTop = terminalContainer.scrollHeight;
+    }
+    return;
+  }
+  
+  const targetZone = systemState.hypervisor.zones['terminal'] || 'work';
+  
+  interceptAction(
+    clipboard.sourceApp || 'unknown',
+    'terminal',
+    'clipboard_paste_to_terminal',
+    () => {
+      const win = document.getElementById('window-terminal');
+      if (win) {
+        const input = win.querySelector('.terminal-input');
+        if (input) {
+          input.value += clipboard.text;
+          addHypervisorLog(`PASTE: Transferred clipboard data from ${clipboard.sourceZone.toUpperCase()} to TERMINAL (${targetZone.toUpperCase()})`);
+        }
+      }
+    },
+    () => {
+      const win = document.getElementById('window-terminal');
+      if (win) {
+        const history = win.querySelector('.terminal-history');
+        history.innerHTML += `<div class="terminal-line error">[XEN BLOCK] Hypervisor paste interdiction: Clipboard data transfer denied.</div>`;
+        const terminalContainer = win.querySelector('.terminal-input').parentElement.parentElement;
+        terminalContainer.scrollTop = terminalContainer.scrollHeight;
+      }
+    }
+  );
+}
+
+function getHypervisorContent() {
+  setTimeout(updateHypervisorManagerUI, 100);
+  return `
+    <div class="app-hypervisor-container">
+      <div class="hypervisor-header">
+        <div class="hypervisor-title-block">
+          <h3>Tomb Hypervisor VM Manager</h3>
+          <p>Xen hypervisor sandboxing controls. Manage security zones, view VM telemetry, and enforce Dom0 isolation policies.</p>
+        </div>
+        <div class="hypervisor-stats">
+          <div class="hypervisor-stat-pill">
+            <div class="val">4</div>
+            <div class="lbl">Active VMs</div>
+          </div>
+          <div class="hypervisor-stat-pill">
+            <div class="val">3.0 GB</div>
+            <div class="lbl">Total VM RAM</div>
+          </div>
+          <div class="hypervisor-stat-pill">
+            <div class="val" id="hyp-cpu-usage">12%</div>
+            <div class="lbl">Hypervisor CPU</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="hypervisor-main">
+        <div class="hypervisor-panel">
+          <h4>Security Isolation Domains (VMs)</h4>
+          <div class="vm-list" id="hypervisor-vm-list-container">
+          </div>
+        </div>
+        
+        <div class="hypervisor-panel">
+          <h4>Inter-VM Security Policies</h4>
+          <div class="hypervisor-rules">
+            <div class="rule-row">
+              <div class="rule-info">
+                <span class="rule-name">Inter-Domain Drag & Drop</span>
+                <span class="rule-desc">Intercept any file drag and drop events across color zones</span>
+              </div>
+              <label class="aa-switch">
+                <input type="checkbox" id="hyp-rule-dnd" ${systemState.hypervisor.rules.interAppDnd ? 'checked' : ''} onchange="toggleHypRule('interAppDnd', this)">
+                <span class="aa-slider"></span>
+              </label>
+            </div>
+            
+            <div class="rule-row">
+              <div class="rule-info">
+                <span class="rule-name">Cross-Zone Clipboard Copy</span>
+                <span class="rule-desc">Require authorization to copy text out of a secure zone</span>
+              </div>
+              <label class="aa-switch">
+                <input type="checkbox" id="hyp-rule-copy" ${systemState.hypervisor.rules.crossCopy ? 'checked' : ''} onchange="toggleHypRule('crossCopy', this)">
+                <span class="aa-slider"></span>
+              </label>
+            </div>
+            
+            <div class="rule-row">
+              <div class="rule-info">
+                <span class="rule-name">Keys and Crypt Export Protection</span>
+                <span class="rule-desc">Block exporting vault keys to red/untrusted domains</span>
+              </div>
+              <label class="aa-switch">
+                <input type="checkbox" id="hyp-rule-keys" ${systemState.hypervisor.rules.vaultExport ? 'checked' : ''} onchange="toggleHypRule('vaultExport', this)">
+                <span class="aa-slider"></span>
+              </label>
+            </div>
+            
+            <div class="rule-row">
+              <div class="rule-info">
+                <span class="rule-name">Firmware (BIOS) Configuration Lock</span>
+                <span class="rule-desc">Prohibit any warm/cold reboot calls to the system BIOS utility</span>
+              </div>
+              <label class="aa-switch">
+                <input type="checkbox" id="hyp-rule-firmware" ${systemState.hypervisor.rules.firmwareLock ? 'checked' : ''} onchange="toggleHypRule('firmwareLock', this)">
+                <span class="aa-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="hypervisor-logs" id="hypervisor-logs-list">
+      </div>
+    </div>
+  `;
+}
+
+function updateHypervisorManagerUI() {
+  const container = document.getElementById('hypervisor-vm-list-container');
+  if (!container) return;
+  
+  const vms = [
+    { id: 'untrusted', name: 'untrusted (Red Zone)', desc: 'Web browser, unverified downloads, networking open', zone: 'untrusted', cpu: '6%', ram: '0.5 GB / 1.0 GB' },
+    { id: 'work', name: 'work (Yellow Zone)', desc: 'Terminal, developer workspaces, local networks', zone: 'work', cpu: '4%', ram: '0.8 GB / 1.0 GB' },
+    { id: 'personal', name: 'personal (Blue Zone)', desc: 'Crypt Vault, files, password manager', zone: 'personal', cpu: '1%', ram: '0.4 GB / 0.6 GB' },
+    { id: 'secure', name: 'secure (Green Zone)', desc: 'Auditors, seL4 Microkernel root control panel', zone: 'secure', cpu: '1%', ram: '0.2 GB / 0.4 GB' }
+  ];
+  
+  container.innerHTML = vms.map(vm => {
+    const isOpen = Object.entries(systemState.hypervisor.zones).some(([appId, zone]) => {
+      return zone === vm.zone && document.getElementById(`window-${appId}`) !== null;
+    });
+    
+    return `
+      <div class="vm-card ${vm.zone}">
+        <div class="vm-info">
+          <span class="vm-name">${vm.name}</span>
+          <span class="vm-desc">${vm.desc}</span>
+        </div>
+        <div class="vm-status">
+          <span class="vm-badge ${isOpen ? 'running' : 'stopped'}">${isOpen ? 'RUNNING' : 'STOPPED'}</span>
+          <span class="vm-resources">${isOpen ? `CPU: ${vm.cpu} | RAM: ${vm.ram}` : 'Idle'}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  const logsList = document.getElementById('hypervisor-logs-list');
+  if (logsList) {
+    logsList.innerHTML = systemState.hypervisor.logs.map(log => {
+      const isAlert = log.includes('BLOCK') || log.includes('INTERCEPT');
+      const isAllow = log.includes('ALLOW');
+      const cssClass = isAlert ? 'alert' : (isAllow ? 'allow' : 'info');
+      return `<div class="hyp-log-row ${cssClass}">${log}</div>`;
+    }).join('');
+    logsList.scrollTop = logsList.scrollHeight;
+  }
+}
+
+
+// INTERACTIVE ONBOARDING TOUR
+const tourSteps = [
+  {
+    title: "Step 1: CIS Hardening Auditor",
+    body: "Start by checking the system security score. Open the **CIS Auditor** app (square shield checklist icon in the left dock) and click **Run Security Compliance Audit**.",
+    highlight: "cis"
+  },
+  {
+    title: "Step 2: AppArmor Sandboxing",
+    body: "A key control is process isolation. Open the **AppArmor Control Center** (profile shield icon) and toggle the switches to put applications in **Enforce Sandbox** mode.",
+    highlight: "apparmor"
+  },
+  {
+    title: "Step 3: Hardened Terminal Suggestions",
+    body: "For users of all skill levels, the **Hardened Terminal** (green prompt icon) has **Quick Command Chips** at the bottom. Simply click on `ufw status` to run it instantly without typing!",
+    highlight: "terminal"
+  },
+  {
+    title: "Step 4: SOC 2 Auditor Center",
+    body: "Compliance centers simplify operations. Open the **SOC 2 Auditor** (plus folder icon) to toggle access controls (MFA), volume encryption, and generate a signed report packet.",
+    highlight: "soc2"
+  },
+  {
+    title: "Step 5: Global Compliance Hub",
+    body: "To satisfy regional laws, open the **Global Compliance Hub** (earth icon) and toggle rules for GDPR (Europe), CCPA (USA), and DPDP (India) to reach 100% compliance.",
+    highlight: "globalcom"
+  },
+  {
+    title: "Step 6: Ultimate Hardening Core",
+    body: "To build the absolute most secure OS possible, open the **Ultimate Hardening** app (shield with user icon). Toggle **seL4 Verification** to mathematically prove the microkernel, and enable **Immutable Core** to make filesystems read-only.",
+    highlight: "ultimate"
+  }
+];
+
+function startTour() {
+  systemState.tour.step = 0;
+  systemState.tour.active = true;
+  
+  const overlay = document.getElementById('tour-overlay');
+  if (overlay) {
+    overlay.classList.remove('hidden');
+    updateTourStepUI();
+  }
+  logAudit("Interactive onboarding accessibility tour started.");
+}
+
+function closeTour() {
+  systemState.tour.active = false;
+  const overlay = document.getElementById('tour-overlay');
+  if (overlay) {
+    overlay.classList.add('hidden');
+  }
+  document.querySelectorAll('.dock-item').forEach(el => el.classList.remove('tour-highlight'));
+  logAudit("Interactive onboarding accessibility tour closed.");
+}
+
+function nextTourStep() {
+  if (systemState.tour.step < tourSteps.length - 1) {
+    systemState.tour.step++;
+    updateTourStepUI();
+  } else {
+    closeTour();
+  }
+}
+
+function prevTourStep() {
+  if (systemState.tour.step > 0) {
+    systemState.tour.step--;
+    updateTourStepUI();
+  }
+}
+
+function updateTourStepUI() {
+  const step = tourSteps[systemState.tour.step];
+  
+  document.getElementById('tour-title').textContent = step.title;
+  document.getElementById('tour-body').innerHTML = step.body;
+  document.getElementById('tour-step-indicator').textContent = `Step ${systemState.tour.step + 1} of ${tourSteps.length}`;
+  
+  document.querySelectorAll('.dock-item').forEach(el => el.classList.remove('tour-highlight'));
+  
+  const targetDock = document.querySelector(`.dock-item[data-app="${step.highlight}"]`);
+  if (targetDock) {
+    targetDock.classList.add('tour-highlight');
+    
+    const tourCard = document.querySelector('.tour-card');
+    const rect = targetDock.getBoundingClientRect();
+    
+    tourCard.style.left = `${rect.right + 15}px`;
+    tourCard.style.top = `${rect.top - 20}px`;
+  }
+
+  const nextBtn = document.getElementById('tour-next-btn');
+  if (nextBtn) {
+    nextBtn.textContent = systemState.tour.step === tourSteps.length - 1 ? "Finish Tour" : "Next Step";
+  }
+}
+
+// OS Control Actions
+function triggerOSAction(action) {
+  if (action === 'restart') {
+    location.reload();
+  } else if (action === 'shutdown') {
+    document.getElementById('desktop-wrapper').classList.add('hidden');
+    document.body.innerHTML = `
+      <div style="background:#000; width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; color:#555; font-family:var(--font-mono); font-size:14px;">
+        <span style="color:#dfdbd2; margin-bottom:10px;">[  OK  ] Deactivated target Local Security Services.</span>
+        <span style="color:#dfdbd2; margin-bottom:10px;">[  OK  ] Stopped AppArmor MAC system framework.</span>
+        <span style="color:#dfdbd2; margin-bottom:20px;">[  OK  ] Reached target System Power Off.</span>
+        <h2 style="color:#fff; font-family:var(--font-ui); font-size:20px; font-weight:400;">Power Off. You can close this tab now.</h2>
+      </div>
+    `;
+  }
+}
+
+// Mobile Viewport and Gesture optimization (Android & iOS)
+document.addEventListener('touchstart', (e) => {
+  if (e.touches.length > 1) {
+    e.preventDefault();
+  }
+}, { passive: false });
+
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+  const now = (new Date()).getTime();
+  if (now - lastTouchEnd <= 300) {
+    e.preventDefault();
+  }
+  lastTouchEnd = now;
+}, false);
+
+// ==========================================
+// 150-CHARACTER CRYPTOGRAPHIC HASH GENERATOR
+// ==========================================
+function generateInteractionHash() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < 150; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
+// ==========================================
+// TOMB RENDER (VIDEO PRODUCTION STUDIO)
+// ==========================================
+function getRenderContent() {
+  const isPlaying = systemState.render.isPlaying;
+  const playProgress = systemState.render.playProgress;
+  const isRendering = systemState.render.isRendering;
+  const renderProgress = systemState.render.renderProgress;
+  const activeScene = systemState.render.activeScene;
+
+  return `
+    <div class="app-render-container">
+      <div class="render-preview-box">
+        <div class="render-canvas-sim">
+          <div style="font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #fff; letter-spacing: 1px;">TOMB PRODUCTION STUDIO PREVIEW</div>
+          <div id="render-preview-scene" style="font-size: 11.5px; color: var(--sec-yellow); font-family: var(--font-mono); margin-bottom: 8px; font-weight: bold; height: 16px;">
+            ${activeScene}
+          </div>
+          <div id="render-preview-timer" style="font-size: 11px; color: var(--ubuntu-light-grey); font-family: var(--font-mono);">
+            Time: ${(playProgress * 0.15).toFixed(1)}s / 15.0s
+          </div>
+          <div style="display: flex; gap: 6px; margin-top: 12px; font-size: 9px; color: rgba(255,255,255,0.4); text-transform: uppercase;">
+            <span>1080p Stream</span> • <span>60 FPS</span> • <span>VM Zone: Work</span>
+          </div>
+        </div>
+
+        ${isRendering ? `
+        <div class="render-progress-overlay" id="render-progress-overlay">
+          <div style="font-size: 12px; font-weight: bold; color: var(--sec-green); font-family: var(--font-mono); letter-spacing: 1px; animation: pulse 1s infinite alternate;">COMPILING VIDEO STREAMS...</div>
+          <div class="render-bar">
+            <div class="render-bar-fill" id="render-bar-fill" style="width: ${renderProgress}%"></div>
+          </div>
+          <div id="render-progress-text" style="font-size: 11px; color: #fff; font-family: var(--font-mono);">${renderProgress}% Complete</div>
+        </div>
+        ` : ''}
+      </div>
+
+      <div class="render-timeline">
+        <div style="position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center;">
+          <div class="timeline-tracks" style="position: relative; overflow-x: hidden;">
+            <!-- Vertical Playhead -->
+            <div id="render-playhead" style="position: absolute; top: 0; bottom: 0; width: 2px; background: var(--ubuntu-orange); left: calc(60px + (100% - 70px) * (${playProgress} / 100)); pointer-events: none; z-index: 5; box-shadow: 0 0 6px var(--ubuntu-orange);"></div>
+            
+            <div class="timeline-track" style="margin-bottom: 4px;">
+              <div class="track-label">VIDEO</div>
+              <div class="track-bar">
+                <div class="track-clip" style="left: 0%; width: 25%;" title="Intro Scene: Kernel Boot">Intro</div>
+                <div class="track-clip" style="left: 25%; width: 35%; background: linear-gradient(90deg, #b00020, #e95420);" title="Scene 2: Cyber Attack Sim">Threat Sim</div>
+                <div class="track-clip" style="left: 60%; width: 40%; background: linear-gradient(90deg, #33d17a, #3584e4);" title="Scene 3: Crypt Shield & Mitigation">Mitigation</div>
+              </div>
+            </div>
+
+            <div class="timeline-track" style="margin-bottom: 4px;">
+              <div class="track-label">AUDIO</div>
+              <div class="track-bar">
+                <div class="track-clip audio" style="left: 0%; width: 50%;" title="Theme Music Track">Soundtrack</div>
+                <div class="track-clip audio" style="left: 50%; width: 50%;" title="IDS Alarm Effects">Alarm.fx</div>
+              </div>
+            </div>
+
+            <div class="timeline-track">
+              <div class="track-label">FX/TEXT</div>
+              <div class="track-bar">
+                <div class="track-clip fx" style="left: 10%; width: 20%;" title="Title Card overlay">Title Text</div>
+                <div class="track-clip fx" style="left: 30%; width: 20%;" title="Alert overlay">Alert.Overlay</div>
+                <div class="track-clip fx" style="left: 60%; width: 30%;" title="Success overlay">Success.Overlay</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="render-controls">
+        <div>
+          <button class="render-btn-play" onclick="toggleRenderPlay()" id="render-play-btn">
+            ${isPlaying ? '❚❚ Pause' : '▶ Play'}
+          </button>
+          <button class="render-btn-play" style="margin-left: 5px;" onclick="resetRenderPlay()">
+            Stop / Reset
+          </button>
+        </div>
+        <div>
+          <button class="render-btn-build" onclick="startMovieRendering()">
+            Render Production Movie
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function toggleRenderPlay() {
+  const isPlaying = systemState.render.isPlaying;
+  
+  if (isPlaying) {
+    // Pause
+    systemState.render.isPlaying = false;
+    if (systemState.render.intervalId) {
+      clearInterval(systemState.render.intervalId);
+      systemState.render.intervalId = null;
+    }
+    const playBtn = document.getElementById('render-play-btn');
+    if (playBtn) playBtn.textContent = '▶ Play';
+  } else {
+    // Play
+    systemState.render.isPlaying = true;
+    const playBtn = document.getElementById('render-play-btn');
+    if (playBtn) playBtn.textContent = '❚❚ Pause';
+    
+    systemState.render.intervalId = setInterval(() => {
+      systemState.render.playProgress += 1;
+      if (systemState.render.playProgress > 100) {
+        systemState.render.playProgress = 0;
+      }
+      updateRenderPlayUI();
+    }, 150);
+  }
+}
+
+function resetRenderPlay() {
+  systemState.render.isPlaying = false;
+  systemState.render.playProgress = 0;
+  systemState.render.activeScene = "Scene 1: System Boot & Kernel Audits";
+  
+  if (systemState.render.intervalId) {
+    clearInterval(systemState.render.intervalId);
+    systemState.render.intervalId = null;
+  }
+  
+  const playBtn = document.getElementById('render-play-btn');
+  if (playBtn) playBtn.textContent = '▶ Play';
+  
+  updateRenderPlayUI();
+}
+
+function updateRenderPlayUI() {
+  const playhead = document.getElementById('render-playhead');
+  const timer = document.getElementById('render-preview-timer');
+  const scene = document.getElementById('render-preview-scene');
+  const playProgress = systemState.render.playProgress;
+
+  if (playhead) {
+    playhead.style.left = `calc(60px + (100% - 70px) * (${playProgress} / 100))`;
+  }
+  if (timer) {
+    timer.textContent = `Time: ${(playProgress * 0.15).toFixed(1)}s / 15.0s`;
+  }
+  if (scene) {
+    let activeScene = "Scene 1: System Boot & Kernel Audits";
+    if (playProgress >= 25 && playProgress < 60) {
+      activeScene = "⚠️ Scene 2: Firewall Breach & Port Scan Intrusion";
+    } else if (playProgress >= 60) {
+      activeScene = "🛡️ Scene 3: Crypt Shield Isolation & seL4 Hardening Proof";
+    }
+    scene.textContent = activeScene;
+    systemState.render.activeScene = activeScene;
+  }
+}
+
+function startMovieRendering() {
+  if (systemState.render.isRendering) return;
+  
+  // Pause playback first
+  if (systemState.render.isPlaying) {
+    toggleRenderPlay();
+  }
+
+  systemState.render.isRendering = true;
+  systemState.render.renderProgress = 0;
+
+  // Append overlay programmatically
+  const container = document.querySelector('.app-render-container');
+  const previewBox = document.querySelector('.render-preview-box');
+  
+  if (!previewBox) return;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'render-progress-overlay';
+  overlay.id = 'render-progress-overlay';
+  overlay.innerHTML = `
+    <div style="font-size: 12px; font-weight: bold; color: var(--sec-green); font-family: var(--font-mono); letter-spacing: 1px; animation: pulse 1s infinite alternate;">COMPILING VIDEO STREAMS...</div>
+    <div class="render-bar">
+      <div class="render-bar-fill" id="render-bar-fill" style="width: 0%"></div>
+    </div>
+    <div id="render-progress-text" style="font-size: 11px; color: #fff; font-family: var(--font-mono);">0% Complete</div>
+  `;
+  previewBox.appendChild(overlay);
+
+  const renderTimer = setInterval(() => {
+    systemState.render.renderProgress += 5;
+    
+    const fill = document.getElementById('render-bar-fill');
+    const txt = document.getElementById('render-progress-text');
+    
+    if (fill) fill.style.width = `${systemState.render.renderProgress}%`;
+    if (txt) txt.textContent = `${systemState.render.renderProgress}% Complete`;
+
+    if (systemState.render.renderProgress >= 100) {
+      clearInterval(renderTimer);
+      systemState.render.isRendering = false;
+
+      // Generate verification key of 150 characters
+      const key = generateInteractionHash();
+
+      // Intercept file write using Qubes Hypervisor security borders
+      interceptAction(
+        'render',
+        'vault',
+        'write_rendered_video_file',
+        () => {
+          // Allowed by hypervisor
+          const overlayEl = document.getElementById('render-progress-overlay');
+          if (overlayEl) overlayEl.remove();
+          
+          let alertMsg = `SUCCESS: Production Movie 'tomb_production_movie.mp4' compiled.\n\n`;
+          if (systemState.ultimate.sdcardMode) {
+            alertMsg += `Storage: live sd-card (/media/sdcard/movies/)\n`;
+          } else {
+            alertMsg += `Storage: crypt-vault (/home/sec-admin/vault/)\n`;
+          }
+          alertMsg += `Integrity Verification Key:\n${key}`;
+          
+          alert(alertMsg);
+          logAudit(`Saved production movie to Vault. Size: 412 MB. SHA-256 Verified.`);
+        },
+        () => {
+          // Blocked by hypervisor
+          const overlayEl = document.getElementById('render-progress-overlay');
+          if (overlayEl) overlayEl.remove();
+          
+          console.warn('BLOCKED: Hypervisor denied permission to write output movie file to secure storage.');
+          logAudit(`XEN Intercept Blocked Movie Maker exporting video file to Vault.`);
+        }
+      );
+    }
+  }, 150);
+}
+
+// ==========================================
+// AI TEACHER & TRANSLATOR HUB
+// ==========================================
+const translationTemplates = [
+  {
+    lang: "🇷🇺 Russian",
+    original: "Обнаружена атака методом подбора пароля SSH с IP-адреса 91.240.118.66",
+    english: "SSH brute-force attack detected from IP 91.240.118.66",
+    src: "91.240.118.66"
+  },
+  {
+    lang: "🇨🇳 Chinese",
+    original: "检测到端口扫描，扫描端口范围：21, 22, 23, 80",
+    english: "Port scan detected, scanned ports: 21, 22, 23, 80",
+    src: "45.143.203.14"
+  },
+  {
+    lang: "🇪🇸 Spanish",
+    original: "Intento de inyección SQL detectado en HTTP GET /login",
+    english: "SQL Injection attempt detected in HTTP GET /login",
+    src: "185.220.101.5"
+  },
+  {
+    lang: "🇫🇷 French",
+    original: "AppArmor a bloqué la lecture non autorisée de /etc/shadow par chromium-browser",
+    english: "AppArmor blocked unauthorized read on /etc/shadow by chromium-browser",
+    src: "localhost"
+  },
+  {
+    lang: "🇩🇪 German",
+    original: "ICMP-Flood-Paketvolumen hat den Grenzwert überschritten",
+    english: "ICMP flood packet volume has exceeded the limit",
+    src: "192.168.1.102"
+  },
+  {
+    lang: "🇯🇵 Japanese",
+    original: "IPアドレス 185.220.101.5 からの SQL インジェクション攻撃を検出しました",
+    english: "SQL Injection attack detected from IP address 185.220.101.5",
+    src: "185.220.101.5"
+  },
+  {
+    lang: "🇰🇷 Korean",
+    original: "SSH 무차별 대입 공격 감지: IP 91.240.118.66",
+    english: "SSH brute-force attack detected: IP 91.240.118.66",
+    src: "91.240.118.66"
+  }
+];
+
+function getTeacherContent() {
+  const activeTab = systemState.teacher.activeTab || 'translator';
+  
+  return `
+    <div class="app-teacher-container">
+      <div class="teacher-tabs">
+        <button class="teacher-tab ${activeTab === 'translator' ? 'active' : ''}" onclick="switchTeacherTab('translator')">
+          🌐 Live Language Translator
+        </button>
+        <button class="teacher-tab ${activeTab === 'teacher' ? 'active' : ''}" onclick="switchTeacherTab('teacher')">
+          🧠 Interactive Agent Teacher
+        </button>
+      </div>
+
+      ${activeTab === 'translator' ? `
+        <div class="teacher-panel" id="teacher-translator-panel">
+          <div style="font-size: 11px; color: var(--ubuntu-light-grey); margin-bottom: 2px;">
+            Incoming international alerts and message streams translated into English in real-time.
+          </div>
+          <div class="translate-feed" id="translate-feed">
+            ${renderTranslationFeed()}
+          </div>
+        </div>
+      ` : `
+        <div class="teacher-panel" id="teacher-agent-panel">
+          <div style="font-size: 11px; color: var(--ubuntu-light-grey); margin-bottom: 2px;">
+            Submit custom rules, behavior guidelines, or command automation preferences to train your Tomb OS agent.
+          </div>
+          
+          <div class="teacher-input-area">
+            <label for="teacher-rule-input" style="font-weight: 600; margin-bottom: 4px; display: block;">Rule / Instruction to Teach Agent:</label>
+            <textarea class="teacher-textarea" id="teacher-rule-input" placeholder="e.g. When Port 22 is scanned, immediately toggle AppArmor sandbox on SSH..."></textarea>
+            <button class="teacher-btn-action" style="margin-top: 6px;" onclick="submitAgentRule()">Teach Rules to Agent</button>
+          </div>
+
+          <div style="font-size: 11px; font-weight: bold; color: var(--sec-yellow); margin-top: 4px;">Active Learned Rules Brain Database:</div>
+          <div class="teacher-logs" id="teacher-rules-logs">
+            ${renderLearnedRules()}
+          </div>
+        </div>
+      `}
+    </div>
+  `;
+}
+
+function switchTeacherTab(tab) {
+  systemState.teacher.activeTab = tab;
+  const win = document.getElementById('window-teacher');
+  if (win) {
+    const content = win.querySelector('.window-content');
+    if (content) {
+      content.innerHTML = getTeacherContent();
+    }
+  }
+}
+
+function submitAgentRule() {
+  const textarea = document.getElementById('teacher-rule-input');
+  if (!textarea) return;
+  
+  const ruleText = textarea.value.trim();
+  if (!ruleText) {
+    alert("Please enter a rule to teach the agent.");
+    return;
+  }
+
+  // Generate unique validation hash of 150 characters
+  const hash = generateInteractionHash();
+  
+  // Format the learned rule with its 150-char validation hash
+  const formattedRule = `"${ruleText}" | Verification Hash: [${hash}]`;
+  systemState.teacher.rules.unshift(formattedRule);
+  
+  // Clear textarea
+  textarea.value = '';
+  
+  // Log to auditd
+  logAudit(`Trained agent with new behavior rule: "${ruleText.substring(0, 40)}..."`);
+  
+  // Update view
+  const rulesLogs = document.getElementById('teacher-rules-logs');
+  if (rulesLogs) {
+    rulesLogs.innerHTML = renderLearnedRules();
+  }
+}
+
+function renderLearnedRules() {
+  if (systemState.teacher.rules.length === 0) {
+    return `<div style="color: rgba(255,255,255,0.4); font-style: italic; font-size: 11px;">No rules loaded. Submit a rule above to teach the agent.</div>`;
+  }
+  return systemState.teacher.rules.map((rule, idx) => {
+    const parts = rule.split(' | ');
+    const ruleText = parts[0].replace(/^"|"$/g, ''); 
+    const hashPart = parts[1] || '';
+    const hashText = hashPart.replace('Verification Hash: [', '').replace(']', '');
+    return `
+      <div style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 6px; font-size: 11px; line-height: 1.4;">
+        <span style="color: var(--sec-green); font-weight: bold; display: block; margin-bottom: 2px;">[LEARNED RULE #${systemState.teacher.rules.length - idx}]</span>
+        <div style="color: #fff; margin-bottom: 4px;">"${escapeHTML(ruleText)}"</div>
+        <div style="color: rgba(255,255,255,0.3); font-size: 9.5px; word-break: break-all; font-family: var(--font-mono);">Hash: ${escapeHTML(hashText)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderTranslationFeed() {
+  if (systemState.teacher.translations.length === 0) {
+    return `<div style="color: rgba(255,255,255,0.3); font-style: italic; text-align: center; margin-top: 50px; font-size: 12px;">
+      Waiting for incoming traffic alerts in foreign languages...
+    </div>`;
+  }
+  return systemState.teacher.translations.map(t => {
+    return `
+      <div class="translate-row" style="margin-bottom: 8px;">
+        <div class="translate-source" style="display: flex; justify-content: space-between; align-items: center;">
+          <span>${escapeHTML(t.lang)} Alert (IP: ${escapeHTML(t.src)})</span>
+          <span style="color: var(--sec-green); font-family: var(--font-mono); font-size: 9px;">VERIFIED</span>
+        </div>
+        <div class="translate-text-original">${escapeHTML(t.original)}</div>
+        <div class="translate-text-english">${escapeHTML(t.english)}</div>
+        <div style="font-size: 9px; color: rgba(255,255,255,0.25); margin-top: 5px; word-break: break-all; font-family: var(--font-mono);">
+          Hash: ${escapeHTML(t.hash)}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+
+function translateIncomingMessage(template) {
+  // Find a matching translation template or fallback
+  const matchingTrans = translationTemplates.filter(t => 
+    t.english.toLowerCase().includes(template.type.toLowerCase()) || 
+    template.msg.toLowerCase().includes(t.english.split(' ')[0].toLowerCase())
+  );
+  
+  const trans = matchingTrans.length > 0 
+    ? matchingTrans[Math.floor(Math.random() * matchingTrans.length)] 
+    : translationTemplates[Math.floor(Math.random() * translationTemplates.length)];
+  
+  const original = trans.original.replace('91.240.118.66', template.src).replace('185.220.101.5', template.src).replace('45.143.203.14', template.src);
+  const english = trans.english.replace('91.240.118.66', template.src).replace('185.220.101.5', template.src).replace('45.143.203.14', template.src);
+
+  // Generate 150-char validation hash for this specific translation interaction
+  const hash = generateInteractionHash();
+
+  systemState.teacher.translations.unshift({
+    lang: trans.lang,
+    original: original,
+    english: english,
+    src: template.src,
+    hash: hash
+  });
+
+  if (systemState.teacher.translations.length > 20) {
+    systemState.teacher.translations.pop();
+  }
+
+  // Update DOM if it's currently open
+  const feed = document.getElementById('translate-feed');
+  if (feed) {
+    feed.innerHTML = renderTranslationFeed();
+  }
+}
+
+// ==========================================
+// SANDBOXED CHROMIUM WEB BROWSER
+// ==========================================
+function getBrowserContent() {
+  const currentUrl = systemState.browserUrl || 'https://tombos.sec/defense-portal';
+  return `
+    <div class="app-browser-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #121212;">
+      <div class="browser-toolbar" style="background: #1f1f1f; padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 8px;">
+        <button style="background: transparent; border: none; color: #aaa; cursor: pointer; font-size: 14px;" onclick="navigateBrowserUrl('https://tombos.sec/defense-portal')">◀</button>
+        <button style="background: transparent; border: none; color: #aaa; cursor: pointer; font-size: 14px;" onclick="navigateBrowserUrl('${currentUrl}')">🔄</button>
+        <div style="flex: 1; background: #2a2a2a; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 4px 12px; display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 12px;">🔒</span>
+          <input type="text" id="browser-url-input" value="${currentUrl}" onkeydown="handleBrowserUrlKey(event)" style="flex: 1; background: transparent; border: none; color: #fff; font-family: var(--font-mono); font-size: 12px; outline: none;" />
+        </div>
+        <span style="font-size: 10px; padding: 2px 6px; border-radius: 4px; background: rgba(255,59,48,0.2); color: #ff3b30; border: 1px solid rgba(255,59,48,0.4); font-family: var(--font-mono); font-weight: 600;">UNTRUSTED ZONE (AppArmor Sandboxed)</span>
+      </div>
+
+      <div class="browser-viewport" id="browser-viewport" style="flex: 1; overflow-y: auto; padding: 20px; background: #181818;">
+        ${renderBrowserPageContent(currentUrl)}
+      </div>
+    </div>
+  `;
+}
+
+function renderBrowserPageContent(url) {
+  if (url.includes('defense-portal') || url === 'https://tombos.sec/defense-portal') {
+    return `
+      <div style="max-width: 680px; margin: 0 auto; background: #222; border-radius: 8px; padding: 24px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 8px 24px rgba(0,0,0,0.5);">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px; margin-bottom: 18px;">
+          <h2 style="margin: 0; color: var(--ubuntu-orange, #E95420); font-size: 20px;">🛡️ Tomb OS Security Defense Portal</h2>
+          <span style="font-size: 11px; background: rgba(74,246,38,0.15); color: #4AF626; padding: 3px 8px; border-radius: 12px; font-family: var(--font-mono);">Live Telemetry Connected</span>
+        </div>
+        <p style="color: #ccc; font-size: 13.5px; line-height: 1.6;">Welcome to the internal web security portal. This Chromium instance runs inside the <strong>Untrusted Red Zone VM sandbox</strong>. AppArmor MAC controls continuously monitor all filesystem I/O calls executed by this browser.</p>
+        
+        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 16px; margin: 18px 0;">
+          <h4 style="margin: 0 0 10px 0; color: var(--sec-yellow, #ffcc00); font-size: 14px;">🌐 Live Internet Browsing & Web Quick-Links</h4>
+          <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Type any live web address into the URL bar above or click one of the live web targets below to reach out to the live internet:</p>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button onclick="navigateBrowserUrl('https://example.com')" style="background: rgba(74,246,38,0.15); border: 1px solid #4AF626; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600;">🌐 Example.com (Live)</button>
+            <button onclick="navigateBrowserUrl('https://wikipedia.org')" style="background: rgba(0,122,255,0.2); border: 1px solid #007AFF; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600;">📖 Wikipedia (Live)</button>
+            <button onclick="navigateBrowserUrl('https://bing.com')" style="background: rgba(255,204,0,0.2); border: 1px solid #ffcc00; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600;">🔍 Bing Search (Live)</button>
+          </div>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 16px; margin: 18px 0;">
+          <h4 style="margin: 0 0 10px 0; color: var(--sec-yellow, #ffcc00); font-size: 14px;">⚡ Interactive Security Sandbox Simulations</h4>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button onclick="triggerBrowserDownloadTrigger()" style="background: rgba(255,59,48,0.2); border: 1px solid #ff3b30; color: #fff; padding: 8px 14px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600;">Simulate Unauthorized Executable Download</button>
+            <button onclick="navigateBrowserUrl('https://security-onion.internal')" style="background: rgba(0,122,255,0.2); border: 1px solid #007AFF; color: #fff; padding: 8px 14px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600;">Open Security Onion Portal →</button>
+          </div>
+        </div>
+
+        <div id="browser-sandbox-status" style="display: none; background: rgba(255,59,48,0.15); border: 1px solid #ff3b30; border-radius: 6px; padding: 12px; margin-top: 14px; color: #ffbaba; font-size: 12.5px; font-family: var(--font-mono);"></div>
+      </div>
+    `;
+  } else if (url.includes('security-onion') || url === 'https://security-onion.internal') {
+    return `
+      <div style="max-width: 680px; margin: 0 auto; background: #1e2530; border-radius: 8px; padding: 24px; border: 1px solid rgba(0,122,255,0.3);">
+        <h2 style="margin: 0 0 12px 0; color: #007AFF; font-size: 20px;">🧅 Security Onion Enterprise Threat Feed</h2>
+        <p style="color: #ddd; font-size: 13px; line-height: 1.6;">Monitoring global IDS packet signatures, Suricata alerts, and automated SOC 2 compliance mappings.</p>
+        <div style="background: #111823; padding: 14px; border-radius: 6px; font-family: var(--font-mono); font-size: 11.5px; color: #4AF626; margin-top: 14px;">
+          [SYSTEM OK] All nodes operational. Zero compromised endpoints across Red/Blue/Secure hypervisor zones.
+        </div>
+      </div>
+    `;
+  } else {
+    return `
+      <div style="width: 100%; height: 100%; min-height: 400px; display: flex; flex-direction: column;">
+        <div style="background: rgba(0,0,0,0.4); padding: 6px 12px; font-size: 11px; color: var(--sec-green, #4AF626); font-family: var(--font-mono); border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+          <span>🌐 LIVE INTERNET CONNECTION: Connected to ${escapeHTML(url)}</span>
+          <a href="${escapeHTML(url)}" target="_blank" style="color: #007AFF; text-decoration: underline;">Open External Window ↗</a>
+        </div>
+        <iframe src="${escapeHTML(url)}" style="width: 100%; flex: 1; min-height: 380px; border: none; background: #fff; border-radius: 0 0 6px 6px;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+      </div>
+    `;
+  }
+}
+
+function handleBrowserUrlKey(e) {
+  if (e.key === 'Enter') {
+    const input = document.getElementById('browser-url-input');
+    if (input) navigateBrowserUrl(input.value.trim());
+  }
+}
+
+function navigateBrowserUrl(url) {
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = 'https://' + url;
+  }
+  systemState.browserUrl = url;
+  const vp = document.getElementById('browser-viewport');
+  const input = document.getElementById('browser-url-input');
+  if (input) input.value = url;
+  if (vp) vp.innerHTML = renderBrowserPageContent(url);
+}
+
+function triggerBrowserDownloadTrigger() {
+  const status = document.getElementById('browser-sandbox-status');
+  if (status) {
+    status.style.display = 'block';
+    status.innerHTML = `🛡️ [APPARMOR BLOCK] Unauthorized download execute request intercepted! Access to host filesystem denied. Logged to system audit daemon.`;
+  }
+  logAudit(`[AppArmor sandbox violation] Blocked unauthorized executable download attempt by chromium-browser`);
+}
+
+// ==========================================
+// TOMB SECURITY ACADEMY & LEARNING MODULES
+// ==========================================
+const securityLessons = [
+  {
+    id: 'dsa_arrays',
+    title: "CS Module 1: Data Structures - Arrays & Hash Tables",
+    category: "Data Structures & Algorithms",
+    description: "Master foundational memory layouts, O(1) hash table lookups, and array manipulations across C, Python & JS.",
+    content: `
+      <h5>💻 Target Terminal Command</h5>
+      <div style="background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 4px; font-family: var(--font-mono); color: var(--sec-green, #4AF626); margin-bottom: 12px;">$ notes</div>
+      <h5>Overview & Objectives</h5>
+      <p>Arrays provide contiguous indexed memory buffers. Hash Tables map key-value pairs using hash functions for O(1) constant time search complexity.</p>
+      <h5>💡 Real-World Production Use Cases</h5>
+      <ul>
+        <li><strong>High-Throughput Caching:</strong> Building Redis-style in-memory key-value stores.</li>
+        <li><strong>Big-O Space & Time Optimization:</strong> Reducing O(N^2) search loops down to O(N) linear time using Hash Maps.</li>
+      </ul>
+    `,
+    exercisePrompt: "Type 'notes' in the exercises tab to open the Notepad & view Data Structure code snippets.",
+    expectedCmd: "notes",
+    rewardText: "Mastered Data Structures & O(1) Hash Map Optimization!"
+  },
+  {
+    id: 'dsa_trees',
+    title: "CS Module 2: Data Structures - Binary Trees & Graph Traversal",
+    category: "Data Structures & Algorithms",
+    description: "Understand hierarchical tree nodes, Binary Search Trees (BST), Breadth-First Search (BFS), and DFS.",
+    content: `
+      <h5>💻 Target Terminal Command</h5>
+      <div style="background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 4px; font-family: var(--font-mono); color: var(--sec-green, #4AF626); margin-bottom: 12px;">$ sysctl -a</div>
+      <h5>Overview & Objectives</h5>
+      <p>Trees and Graphs model interconnected networks, filesystem directories, and dependency graphs. Graph traversal algorithms power routing engines.</p>
+      <h5>💡 Real-World Production Use Cases</h5>
+      <ul>
+        <li><strong>Dependency Resolution:</strong> Resolving package dependency trees in npm, pip, and apt.</li>
+        <li><strong>Database Indexing:</strong> Using B-Trees and LSM Trees to index millions of records in PostgreSQL.</li>
+      </ul>
+    `,
+    exercisePrompt: "Type 'sysctl -a' in the exercises tab to analyze kernel system dependency structures.",
+    expectedCmd: "sysctl -a",
+    rewardText: "Mastered Binary Search Trees & Graph Traversal Algorithms!"
+  },
+  {
+    id: 'se_clean_code',
+    title: "SE Module 3: Software Architecture - Clean Code & SOLID Principles",
+    category: "Software Engineering",
+    description: "Learn Single Responsibility, Open/Closed, Interface Segregation, and Dependency Inversion design patterns.",
+    content: `
+      <h5>💻 Target Terminal Command</h5>
+      <div style="background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 4px; font-family: var(--font-mono); color: var(--sec-green, #4AF626); margin-bottom: 12px;">$ cat .env</div>
+      <h5>Overview & Objectives</h5>
+      <p>SOLID design principles ensure codebases remain maintainable, testable, and loosely coupled as engineering teams scale.</p>
+      <h5>💡 Real-World Production Use Cases</h5>
+      <ul>
+        <li><strong>Enterprise Microservices:</strong> Decoupling storage layers from business logic to enable painless cloud migrations.</li>
+        <li><strong>Test-Driven Development (TDD):</strong> Injecting mock dependencies to achieve 100% unit test coverage.</li>
+      </ul>
+    `,
+    exercisePrompt: "Type 'cat .env' in the exercises tab to inspect environmental dependency injection bindings.",
+    expectedCmd: "cat .env",
+    rewardText: "Mastered Clean Code Architecture & SOLID Design Principles!"
+  },
+  {
+    id: 'lang_c_rust',
+    title: "Coding Module 4: Low-Level Memory - C, C++ & Rust Ownership",
+    category: "Multi-Language Foundations",
+    description: "Compare manual memory management (malloc/free) in C with Rust borrow checking and zero-cost abstractions.",
+    content: `
+      <h5>💻 Target Terminal Command</h5>
+      <div style="background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 4px; font-family: var(--font-mono); color: var(--sec-green, #4AF626); margin-bottom: 12px;">$ vault</div>
+      <h5>Overview & Objectives</h5>
+      <p>Systems languages operate near bare-metal hardware. C offers pointer arithmetic, while Rust guarantees memory safety at compile time.</p>
+      <h5>💡 Real-World Production Use Cases</h5>
+      <ul>
+        <li><strong>Operating System Kernel Dev:</strong> Writing device drivers and microkernel IPC mechanisms.</li>
+        <li><strong>High-Frequency Trading & Games:</strong> Eliminating garbage collection pauses for microsecond latency.</li>
+      </ul>
+    `,
+    exercisePrompt: "Type 'vault' in the exercises tab to open the Crypt Vault memory manager.",
+    expectedCmd: "vault",
+    rewardText: "Mastered Low-Level Memory Management & Rust Ownership Models!"
+  },
+  {
+    id: 'ls',
+    title: "Linux Module 5: Linux Directory Navigation & Inspection",
+    category: "Linux Fundamentals",
+    description: "Learn how Linux structures files, directories, hidden files, and access permissions in Unix filesystems.",
+    content: `
+      <h5>💻 Target Terminal Command</h5>
+      <div style="background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 4px; font-family: var(--font-mono); color: var(--sec-green, #4AF626); margin-bottom: 12px;">$ ls -la</div>
+      <h5>Overview & Objectives</h5>
+      <p>The Linux filesystem is organized in a hierarchical tree starting at the root directory (<code>/</code>). Administrators use file inspection tools to verify permissions, file owners, and hidden configurations.</p>
+      <h5>💡 Real-World Production Use Cases</h5>
+      <ul>
+        <li><strong>Server Audit & Malware Forensics:</strong> Finding hidden malware scripts or backdoor web shells disguised as dot-files.</li>
+        <li><strong>Web Server Configuration Checks:</strong> Verifying file permissions on <code>/var/www/html/</code>.</li>
+      </ul>
+    `,
+    exercisePrompt: "Type 'ls -la' in the exercises tab to inspect hidden files and Linux permission masks.",
+    expectedCmd: "ls -la",
+    rewardText: "Mastered Linux Filesystem Inspection & Permission Listing!"
+  },
+  {
+    id: 'whoami',
+    title: "Linux Module 6: User Context & Root Privilege Verification",
+    category: "Linux Fundamentals",
+    description: "Understand Linux multi-user privileges, UID contexts, and administrative root access.",
+    content: `
+      <h5>💻 Target Terminal Command</h5>
+      <div style="background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 4px; font-family: var(--font-mono); color: var(--sec-green, #4AF626); margin-bottom: 12px;">$ whoami</div>
+      <h5>Overview & Objectives</h5>
+      <p>Linux operates under strict multi-user permissions. User accounts run either as unprivileged users or privileged root accounts (UID 0).</p>
+      <h5>💡 Real-World Production Use Cases</h5>
+      <ul>
+        <li><strong>Automated Deployment Scripts:</strong> Including <code>whoami</code> checks in bash deployment scripts to verify privileged access.</li>
+      </ul>
+    `,
+    exercisePrompt: "Type 'whoami' in the exercises tab to verify your active administrative context.",
+    expectedCmd: "whoami",
+    rewardText: "Mastered Linux User Identity & Privilege Context Verification!"
+  },
+  {
+    id: 'ufw',
+    title: "Security Module 7: Uncomplicated Firewall (UFW) & Network Defense",
+    category: "Network Security",
+    description: "Learn how Linux packet filtering engines inspect inbound and outbound traffic to block port scanners.",
+    content: `
+      <h5>💻 Target Terminal Command</h5>
+      <div style="background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 4px; font-family: var(--font-mono); color: var(--sec-green, #4AF626); margin-bottom: 12px;">$ ufw status</div>
+      <h5>Overview & Objectives</h5>
+      <p>Uncomplicated Firewall (UFW) manages Netfilter packet rules on Linux servers to block unsolicited inbound connection requests on exposed ports.</p>
+    `,
+    exercisePrompt: "Type 'ufw status' in the exercises tab to inspect active network packet filter rules.",
+    expectedCmd: "ufw status",
+    rewardText: "Mastered UFW Packet Filtering diagnostic protocols!"
+  },
+  {
+    id: 'crypto',
+    title: "Security Module 8: Cryptographic Vault & AES Payload Sealing",
+    category: "Cryptography",
+    description: "Learn symmetric payload encryption using AES-256 and post-quantum lattice cryptography.",
+    content: `
+      <h5>💻 Target Terminal Command</h5>
+      <div style="background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 4px; font-family: var(--font-mono); color: var(--sec-green, #4AF626); margin-bottom: 12px;">$ gpg -c secretdata</div>
+      <h5>Overview & Objectives</h5>
+      <p>Protecting confidential files at rest requires strong symmetric payload ciphers (AES-256) and lattice-based key exchange mechanisms.</p>
+    `,
+    exercisePrompt: "Type 'gpg -c secretdata' in the exercises tab to execute symmetric AES payload sealing.",
+    expectedCmd: "gpg -c secretdata",
+    rewardText: "Mastered Symmetric GPG Cryptographic Payload Sealing!"
+  }
+];
+
+function getLearningContent() {
+  const activeTab = systemState.learning.activeTab || 'lessons';
+  const selectedIdx = systemState.learning.selectedLesson || 0;
+  const currentLesson = securityLessons[selectedIdx] || securityLessons[0];
+  const completedCount = systemState.learning.completedExercises.length;
+  const progressPercent = Math.round((completedCount / securityLessons.length) * 100);
+
+  return `
+    <div class="app-learning-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif;">
+      <div class="learning-header" style="background: rgba(0,0,0,0.25); padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h3 style="margin: 0; font-size: 16px; color: var(--ubuntu-orange, #E95420); font-weight: 600;">🎓 Tomb Security Academy</h3>
+          <div style="font-size: 11px; color: var(--ubuntu-light-grey, #aea79f);">Interactive Cybersecurity Lessons & Terminal Exercises</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="text-align: right;">
+            <div style="font-size: 10px; color: var(--ubuntu-light-grey);">Academy Progress</div>
+            <div style="font-size: 13px; font-weight: 700; color: var(--sec-green, #4AF626); font-family: var(--font-mono);">${progressPercent}% Completed</div>
+          </div>
+          <div style="width: 80px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+            <div style="width: ${progressPercent}%; height: 100%; background: var(--sec-green, #4AF626); transition: width 0.4s ease;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="learning-tabs" style="display: flex; background: rgba(0,0,0,0.15); border-bottom: 1px solid rgba(255,255,255,0.08);">
+        <button class="teacher-tab ${activeTab === 'lessons' ? 'active' : ''}" onclick="switchLearningTab('lessons')" style="padding: 10px 20px; border: none; background: ${activeTab === 'lessons' ? 'rgba(233,84,32,0.2)' : 'transparent'}; color: ${activeTab === 'lessons' ? '#fff' : 'var(--ubuntu-light-grey)'}; border-bottom: 2px solid ${activeTab === 'lessons' ? 'var(--ubuntu-orange)' : 'transparent'}; cursor: pointer; font-weight: 600; font-size: 12.5px;">
+          📚 Security Lessons
+        </button>
+        <button class="teacher-tab ${activeTab === 'exercises' ? 'active' : ''}" onclick="switchLearningTab('exercises')" style="padding: 10px 20px; border: none; background: ${activeTab === 'exercises' ? 'rgba(233,84,32,0.2)' : 'transparent'}; color: ${activeTab === 'exercises' ? '#fff' : 'var(--ubuntu-light-grey)'}; border-bottom: 2px solid ${activeTab === 'exercises' ? 'var(--ubuntu-orange)' : 'transparent'}; cursor: pointer; font-weight: 600; font-size: 12.5px;">
+          💻 Terminal Command Exercises
+        </button>
+      </div>
+
+      <div class="learning-body" style="flex: 1; overflow: hidden; display: flex;">
+        ${activeTab === 'lessons' ? renderLessonsTab(currentLesson, selectedIdx) : renderExercisesTab(currentLesson, selectedIdx)}
+      </div>
+    </div>
+  `;
+}
+
+function renderLessonsTab(lesson, selectedIdx) {
+  return `
+    <div style="width: 240px; border-right: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.15); overflow-y: auto; padding: 8px;">
+      <div style="font-size: 11px; font-weight: 600; color: var(--ubuntu-light-grey); padding: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Course Modules</div>
+      ${securityLessons.map((l, idx) => {
+        const isDone = systemState.learning.completedExercises.includes(l.id);
+        const isSel = idx === selectedIdx;
+        return `
+          <div onclick="selectLessonModule(${idx})" style="padding: 10px; margin-bottom: 4px; border-radius: 6px; cursor: pointer; background: ${isSel ? 'rgba(233,84,32,0.25)' : 'rgba(255,255,255,0.03)'}; border: 1px solid ${isSel ? 'var(--ubuntu-orange)' : 'transparent'}; transition: all 0.2s;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <span style="font-size: 10px; padding: 1px 5px; border-radius: 3px; background: rgba(255,255,255,0.1); color: var(--sec-yellow); font-family: var(--font-mono);">${l.category}</span>
+              ${isDone ? '<span style="color: var(--sec-green); font-size: 12px;">✓ Completed</span>' : ''}
+            </div>
+            <div style="font-size: 12px; font-weight: 600; color: #fff; line-height: 1.3;">${l.title}</div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+    <div style="flex: 1; padding: 20px; overflow-y: auto; background: rgba(0,0,0,0.05);">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+        <div>
+          <span style="font-size: 11px; color: var(--sec-yellow); font-family: var(--font-mono); font-weight: 600; text-transform: uppercase;">${lesson.category} Module</span>
+          <h4 style="margin: 4px 0 0 0; font-size: 18px; color: #fff;">${lesson.title}</h4>
+        </div>
+        <button onclick="switchLearningTab('exercises')" style="background: var(--ubuntu-orange); color: #fff; border: none; padding: 8px 16px; border-radius: 16px; font-weight: 600; font-size: 12px; cursor: pointer; box-shadow: 0 2px 8px rgba(233,84,32,0.4);">
+          Start Terminal Exercise →
+        </button>
+      </div>
+      <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px; margin-bottom: 16px; font-size: 13px; line-height: 1.6; color: #ddd;">
+        ${lesson.content}
+      </div>
+      <div style="background: rgba(255,255,0,0.05); border: 1px solid rgba(255,255,0,0.2); border-radius: 8px; padding: 14px;">
+        <div style="font-weight: 600; color: var(--sec-yellow); font-size: 12px; margin-bottom: 4px;">🎯 Practical Exercise Target:</div>
+        <div style="font-size: 12.5px; color: #eee;">${lesson.exercisePrompt}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderExercisesTab(lesson, selectedIdx) {
+  const isCompleted = systemState.learning.completedExercises.includes(lesson.id);
+  const feedback = systemState.learning.exerciseFeedback;
+
+  return `
+    <div style="flex: 1; padding: 20px; display: flex; flex-direction: column; height: 100%; overflow-y: auto;">
+      <div style="margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h4 style="margin: 0; font-size: 16px; color: #fff;">Interactive Exercise: ${lesson.title}</h4>
+          <span style="font-size: 11px; color: var(--sec-yellow); font-family: var(--font-mono);">Target Cmd: ${lesson.expectedCmd}</span>
+        </div>
+        <p style="margin: 6px 0 0 0; font-size: 12.5px; color: var(--ubuntu-light-grey);">${lesson.exercisePrompt}</p>
+      </div>
+
+      <div style="background: #1e1e1e; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 14px; margin-bottom: 14px; font-family: var(--font-mono);">
+        <div style="font-size: 11px; color: #888; margin-bottom: 8px; border-bottom: 1px solid #333; padding-bottom: 4px;">CLI Terminal Simulator Practice Environment</div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="color: #4AF626; font-size: 13px;">sec-admin@tomb-os:~$</span>
+          <input type="text" id="academy-cmd-input" placeholder="Type target command here (e.g. ${lesson.expectedCmd})..." onkeydown="handleAcademyCmdKey(event)" style="flex: 1; background: transparent; border: none; color: #fff; font-family: var(--font-mono); font-size: 13px; outline: none;" autofocus />
+          <button onclick="submitAcademyCmd()" style="background: var(--ubuntu-orange); color: #fff; border: none; padding: 4px 12px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px; cursor: pointer;">Run Cmd</button>
+        </div>
+      </div>
+
+      ${feedback ? `
+        <div style="background: rgba(74,246,38,0.1); border: 1px solid var(--sec-green); border-radius: 8px; padding: 12px; margin-bottom: 14px; color: var(--sec-green); font-size: 12.5px; font-family: var(--font-mono);">
+          ${feedback}
+        </div>
+      ` : ''}
+
+      <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px; flex: 1;">
+        <div style="font-size: 11px; font-weight: 600; color: var(--ubuntu-light-grey); margin-bottom: 8px; text-transform: uppercase;">Module Quick-Launch Exercises</div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px;">
+          ${securityLessons.map((l, idx) => `
+            <button onclick="selectLessonModule(${idx}); switchLearningTab('exercises');" style="background: ${idx === selectedIdx ? 'rgba(233,84,32,0.2)' : 'rgba(255,255,255,0.04)'}; border: 1px solid ${idx === selectedIdx ? 'var(--ubuntu-orange)' : 'rgba(255,255,255,0.08)'}; color: #fff; padding: 10px; border-radius: 6px; text-align: left; cursor: pointer;">
+              <div style="font-size: 10px; color: var(--sec-yellow); font-family: var(--font-mono);">${l.expectedCmd}</div>
+              <div style="font-size: 11.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${l.title.split(':')[0]}</div>
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function switchLearningTab(tab) {
+  systemState.learning.activeTab = tab;
+  systemState.learning.exerciseFeedback = '';
+  updateLearningUI();
+}
+
+function selectLessonModule(idx) {
+  systemState.learning.selectedLesson = idx;
+  systemState.learning.exerciseFeedback = '';
+  updateLearningUI();
+}
+
+function handleAcademyCmdKey(e) {
+  if (e.key === 'Enter') {
+    submitAcademyCmd();
+  }
+}
+
+function submitAcademyCmd() {
+  const input = document.getElementById('academy-cmd-input');
+  if (!input) return;
+  const val = input.value.trim().toLowerCase();
+  const selectedIdx = systemState.learning.selectedLesson || 0;
+  const lesson = securityLessons[selectedIdx];
+
+  if (val === lesson.expectedCmd.toLowerCase()) {
+    if (!systemState.learning.completedExercises.includes(lesson.id)) {
+      systemState.learning.completedExercises.push(lesson.id);
+    }
+    systemState.learning.exerciseFeedback = `✅ SUCCESS: Command '${val}' executed cleanly! ${lesson.rewardText}`;
+    logAudit(`Academy student successfully executed terminal exercise: '${val}' for module ${lesson.id}`);
+  } else {
+    systemState.learning.exerciseFeedback = `❌ EXERCISE MISMATCH: Submitted '${val}'. Expected target command is '${lesson.expectedCmd}'. Try typing '${lesson.expectedCmd}'!`;
+  }
+  updateLearningUI();
+}
+
+function updateLearningUI() {
+  const win = document.getElementById('window-learning');
+  if (win) {
+    const content = win.querySelector('.window-body-content');
+    if (content) {
+      content.innerHTML = getLearningContent();
+    }
+  }
+}
+
+// ==========================================
+// TOMB SECURE NOTES & NOTEPAD APP
+// ==========================================
+function getNotesContent() {
+  const activeId = systemState.notes.activeNoteId || (systemState.notes.list[0] ? systemState.notes.list[0].id : null);
+  const activeNote = systemState.notes.list.find(n => n.id === activeId) || { id: '', title: '', content: '' };
+
+  return `
+    <div class="app-notes-container" style="display: flex; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #1a1a1a;">
+      <div class="notes-sidebar" style="width: 230px; border-right: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.2); display: flex; flex-direction: column;">
+        <div style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 600; font-size: 13px; color: var(--ubuntu-orange);">📝 My Secure Notes</span>
+          <button onclick="createNewNote()" style="background: var(--ubuntu-orange); border: none; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 600;">+ New</button>
+        </div>
+        <div class="notes-list" style="flex: 1; overflow-y: auto; padding: 6px;">
+          ${systemState.notes.list.map(n => `
+            <div onclick="selectNote('${n.id}')" style="padding: 10px; margin-bottom: 4px; border-radius: 6px; cursor: pointer; background: ${n.id === activeId ? 'rgba(233,84,32,0.25)' : 'rgba(255,255,255,0.03)'}; border: 1px solid ${n.id === activeId ? 'var(--ubuntu-orange)' : 'transparent'};">
+              <div style="font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${n.title || 'Untitled Note'}</div>
+              <div style="font-size: 10px; color: var(--ubuntu-light-grey); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${(n.content || '').substring(0, 35)}...</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="notes-main" style="flex: 1; display: flex; flex-direction: column; padding: 16px; background: #161616;">
+        ${activeNote.id ? `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <input type="text" id="note-title-input" value="${activeNote.title}" oninput="updateActiveNoteTitle(this.value)" placeholder="Note Title..." style="flex: 1; background: transparent; border: none; color: #fff; font-size: 16px; font-weight: 600; outline: none; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px; margin-right: 12px;" />
+            <button onclick="copyNoteToVMClipboard()" style="background: rgba(0,122,255,0.2); border: 1px solid #007AFF; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;">📋 Copy to VM</button>
+            <button onclick="deleteNote('${activeNote.id}')" style="background: rgba(255,59,48,0.2); border: 1px solid #ff3b30; color: #ffbaba; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-left: 6px;">🗑️ Delete</button>
+          </div>
+          <textarea id="note-body-textarea" oninput="updateActiveNoteContent(this.value)" placeholder="Start typing your secure note here..." style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 12px; color: #ddd; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.5; outline: none; resize: none;"></textarea>
+          <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--ubuntu-light-grey); margin-top: 6px;">
+            <span id="note-save-status">🔒 Auto-saved to Encrypted Vault</span>
+            <span id="note-char-count">${activeNote.content.length} characters</span>
+          </div>
+        ` : `
+          <div style="flex: 1; display: flex; justify-content: center; align-items: center; color: var(--ubuntu-light-grey); font-size: 13px;">
+            No note selected. Click "+ New" to create one!
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+function selectNote(id) {
+  systemState.notes.activeNoteId = id;
+  updateNotesUI();
+}
+
+function createNewNote() {
+  const newId = 'n' + Date.now();
+  const newNote = { id: newId, title: '📝 New Confidential Note', content: '' };
+  systemState.notes.list.unshift(newNote);
+  systemState.notes.activeNoteId = newId;
+  updateNotesUI();
+}
+
+function deleteNote(id) {
+  systemState.notes.list = systemState.notes.list.filter(n => n.id !== id);
+  if (systemState.notes.activeNoteId === id) {
+    systemState.notes.activeNoteId = systemState.notes.list[0] ? systemState.notes.list[0].id : null;
+  }
+  updateNotesUI();
+}
+
+function updateActiveNoteTitle(title) {
+  const activeId = systemState.notes.activeNoteId;
+  const note = systemState.notes.list.find(n => n.id === activeId);
+  if (note) {
+    note.title = title;
+    // Update sidebar list title dynamically
+    const listEl = document.querySelector(`.notes-list div[onclick*="${activeId}"] div`);
+    if (listEl) listEl.textContent = title || 'Untitled Note';
+  }
+}
+
+function updateActiveNoteContent(content) {
+  const activeId = systemState.notes.activeNoteId;
+  const note = systemState.notes.list.find(n => n.id === activeId);
+  if (note) {
+    note.content = content;
+    const charCount = document.getElementById('note-char-count');
+    if (charCount) charCount.textContent = `${content.length} characters`;
+  }
+}
+
+function copyNoteToVMClipboard() {
+  const activeId = systemState.notes.activeNoteId;
+  const note = systemState.notes.list.find(n => n.id === activeId);
+  if (note) {
+    systemState.vmClipboard = note.content;
+    const status = document.getElementById('note-save-status');
+    if (status) {
+      status.textContent = '📋 Copied Note to VM Clipboard!';
+      setTimeout(() => { status.textContent = '🔒 Auto-saved to Encrypted Vault'; }, 2000);
+    }
+  }
+}
+
+function updateNotesUI() {
+  const win = document.getElementById('window-notes');
+  if (win) {
+    const content = win.querySelector('.window-body-content');
+    if (content) {
+      content.innerHTML = getNotesContent();
+    }
+  }
+}
+
+// ==========================================
+// CROSS-PLATFORM DATA MIGRATION & IMPORTER
+// ==========================================
+function getImporterContent() {
+  return `
+    <div class="app-importer-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #181818; padding: 20px; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px; margin-bottom: 16px;">
+        <div>
+          <h2 style="margin: 0; font-size: 19px; color: var(--ubuntu-orange); font-weight: 600;">📥 Cross-Platform Data Migration & Cryptographic Importer</h2>
+          <div style="font-size: 12px; color: var(--ubuntu-light-grey); margin-top: 2px;">Import profiles, documents, keys & credentials securely into isolated Tomb OS zones</div>
+        </div>
+        <span style="font-size: 10px; background: rgba(74,246,38,0.15); color: #4AF626; padding: 4px 10px; border-radius: 12px; font-family: var(--font-mono); font-weight: 600;">Sanitization Daemon: Ready</span>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+        <button class="importer-tab active" onclick="switchImporterTab(this, 'apple')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid var(--ubuntu-orange); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">🍏 Apple Ecosystem (iCloud/iOS)</button>
+        <button class="importer-tab" onclick="switchImporterTab(this, 'google')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">🌐 Google Workspace & Chrome</button>
+        <button class="importer-tab" onclick="switchImporterTab(this, 'windows')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">🪟 Microsoft Windows 10/11</button>
+        <button class="importer-tab" onclick="switchImporterTab(this, 'mac')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">💻 macOS & Linux SSH Keys</button>
+      </div>
+
+      <div id="importer-panel-apple" class="importer-panel" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px;">
+        <h4 style="margin: 0 0 10px 0; color: #fff; font-size: 14px;">🍏 Import Apple iCloud, Apple Notes, Keychain & iOS Backups</h4>
+        <p style="font-size: 12px; color: #ccc; line-height: 1.5; margin-bottom: 12px;">Seamlessly import your Apple ecosystem data, iCloud Drive files, Apple Keychain credentials, and local iPhone/iPad backups into Tomb OS.</p>
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #ddd; margin-bottom: 16px;">
+          <label><input type="checkbox" checked id="imp-a-keychain" /> Apple Keychain Passwords & Wi-Fi Secrets (Sealed in Crypt Key Vault)</label>
+          <label><input type="checkbox" checked id="imp-a-notes" /> Apple Notes & Quick Notes (Converted to Tomb Secure Notes)</label>
+          <label><input type="checkbox" checked id="imp-a-icloud" /> iCloud Drive Documents & Desktop Sync (Mounted to /home/sec-admin)</label>
+          <label><input type="checkbox" checked id="imp-a-ios" /> Encrypted iOS / iPadOS Backup Manifests & AirDrop Transfers</label>
+        </div>
+        <button onclick="runImporterMigration('Apple Ecosystem (iCloud & iOS)')" style="background: #fff; border: none; color: #111; padding: 8px 16px; border-radius: 4px; font-size: 12px; font-weight: 700; cursor: pointer;">Execute Apple Ecosystem Import →</button>
+      </div>
+
+      <div id="importer-panel-google" class="importer-panel hidden" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px;">
+        <h4 style="margin: 0 0 10px 0; color: #007AFF; font-size: 14px;">🌐 Import Google Chrome Bookmarks, Drive & Keep Notes</h4>
+        <p style="font-size: 12px; color: #ccc; line-height: 1.5; margin-bottom: 12px;">Connect your Google account or select a Google Takeout JSON/HTML archive to import into Chromium and Tomb Secure Notes.</p>
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #ddd; margin-bottom: 16px;">
+          <label><input type="checkbox" checked id="imp-g-bookmarks" /> Chrome Bookmarks & Web History (Sandboxed Chromium)</label>
+          <label><input type="checkbox" checked id="imp-g-passwords" /> Saved Web Passwords (Sealed in Crypt Key Vault)</label>
+          <label><input type="checkbox" checked id="imp-g-drive" /> Google Drive Confidential Documents (Restricted Personal Zone)</label>
+        </div>
+        <button onclick="runImporterMigration('Google Workspace')" style="background: var(--ubuntu-orange); border: none; color: #fff; padding: 8px 16px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer;">Execute Google Data Import →</button>
+      </div>
+
+      <div id="importer-panel-windows" class="importer-panel hidden" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px;">
+        <h4 style="margin: 0 0 10px 0; color: #ffcc00; font-size: 14px;">🪟 Import Microsoft Windows User Files & Registry Profiles</h4>
+        <p style="font-size: 12px; color: #ccc; line-height: 1.5; margin-bottom: 12px;">Migrate files from C:\\Users\\Administrator and BitLocker keys into isolated VM storage.</p>
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #ddd; margin-bottom: 16px;">
+          <label><input type="checkbox" checked id="imp-w-docs" /> Windows Documents & Desktop Files (Mount to /home/sec-admin)</label>
+          <label><input type="checkbox" checked id="imp-w-bitlocker" /> BitLocker Recovery Keys & Credentials (Crypt Vault)</label>
+          <label><input type="checkbox" checked id="imp-w-wifi" /> Saved Wi-Fi WPA3 Credentials & Network Profiles</label>
+        </div>
+        <button onclick="runImporterMigration('Microsoft Windows')" style="background: #007AFF; border: none; color: #fff; padding: 8px 16px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer;">Execute Windows Data Import →</button>
+      </div>
+
+      <div id="importer-panel-mac" class="importer-panel hidden" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px;">
+        <h4 style="margin: 0 0 10px 0; color: #4AF626; font-size: 14px;">💻 Import macOS Keychain & Linux SSH / GPG Keys</h4>
+        <p style="font-size: 12px; color: #ccc; line-height: 1.5; margin-bottom: 12px;">Scan ~/.ssh and macOS Keychain for RSA/ED25519 identity keys and shell configurations.</p>
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #ddd; margin-bottom: 16px;">
+          <label><input type="checkbox" checked id="imp-m-ssh" /> OpenSSH Keys (~/.ssh/id_rsa, ~/.ssh/id_ed25519)</label>
+          <label><input type="checkbox" checked id="imp-m-gpg" /> GPG Keyring & Public/Private Subkeys (~/.gnupg)</label>
+          <label><input type="checkbox" checked id="imp-m-shell" /> Shell Profiles & Aliases (.zshrc, .bash_history)</label>
+        </div>
+        <button onclick="runImporterMigration('macOS / Linux')" style="background: #4AF626; border: none; color: #111; padding: 8px 16px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer;">Execute macOS / Linux Import →</button>
+      </div>
+
+      <div id="importer-status-output" style="margin-top: 14px; display: none; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 14px; font-family: var(--font-mono); font-size: 11.5px; color: #4AF626; line-height: 1.6;"></div>
+    </div>
+  `;
+}
+
+function switchImporterTab(btnEl, source) {
+  document.querySelectorAll('#window-importer .importer-tab').forEach(b => {
+    b.classList.remove('active');
+    b.style.borderColor = 'rgba(255,255,255,0.15)';
+  });
+  btnEl.classList.add('active');
+  btnEl.style.borderColor = 'var(--ubuntu-orange)';
+
+  document.querySelectorAll('#window-importer .importer-panel').forEach(p => p.classList.add('hidden'));
+  const target = document.getElementById(`importer-panel-${source}`);
+  if (target) target.classList.remove('hidden');
+}
+
+function runImporterMigration(sourceName) {
+  const out = document.getElementById('importer-status-output');
+  if (!out) return;
+  out.style.display = 'block';
+  out.innerHTML = `[IMPORT DAEMON INITIATED] Connecting to ${sourceName} data stream...<br/>▶ Scanning archive payloads & verifying cryptographic checksums...`;
+
+  setTimeout(() => {
+    out.innerHTML += `<br/>▶ [GLOBAL COMPLIANCE AUDIT] Validating GDPR Art. 32 encryption & CCPA consumer data opt-out metadata...`;
+  }, 700);
+
+  setTimeout(() => {
+    out.innerHTML += `<br/>▶ [SANITY CHECK & ANONYMIZATION] Sanitizing PII records & scrubbing telemetry markers against malware signatures...`;
+  }, 1400);
+
+  setTimeout(() => {
+    out.innerHTML += `<br/>▶ [ISOLATION ENFORCED] Depositing compliant documents into VM Storage (/home/sec-admin/imported_${sourceName.toLowerCase().replace(/[^a-z]/g, '')})...<br/>⚖️ <strong>COMPLIANCE VERIFIED: 100% GDPR/CCPA/DPDP compliant data import from ${sourceName} completed cleanly!</strong>`;
+    logAudit(`Cross-platform data migration completed cleanly from ${sourceName}. Verified 100% compliant under GDPR, CCPA, and SOC 2 frameworks.`);
+    syncComplianceDials();
+  }, 2200);
+}
+
+// ==========================================
+// TOMB CONTROL CENTER & APPLICATION LAUNCHER
+// ==========================================
+const allAppLauncherList = [
+  { id: 'terminal', name: 'Hardened Terminal', category: 'System', icon: '💻', desc: 'CLI system diagnostics & admin tools', zone: 'work' },
+  { id: 'browser', name: 'Chromium Web Browser', category: 'Internet', icon: '🌐', desc: 'Live web browsing & sandboxed downloads', zone: 'untrusted' },
+  { id: 'notes', name: 'Tomb Secure Notes', category: 'Productivity', icon: '📝', desc: 'Encrypted notepad & cheat sheet manager', zone: 'personal' },
+  { id: 'importer', name: 'Cross-Platform Importer', category: 'System', icon: '📥', desc: 'Migrate data & keys from Google, Windows & Mac', zone: 'work' },
+  { id: 'learning', name: 'Tomb Security Academy', category: 'Education', icon: '🎓', desc: 'Interactive Linux lessons & CLI exercises', zone: 'work' },
+  { id: 'ids', name: 'Intrusion Detection (IDS)', category: 'Security', icon: '🛡️', desc: 'Live packet monitoring & Suricata alerts', zone: 'work' },
+  { id: 'apparmor', name: 'AppArmor Control', category: 'Security', icon: '🔒', desc: 'Mandatory Access Control application sandboxing', zone: 'secure' },
+  { id: 'cis', name: 'CIS Security Auditor', category: 'Compliance', icon: '📋', desc: 'Linux kernel & system hardening benchmarks', zone: 'secure' },
+  { id: 'soc2', name: 'SOC 2 Compliance Auditor', category: 'Compliance', icon: '⚖️', desc: 'Trust services criteria compliance tracking', zone: 'secure' },
+  { id: 'globalcom', name: 'Global Compliance Hub', category: 'Compliance', icon: '🌍', desc: 'GDPR, CCPA, DPDP & PIPL privacy frameworks', zone: 'secure' },
+  { id: 'vault', name: 'Cryptographic Key Vault', category: 'Security', icon: '🔑', desc: 'AES-256 and Kyber PQC payload encryption', zone: 'personal' },
+  { id: 'ultimate', name: 'Ultimate Hardening Center', category: 'Security', icon: '🦾', desc: 'Zero Trust Architecture, seL4 microkernel & TPM', zone: 'secure' },
+  { id: 'hypervisor', name: 'Hypervisor VM Manager', category: 'System', icon: '🖥️', desc: 'Xen Dom0 virtual machine & isolation zones', zone: 'secure' },
+  { id: 'teacher', name: 'AI Teacher & Translator', category: 'Education', icon: '🧠', desc: 'Multi-lingual rule translator & agent hub', zone: 'secure' },
+  { id: 'theme', name: 'UI Customization Center', category: 'System', icon: '🎨', desc: 'Theme colors, font size & glassmorphism', zone: 'personal' },
+  { id: 'readme', name: 'System Architecture Guide', category: 'System', icon: '📖', desc: 'Tomb OS documentation & security manifesto', zone: 'personal' }
+];
+
+function getControlCenterContent() {
+  return `
+    <div class="app-controlcenter-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #141414; padding: 20px; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px;">
+        <div>
+          <h2 style="margin: 0; font-size: 20px; color: var(--ubuntu-orange); font-weight: 600;">🎛️ Application Control Center</h2>
+          <div style="font-size: 12px; color: var(--ubuntu-light-grey); margin-top: 2px;">Launch and access all 15 Tomb OS applications from a central hub</div>
+        </div>
+        <div style="width: 240px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 18px; padding: 6px 12px; display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 12px; color: #888;">🔍</span>
+          <input type="text" id="cc-search-input" oninput="filterControlCenterApps(this.value)" placeholder="Search applications..." style="flex: 1; background: transparent; border: none; color: #fff; font-size: 12px; outline: none;" autofocus />
+        </div>
+      </div>
+
+      <div id="cc-grid-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; flex: 1;">
+        ${renderControlCenterAppCards(allAppLauncherList)}
+      </div>
+    </div>
+  `;
+}
+
+function renderControlCenterAppCards(apps) {
+  if (apps.length === 0) {
+    return `<div style="grid-column: 1 / -1; text-align: center; color: var(--ubuntu-light-grey); padding: 40px;">No applications match your search query.</div>`;
+  }
+  return apps.map(app => {
+    let zoneBg = 'rgba(74,246,38,0.15)';
+    let zoneColor = '#4AF626';
+    if (app.zone === 'untrusted') { zoneBg = 'rgba(255,59,48,0.15)'; zoneColor = '#ff3b30'; }
+    else if (app.zone === 'secure') { zoneBg = 'rgba(0,122,255,0.15)'; zoneColor = '#007AFF'; }
+    else if (app.zone === 'personal') { zoneBg = 'rgba(255,204,0,0.15)'; zoneColor = '#ffcc00'; }
+
+    return `
+      <div onclick="openWindow('${app.id}');" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; justify-content: space-between;" onmouseover="this.style.background='rgba(233,84,32,0.15)'; this.style.borderColor='var(--ubuntu-orange)';" onmouseout="this.style.background='rgba(255,255,255,0.04)'; this.style.borderColor='rgba(255,255,255,0.08)';">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 26px;">${app.icon}</span>
+            <span style="font-size: 9px; font-family: var(--font-mono); padding: 2px 6px; border-radius: 3px; background: ${zoneBg}; color: ${zoneColor}; font-weight: 600;">${app.zone.toUpperCase()}</span>
+          </div>
+          <div style="font-size: 13.5px; font-weight: 600; color: #fff; margin-bottom: 4px;">${app.name}</div>
+          <div style="font-size: 11px; color: var(--ubuntu-light-grey); line-height: 1.4;">${app.desc}</div>
+        </div>
+        <div style="margin-top: 12px; font-size: 10.5px; color: var(--ubuntu-orange); font-weight: 600; text-align: right;">Launch App →</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function filterControlCenterApps(query) {
+  const q = query.trim().toLowerCase();
+  const filtered = allAppLauncherList.filter(a => a.name.toLowerCase().includes(q) || a.desc.toLowerCase().includes(q) || a.category.toLowerCase().includes(q));
+  const grid = document.getElementById('cc-grid-container');
+  if (grid) {
+    grid.innerHTML = renderControlCenterAppCards(filtered);
+  }
+}
+
+// ==========================================
+// OSS SECURITY FRAMEWORK AUTO-UPGRADES DAEMON
+// ==========================================
+let ossUpgradeInterval = null;
+
+function startOSSAutoUpgrades() {
+  if (ossUpgradeInterval) clearInterval(ossUpgradeInterval);
+  ossUpgradeInterval = setInterval(() => {
+    if (!systemState.ultimate.autoUpdate) {
+      clearInterval(ossUpgradeInterval);
+      ossUpgradeInterval = null;
+      return;
+    }
+    const targets = [
+      { name: "Suricata IPS Rules Database", ver: "v7.0.3-hardened" },
+      { name: "AppArmor Mandatory Access Profiles", ver: "v3.1.2-tomb" },
+      { name: "UFW iptables Filter Tables", ver: "v0.36-compliant" },
+      { name: "seL4 Microkernel Core Proof Tables", ver: "v12.1.0-verified" }
+    ];
+    const target = targets[Math.floor(Math.random() * targets.length)];
+    const hash = generateInteractionHash();
+    const msg = `[Auto-Upgrades] Synced, compiled, and verified ${target.name} (${target.ver}). System security increased.`;
+    
+    // Log to auditd
+    logAudit(`OSS Auto-Upgrade: Installed new ${target.name} patches.`);
+    
+    // Log to Ultimate Center UI if open
+    const logsEl = document.getElementById('ultimate-logs');
+    if (logsEl) {
+      const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+      const row = document.createElement('div');
+      row.className = 'ultimate-log-row verified';
+      row.textContent = `[${time}] ${msg} | Verification Key: ${hash}`;
+      logsEl.appendChild(row);
+      logsEl.scrollTop = logsEl.scrollHeight;
+    }
+  }, 8000);
+}
+
+function stopOSSAutoUpgrades() {
+  if (ossUpgradeInterval) {
+    clearInterval(ossUpgradeInterval);
+    ossUpgradeInterval = null;
+  }
+}
+
+// ==========================================
+// TOMB UI DYNAMIC CUSTOMIZATION ENGINE
+// ==========================================
+
+function hexToRgb(hex) {
+  hex = hex.replace(/^#/, '');
+  if (hex.length === 3) {
+    hex = hex.split('').map(char => char + char).join('');
+  }
+  const num = parseInt(hex, 16);
+  return `${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}`;
+}
+
+function initializeTheme() {
+  const root = document.documentElement;
+  const currentTheme = systemState.theme;
+  
+  // Set accent & background base colors
+  root.style.setProperty('--ubuntu-orange', currentTheme.accent);
+  root.style.setProperty('--ubuntu-dark', currentTheme.darkBase);
+  root.style.setProperty('--ubuntu-medium', currentTheme.secondary);
+  
+  // Set glass parameters
+  root.style.setProperty('--glass-blur', `${currentTheme.blur}px`);
+  root.style.setProperty('--glass-bg', `rgba(${hexToRgb(currentTheme.darkBase)}, ${currentTheme.opacity})`);
+  root.style.setProperty('--glass-border', `rgba(${hexToRgb(currentTheme.accent)}, 0.15)`);
+  root.style.setProperty('--glass-border-width', currentTheme.borderWidth);
+  root.style.setProperty('--glass-border-style', currentTheme.borderStyle);
+  
+  // Set system font variables
+  root.style.setProperty('--system-font-size', currentTheme.fontSize);
+  if (currentTheme.fontFamily === 'mono') {
+    root.style.setProperty('--font-ui', "var(--font-mono)");
+  } else {
+    root.style.setProperty('--font-ui', "'Outfit', -apple-system, sans-serif");
+  }
+  
+  // Apply dock classes
+  const dock = document.getElementById('dock');
+  const wrapper = document.getElementById('desktop-wrapper');
+  if (dock) {
+    dock.classList.add('dock');
+    dock.classList.remove('pos-left', 'pos-right', 'pos-bottom', 'size-small', 'size-large');
+    dock.classList.add(`pos-${currentTheme.dockPosition}`);
+    if (currentTheme.dockIconSize !== 'medium') {
+      dock.classList.add(`size-${currentTheme.dockIconSize}`);
+    }
+  }
+  if (wrapper) {
+    wrapper.classList.remove('dock-left', 'dock-right', 'dock-bottom');
+    wrapper.classList.add(`dock-${currentTheme.dockPosition}`);
+  }
+  updateNetworkUI();
+}
+
+function getThemeContent() {
+  const currentTheme = systemState.theme;
+  
+  const themes = [
+    { id: 'aubergine', name: 'Ubuntu Aubergine', accent: '#E95420', darkBase: '#2C001E', secondary: '#5E2750' },
+    { id: 'cyberpunk', name: 'Cyberpunk Green', accent: '#4AF626', darkBase: '#020f01', secondary: '#0a2f07' },
+    { id: 'tombdark', name: 'Tomb Dark', accent: '#E95420', darkBase: '#11000a', secondary: '#2c001e' },
+    { id: 'cyberblue', name: 'Cyber Blue', accent: '#00e5ff', darkBase: '#050b14', secondary: '#0c1b33' },
+    { id: 'crimson', name: 'Tomb Crimson', accent: '#FF3B30', darkBase: '#1e0000', secondary: '#3c0000' },
+    { id: 'gold', name: 'Royal Gold', accent: '#FFCC00', darkBase: '#1a1100', secondary: '#332200' }
+  ];
+
+  const wallpapers = [
+    { id: 'gradient-aubergine', name: 'Gradient Aubergine' },
+    { id: 'tomb-dark', name: 'Tomb Dark' },
+    { id: 'cyberpunk-green', name: 'Cyberpunk Green' },
+    { id: 'deep-space-blue', name: 'Deep Space Blue' }
+  ];
+
+  const fonts = [
+    { id: 'outfit', name: 'Outfit (Sans-Serif)' },
+    { id: 'mono', name: 'JetBrains Mono' }
+  ];
+
+  const sizes = [
+    { id: '80%', name: '80% (Small)' },
+    { id: '90%', name: '90% (Medium-Small)' },
+    { id: '100%', name: '100% (Default)' },
+    { id: '110%', name: '110% (Medium-Large)' },
+    { id: '120%', name: '120% (Large)' }
+  ];
+
+  const dockPositions = [
+    { id: 'left', name: 'Left Side' },
+    { id: 'right', name: 'Right Side' },
+    { id: 'bottom', name: 'Bottom Panel' }
+  ];
+
+  const dockSizes = [
+    { id: 'small', name: 'Compact' },
+    { id: 'medium', name: 'Default' },
+    { id: 'large', name: 'Comfortable' }
+  ];
+
+  const borderWidths = [
+    { id: '1px', name: 'Thin (1px)' },
+    { id: '2px', name: 'Medium (2px)' },
+    { id: '3px', name: 'Thick (3px)' },
+    { id: '4px', name: 'Heavy (4px)' }
+  ];
+
+  const borderStyles = [
+    { id: 'solid', name: 'Solid' },
+    { id: 'dashed', name: 'Dashed' },
+    { id: 'double', name: 'Double' },
+    { id: 'dotted', name: 'Dotted' }
+  ];
+
+  let swatchesHtml = '';
+  themes.forEach(t => {
+    const isActive = (currentTheme.accent.toLowerCase() === t.accent.toLowerCase() && currentTheme.darkBase.toLowerCase() === t.darkBase.toLowerCase());
+    swatchesHtml += `
+      <div class="theme-swatch ${isActive ? 'active' : ''}" 
+           style="background: linear-gradient(135deg, ${t.accent} 0%, ${t.secondary} 50%, ${t.darkBase} 100%);"
+           onclick="applyUITheme('${t.id}')"
+           title="${t.name}"></div>
+    `;
+  });
+
+  let wallpaperHtml = '';
+  wallpapers.forEach(w => {
+    const isActive = currentTheme.wallpaper === w.id;
+    wallpaperHtml += `
+      <button class="theme-btn ${isActive ? 'active' : ''}" onclick="applyUIWallpaper('${w.id}')">
+        ${w.name}
+      </button>
+    `;
+  });
+
+  let sizeHtml = '';
+  sizes.forEach(s => {
+    const isActive = currentTheme.fontSize === s.id;
+    sizeHtml += `
+      <button class="theme-btn ${isActive ? 'active' : ''}" onclick="applyUIFontSize('${s.id}')">
+        ${s.name}
+      </button>
+    `;
+  });
+
+  let fontFamilyHtml = '';
+  fonts.forEach(f => {
+    const isActive = currentTheme.fontFamily === f.id;
+    fontFamilyHtml += `
+      <button class="theme-btn ${isActive ? 'active' : ''}" onclick="applyUIFontFamily('${f.id}')">
+        ${f.name}
+      </button>
+    `;
+  });
+
+  let dockPosHtml = '';
+  dockPositions.forEach(dp => {
+    const isActive = currentTheme.dockPosition === dp.id;
+    dockPosHtml += `
+      <button class="theme-btn ${isActive ? 'active' : ''}" onclick="applyUIDockPosition('${dp.id}')">
+        ${dp.name}
+      </button>
+    `;
+  });
+
+  let dockSizeHtml = '';
+  dockSizes.forEach(ds => {
+    const isActive = currentTheme.dockIconSize === ds.id;
+    dockSizeHtml += `
+      <button class="theme-btn ${isActive ? 'active' : ''}" onclick="applyUIDockSize('${ds.id}')">
+        ${ds.name}
+      </button>
+    `;
+  });
+
+  let borderWidthHtml = '';
+  borderWidths.forEach(bw => {
+    const isActive = currentTheme.borderWidth === bw.id;
+    borderWidthHtml += `
+      <button class="theme-btn ${isActive ? 'active' : ''}" onclick="applyUIBorderWidth('${bw.id}')">
+        ${bw.name}
+      </button>
+    `;
+  });
+
+  let borderStyleHtml = '';
+  borderStyles.forEach(bs => {
+    const isActive = currentTheme.borderStyle === bs.id;
+    borderStyleHtml += `
+      <button class="theme-btn ${isActive ? 'active' : ''}" onclick="applyUIBorderStyle('${bs.id}')">
+        ${bs.name}
+      </button>
+    `;
+  });
+
+  return `
+    <div class="app-theme-container">
+      <div style="font-size: 11px; color: var(--ubuntu-light-grey); margin-bottom: 8px;">
+        Fully customize the design system of Tomb OS. Adjust colors, wallpaper background, window transparency, dock position, and system-wide borders.
+      </div>
+
+      <div class="theme-sec-title">🎨 Theme Accents & Wallpaper</div>
+      
+      <div class="theme-row">
+        <div class="theme-label">Predefined Theme Palettes:</div>
+        <div class="theme-swatches">
+          ${swatchesHtml}
+        </div>
+      </div>
+
+      <div class="theme-row">
+        <div class="theme-label">Desktop Wallpaper Gradient:</div>
+        <div class="theme-buttons">
+          ${wallpaperHtml}
+        </div>
+      </div>
+
+      <div class="theme-sec-title">✨ Glassmorphism & Transparency</div>
+
+      <div class="theme-row">
+        <div class="theme-label">Glassmorphism Blur:</div>
+        <div class="theme-slider-group">
+          <input type="range" class="theme-slider" min="0" max="40" value="${currentTheme.blur}" oninput="applyUIBlur(this.value)">
+          <div class="theme-slider-val" id="theme-blur-val">${currentTheme.blur}px</div>
+        </div>
+      </div>
+
+      <div class="theme-row">
+        <div class="theme-label">Glassmorphism Opacity:</div>
+        <div class="theme-slider-group">
+          <input type="range" class="theme-slider" min="10" max="95" value="${Math.round(currentTheme.opacity * 100)}" oninput="applyUIOpacity(this.value / 100)">
+          <div class="theme-slider-val" id="theme-opacity-val">${Math.round(currentTheme.opacity * 100)}%</div>
+        </div>
+      </div>
+
+      <div class="theme-sec-title">🖥️ Dock Sizing & Placement</div>
+
+      <div class="theme-row">
+        <div class="theme-label">Dock Position:</div>
+        <div class="theme-buttons">
+          ${dockPosHtml}
+        </div>
+      </div>
+
+      <div class="theme-row">
+        <div class="theme-label">Dock Icon Size:</div>
+        <div class="theme-buttons">
+          ${dockSizeHtml}
+        </div>
+      </div>
+
+      <div class="theme-sec-title">🔲 Window Borders (Qubes-Style VM Borders)</div>
+
+      <div class="theme-row">
+        <div class="theme-label">Border Width:</div>
+        <div class="theme-buttons">
+          ${borderWidthHtml}
+        </div>
+      </div>
+
+      <div class="theme-row">
+        <div class="theme-label">Border Style:</div>
+        <div class="theme-buttons">
+          ${borderStyleHtml}
+        </div>
+      </div>
+
+      <div class="theme-sec-title">🔤 Typography & Font Scale</div>
+
+      <div class="theme-row">
+        <div class="theme-label">Font Family:</div>
+        <div class="theme-buttons">
+          ${fontFamilyHtml}
+        </div>
+      </div>
+
+      <div class="theme-row">
+        <div class="theme-label">System Font Scale:</div>
+        <div class="theme-buttons">
+          ${sizeHtml}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function refreshThemeWindow() {
+  const win = document.getElementById('window-theme');
+  if (win) {
+    const content = win.querySelector('.window-content');
+    if (content) {
+      content.innerHTML = getThemeContent();
+    }
+  }
+}
+
+function applyUITheme(themeId) {
+  const root = document.documentElement;
+  const themes = {
+    aubergine: { accent: '#E95420', darkBase: '#2C001E', secondary: '#5E2750' },
+    cyberpunk: { accent: '#4AF626', darkBase: '#020f01', secondary: '#0a2f07' },
+    tombdark: { accent: '#E95420', darkBase: '#11000a', secondary: '#2c001e' },
+    cyberblue: { accent: '#00e5ff', darkBase: '#050b14', secondary: '#0c1b33' },
+    crimson: { accent: '#FF3B30', darkBase: '#1e0000', secondary: '#3c0000' },
+    gold: { accent: '#FFCC00', darkBase: '#1a1100', secondary: '#332200' }
+  };
+  const t = themes[themeId];
+  if (t) {
+    systemState.theme.accent = t.accent;
+    systemState.theme.darkBase = t.darkBase;
+    systemState.theme.secondary = t.secondary;
+    
+    root.style.setProperty('--ubuntu-orange', t.accent);
+    root.style.setProperty('--ubuntu-dark', t.darkBase);
+    root.style.setProperty('--ubuntu-medium', t.secondary);
+    
+    root.style.setProperty('--glass-bg', `rgba(${hexToRgb(t.darkBase)}, ${systemState.theme.opacity})`);
+    root.style.setProperty('--glass-border', `rgba(${hexToRgb(t.accent)}, 0.15)`);
+    
+    refreshThemeWindow();
+  }
+}
+
+function applyUIWallpaper(wallId) {
+  systemState.theme.wallpaper = wallId;
+  const wrapper = document.getElementById('desktop-wrapper');
+  if (wrapper) {
+    const gradients = {
+      'gradient-aubergine': 'radial-gradient(circle at center, #6b2659 0%, #200115 70%, #0c0008 100%)',
+      'tomb-dark': 'radial-gradient(circle at center, #1b0026 0%, #000 100%)',
+      'cyberpunk-green': 'radial-gradient(circle at center, #0a2f07 0%, #020f01 70%, #000000 100%)',
+      'deep-space-blue': 'radial-gradient(circle at center, #0c1b33 0%, #050b14 70%, #000000 100%)'
+    };
+    wrapper.style.background = gradients[wallId] || gradients['gradient-aubergine'];
+  }
+  refreshThemeWindow();
+}
+
+function applyUIBlur(val) {
+  systemState.theme.blur = parseInt(val);
+  document.documentElement.style.setProperty('--glass-blur', `${val}px`);
+  const valEl = document.getElementById('theme-blur-val');
+  if (valEl) valEl.textContent = `${val}px`;
+}
+
+function applyUIOpacity(val) {
+  systemState.theme.opacity = parseFloat(val);
+  document.documentElement.style.setProperty('--glass-bg', `rgba(${hexToRgb(systemState.theme.darkBase)}, ${val})`);
+  const valEl = document.getElementById('theme-opacity-val');
+  if (valEl) valEl.textContent = `${Math.round(val * 100)}%`;
+}
+
+function applyUIDockPosition(pos) {
+  systemState.theme.dockPosition = pos;
+  const dock = document.getElementById('dock');
+  const wrapper = document.getElementById('desktop-wrapper');
+  if (dock) {
+    dock.classList.remove('pos-left', 'pos-right', 'pos-bottom');
+    dock.classList.add(`pos-${pos}`);
+  }
+  if (wrapper) {
+    wrapper.classList.remove('dock-left', 'dock-right', 'dock-bottom');
+    wrapper.classList.add(`dock-${pos}`);
+  }
+  refreshThemeWindow();
+}
+
+function applyUIDockSize(size) {
+  systemState.theme.dockIconSize = size;
+  const dock = document.getElementById('dock');
+  if (dock) {
+    dock.classList.remove('size-small', 'size-large');
+    if (size === 'small' || size === 'large') {
+      dock.classList.add(`size-${size}`);
+    }
+  }
+  refreshThemeWindow();
+}
+
+function applyUIBorderWidth(width) {
+  systemState.theme.borderWidth = width;
+  document.documentElement.style.setProperty('--glass-border-width', width);
+  refreshThemeWindow();
+}
+
+function applyUIBorderStyle(style) {
+  systemState.theme.borderStyle = style;
+  document.documentElement.style.setProperty('--glass-border-style', style);
+  refreshThemeWindow();
+}
+
+function applyUIFontFamily(familyId) {
+  systemState.theme.fontFamily = familyId;
+  const root = document.documentElement;
+  if (familyId === 'mono') {
+    root.style.setProperty('--font-ui', "var(--font-mono)");
+  } else {
+    root.style.setProperty('--font-ui', "'Outfit', -apple-system, sans-serif");
+  }
+  refreshThemeWindow();
+}
+
+function applyUIFontSize(pct) {
+  systemState.theme.fontSize = pct;
+  document.documentElement.style.setProperty('--system-font-size', pct);
+  refreshThemeWindow();
+}
+
+// ==========================================
+// NETWORK SWITCHER & WIFI RESTRICTION ENGINE
+// ==========================================
+
+const wifiIcon = `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-1.47-1.99-2.35-4.43-2.35-7.1 0-6.63 5.37-12 12-12s12 5.37 12 12c0 2.67-.88 5.11-2.35 7.1l-1.62-1.79C21.26 16.07 22 14.12 22 12c0-4.97-4.03-9-9-9zm0 4c-2.76 0-5 2.24-5 5 0 1.25.46 2.39 1.21 3.29l1.43-1.58C9.23 13.19 9 12.62 9 12c0-1.66 1.34-3 3-3s3 1.34 3 3c0 .62-.23 1.19-.64 1.71l1.43 1.58c.75-.9 1.21-2.04 1.21-3.29 0-2.76-2.24-5-5-5zm0 4c-.55 0-1 .45-1 1 0 .28.11.53.3.71l1.41-1.41c-.18-.19-.43-.3-.71-.3z" fill="currentColor"/></svg>`;
+const ethernetIcon = `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M7 16h10v-2H7v2zm12-9h-5V5c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H2v13h17c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zM9 5h6v2H9V5zm10 13H4V9h15v9z" fill="currentColor"/></svg>`;
+
+function setNetworkInterface(type) {
+  systemState.network = type;
+  updateNetworkUI();
+  
+  logAudit(`Network interface switched to ${type === 'wifi' ? 'Wi-Fi (wlan0)' : 'Ethernet (eth0)'}.`);
+  addHypervisorLog(`NETWORK_SWITCH: Interface is now ${type.toUpperCase()}`);
+  
+  const logsEl = document.getElementById('ultimate-logs');
+  if (logsEl) {
+    const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+    const row = document.createElement('div');
+    row.className = type === 'wifi' ? 'ultimate-log-row alert' : 'ultimate-log-row verified';
+    row.textContent = `[${time}] Network configuration altered: interface is ${type === 'wifi' ? 'Wireless (wlan0)' : 'Wired Ethernet (eth0)'}.`;
+    logsEl.appendChild(row);
+    logsEl.scrollTop = logsEl.scrollHeight;
+  }
+}
+
+function updateNetworkUI() {
+  const iconEl = document.getElementById('top-network-icon');
+  if (iconEl) {
+    iconEl.innerHTML = systemState.network === 'wifi' ? wifiIcon : ethernetIcon;
+  }
+  
+  const wifiBtn = document.getElementById('net-btn-wifi');
+  const ethBtn = document.getElementById('net-btn-ethernet');
+  if (wifiBtn && ethBtn) {
+    if (systemState.network === 'wifi') {
+      wifiBtn.style.background = 'var(--ubuntu-orange)';
+      wifiBtn.style.borderColor = 'var(--ubuntu-orange)';
+      wifiBtn.style.fontWeight = 'bold';
+      
+      ethBtn.style.background = 'rgba(255,255,255,0.08)';
+      ethBtn.style.borderColor = 'rgba(255,255,255,0.15)';
+      ethBtn.style.fontWeight = 'normal';
+    } else {
+      ethBtn.style.background = 'var(--ubuntu-orange)';
+      ethBtn.style.borderColor = 'var(--ubuntu-orange)';
+      ethBtn.style.fontWeight = 'bold';
+      
+      wifiBtn.style.background = 'rgba(255,255,255,0.08)';
+      wifiBtn.style.borderColor = 'rgba(255,255,255,0.15)';
+      wifiBtn.style.fontWeight = 'normal';
+    }
+  }
+}
+
+// ==========================================
+// BIOS / FIRMWARE EMULATION ENGINE
+// ==========================================
+
+function executeRebootToBios() {
+  document.getElementById('desktop-wrapper').classList.add('hidden');
+  const qs = document.getElementById('quick-settings');
+  if (qs) qs.classList.add('hidden');
+  
+  const postScreen = document.getElementById('bios-post-screen');
+  const postLog = document.getElementById('bios-post-log');
+  postScreen.classList.remove('hidden');
+  postLog.textContent = '';
+  
+  const logs = [
+    "Initializing Core Hardware...",
+    "Detecting CPU: Intel(R) Xeon(R) Security Processor @ 3.80GHz... OK",
+    "RAM Check: 16384 MB... OK",
+    "TPM 2.0 cryptographic module... FOUND (State: ENABLED)",
+    "Searching for Boot Devices...",
+    "  Device 0: SATA SSD (Tomb Immutable Core Root) - SECURE BOOT VERIFIED",
+    "  Device 1: USB Flash / SD Card Reader - DETECTED",
+    "System reboot mode: BIOS CONFIGURATION UTILITY REQUESTED",
+    "Entering Setup Utility..."
+  ];
+  
+  let logIdx = 0;
+  function printPostLog() {
+    if (logIdx < logs.length) {
+      postLog.textContent += logs[logIdx] + "\n";
+      logIdx++;
+      setTimeout(printPostLog, 300 + Math.random() * 200);
+    } else {
+      setTimeout(() => {
+        postScreen.classList.add('hidden');
+        document.getElementById('bios-screen').classList.remove('hidden');
+        systemState.bios = {
+          activeTab: 'main',
+          selectedIdx: 0,
+          settings: {
+            secureBoot: systemState.ultimate.sel4,
+            tpmState: systemState.ultimate.tpm ? 'Active' : 'Inactive',
+            sdCardBoot: systemState.ultimate.sdcardMode,
+            adminPass: 'Configured',
+            microcode: 'Enforced'
+          }
+        };
+        renderBiosScreen();
+        setupBiosKeyListeners();
+      }, 800);
+    }
+  }
+  printPostLog();
+}
+
+function renderBiosScreen() {
+  const container = document.getElementById('bios-settings-list');
+  if (!container) return;
+  
+  const tab = systemState.bios.activeTab;
+  let html = '';
+  
+  if (tab === 'main') {
+    html = `
+      <div style="color: #ffff55; font-weight: bold; margin-bottom: 10px;">System Overview</div>
+      <div class="bios-row" onclick="selectBiosItem(0)">
+        <span>BIOS Version</span>
+        <span class="bios-row-value">TOMB-UEFI-v1.0.4</span>
+      </div>
+      <div class="bios-row" onclick="selectBiosItem(1)">
+        <span>Processor Type</span>
+        <span class="bios-row-value">Intel(R) Xeon(R) Security CPU @ 3.80GHz</span>
+      </div>
+      <div class="bios-row" onclick="selectBiosItem(2)">
+        <span>System Memory</span>
+        <span class="bios-row-value">16384 MB (DDR5)</span>
+      </div>
+      <div class="bios-row" onclick="selectBiosItem(3)">
+        <span>TPM Module Version</span>
+        <span class="bios-row-value">v2.0 (Verified Secure)</span>
+      </div>
+      <div class="bios-row" onclick="selectBiosItem(4)">
+        <span>System Time</span>
+        <span class="bios-row-value">${new Date().toLocaleTimeString()}</span>
+      </div>
+    `;
+  } else if (tab === 'security') {
+    const s = systemState.bios.settings;
+    html = `
+      <div style="color: #ffff55; font-weight: bold; margin-bottom: 10px;">Security Configuration</div>
+      <div class="bios-row" onclick="toggleBiosSetting('secureBoot')">
+        <span>UEFI Secure Boot Control</span>
+        <span class="bios-row-value">[${s.secureBoot ? 'Enabled' : 'Disabled'}]</span>
+      </div>
+      <div class="bios-row" onclick="toggleBiosSetting('tpmState')">
+        <span>TPM 2.0 Security State</span>
+        <span class="bios-row-value">[${s.tpmState}]</span>
+      </div>
+      <div class="bios-row" onclick="toggleBiosSetting('microcode')">
+        <span>Microcode Enforcement</span>
+        <span class="bios-row-value">[${s.microcode}]</span>
+      </div>
+      <div class="bios-row" onclick="toggleBiosSetting('adminPass')">
+        <span>Supervisor Access Key</span>
+        <span class="bios-row-value">[${s.adminPass}]</span>
+      </div>
+    `;
+  } else if (tab === 'boot') {
+    const s = systemState.bios.settings;
+    html = `
+      <div style="color: #ffff55; font-weight: bold; margin-bottom: 10px;">Boot Priority & Device Settings</div>
+      <div class="bios-row" onclick="toggleBiosSetting('sdCardBoot')">
+        <span>Primary Boot Target</span>
+        <span class="bios-row-value">[${s.sdCardBoot ? 'Live SD Card' : 'Hardened SATA SSD'}]</span>
+      </div>
+      <div class="bios-row">
+        <span>Boot Option #2</span>
+        <span class="bios-row-value">[Hardened SATA SSD]</span>
+      </div>
+      <div class="bios-row">
+        <span>Boot Option #3</span>
+        <span class="bios-row-value">[Network PXE Secure Boot]</span>
+      </div>
+      <div class="bios-row">
+        <span>USB Boot Interface</span>
+        <span class="bios-row-value">[Enabled]</span>
+      </div>
+    `;
+  } else if (tab === 'exit') {
+    html = `
+      <div style="color: #ffff55; font-weight: bold; margin-bottom: 10px;">Exit Options</div>
+      <div class="bios-row" onclick="exitBiosSetup(true)" style="font-weight: bold; color: #ff5555;">
+        <span>Save Changes & Reset System</span>
+        <span class="bios-row-value">&lt;Enter&gt;</span>
+      </div>
+      <div class="bios-row" onclick="exitBiosSetup(false)">
+        <span>Discard Changes & Exit</span>
+        <span class="bios-row-value">&lt;Enter&gt;</span>
+      </div>
+      <div class="bios-row" onclick="toggleBiosSetting('defaults')">
+        <span>Load Optimal Defaults</span>
+        <span class="bios-row-value">&lt;Enter&gt;</span>
+      </div>
+    `;
+  }
+  
+  container.innerHTML = html;
+  updateBiosHelpText();
+}
+
+function switchBiosTab(tabId) {
+  systemState.bios.activeTab = tabId;
+  const tabs = document.querySelectorAll('.bios-menu-tab');
+  tabs.forEach(tab => {
+    if (tab.textContent.toLowerCase().includes(tabId)) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+  renderBiosScreen();
+  setupBiosKeyListeners();
+}
+
+function updateBiosHelpText() {
+  const tab = systemState.bios.activeTab;
+  const helpEl = document.getElementById('bios-help-text');
+  if (!helpEl) return;
+  
+  let help = '';
+  if (tab === 'main') {
+    help = "Main System Information. Shows BIOS release version, CPU models, detected DDR5 RAM capacities, and active hardware-clock timestamps.";
+  } else if (tab === 'security') {
+    help = "Configure cryptographic firmware guards. Secure Boot enforces kernel-signature verification. TPM state permits hardware-anchored key vaulting.";
+  } else if (tab === 'boot') {
+    help = "Select the default boot media target. Change this to 'Live SD Card' to launch the OS in portable sandbox RAM-disk mode.";
+  } else if (tab === 'exit') {
+    help = "Exit the BIOS Configuration utility. Saving changes will commit custom security policies to persistent system firmware and trigger a warm reboot.";
+  }
+  helpEl.innerHTML = help;
+}
+
+function selectBiosItem(idx) {
+  systemState.bios.selectedIdx = idx;
+  const rows = document.querySelectorAll('#bios-settings-list .bios-row');
+  rows.forEach((row, rIdx) => {
+    if (rIdx === idx) {
+      row.style.background = '#ffff55';
+      row.style.color = '#0000aa';
+      const valEl = row.querySelector('.bios-row-value');
+      if (valEl) valEl.style.color = '#0000aa';
+    } else {
+      row.style.background = 'transparent';
+      row.style.color = '#ffff55';
+      const valEl = row.querySelector('.bios-row-value');
+      if (valEl) valEl.style.color = '#ffffff';
+    }
+  });
+}
+
+function toggleBiosSetting(settingKey) {
+  const s = systemState.bios.settings;
+  if (settingKey === 'secureBoot') {
+    s.secureBoot = !s.secureBoot;
+  } else if (settingKey === 'tpmState') {
+    s.tpmState = s.tpmState === 'Active' ? 'Inactive' : 'Active';
+  } else if (settingKey === 'microcode') {
+    s.microcode = s.microcode === 'Enforced' ? 'Standard' : 'Enforced';
+  } else if (settingKey === 'adminPass') {
+    s.adminPass = s.adminPass === 'Configured' ? 'Not Set' : 'Configured';
+  } else if (settingKey === 'sdCardBoot') {
+    s.sdCardBoot = !s.sdCardBoot;
+  } else if (settingKey === 'defaults') {
+    s.secureBoot = true;
+    s.tpmState = 'Active';
+    s.microcode = 'Enforced';
+    s.adminPass = 'Configured';
+    s.sdCardBoot = false;
+  }
+  renderBiosScreen();
+}
+
+function exitBiosSetup(save) {
+  const biosScreen = document.getElementById('bios-screen');
+  const postScreen = document.getElementById('bios-post-screen');
+  const postLog = document.getElementById('bios-post-log');
+  
+  if (save) {
+    const s = systemState.bios.settings;
+    systemState.ultimate.sel4 = s.secureBoot;
+    systemState.ultimate.tpm = (s.tpmState === 'Active');
+    
+    // update ultimate UI status badge if open
+    const sel4Badge = document.getElementById('ultimate-status-sel4');
+    if (sel4Badge) {
+      sel4Badge.textContent = s.secureBoot ? 'FORMALLY VERIFIED' : 'STANDARD KERNEL';
+      sel4Badge.className = `ultimate-card-status ${s.secureBoot ? 'enforced' : 'inactive'}`;
+    }
+    const tpmBadge = document.getElementById('ultimate-status-tpm');
+    if (tpmBadge) {
+      tpmBadge.textContent = (s.tpmState === 'Active') ? 'ATTESTATION ACTIVE' : 'UNSECURED MEMORY';
+      tpmBadge.className = `ultimate-card-status ${(s.tpmState === 'Active') ? 'enforced' : 'inactive'}`;
+    }
+    
+    if (s.sdCardBoot !== systemState.ultimate.sdcardMode) {
+      systemState.ultimate.sdcardMode = s.sdCardBoot;
+      const sdBadge = document.getElementById('ultimate-status-sdcardMode');
+      if (sdBadge) {
+        sdBadge.textContent = s.sdCardBoot ? 'LIVE SD BOOT' : 'HARD DRIVE BOOT';
+        sdBadge.className = `ultimate-card-status ${s.sdCardBoot ? 'enforced' : 'inactive'}`;
+      }
+      const sdCheckbox = document.querySelector('input[onchange*="sdcardMode"]');
+      if (sdCheckbox) sdCheckbox.checked = s.sdCardBoot;
+      
+      const indicator = document.getElementById('sdcard-indicator');
+      if (indicator) {
+        if (s.sdCardBoot) indicator.classList.remove('hidden');
+        else indicator.classList.add('hidden');
+      }
+    }
+  }
+  
+  biosScreen.classList.add('hidden');
+  postScreen.classList.remove('hidden');
+  postLog.innerHTML = `<span style="color: #ffcc00;">Restarting system...\nApplying firmware settings...\nPerforming cold reset...\n</span>`;
+  
+  if (biosKeyHandler) {
+    document.removeEventListener('keydown', biosKeyHandler);
+    biosKeyHandler = null;
+  }
+  
+  setTimeout(() => {
+    postScreen.classList.add('hidden');
+    const bootScreen = document.getElementById('boot-screen');
+    const bootProgressFill = document.querySelector('.boot-progress-fill');
+    const bootStatus = document.querySelector('.boot-status');
+    const desktopWrapper = document.getElementById('desktop-wrapper');
+    
+    if (bootScreen && bootProgressFill && bootStatus) {
+      bootProgressFill.style.width = '0%';
+      bootStatus.textContent = 'Rebooting into Tomb OS kernel...';
+      bootScreen.classList.remove('fade-out', 'hidden');
+      
+      let progress = 0;
+      function runWarmBoot() {
+        if (progress < 100) {
+          progress += 20;
+          bootProgressFill.style.width = `${progress}%`;
+          bootStatus.textContent = `Warming modules... [${progress}%]`;
+          setTimeout(runWarmBoot, 200);
+        } else {
+          bootScreen.classList.add('fade-out');
+          desktopWrapper.classList.remove('hidden');
+          setTimeout(() => {
+            bootScreen.classList.add('hidden');
+            logAudit("System booted successfully from BIOS warm reset.");
+          }, 800);
+        }
+      }
+      runWarmBoot();
+    } else {
+      location.reload();
+    }
+  }, 1500);
+}
+
+let biosKeyHandler = null;
+function setupBiosKeyListeners() {
+  if (biosKeyHandler) {
+    document.removeEventListener('keydown', biosKeyHandler);
+  }
+  
+  systemState.bios.selectedIdx = 0;
+  
+  biosKeyHandler = function(e) {
+    const biosScreen = document.getElementById('bios-screen');
+    if (!biosScreen || biosScreen.classList.contains('hidden')) return;
+    
+    const rows = document.querySelectorAll('#bios-settings-list .bios-row');
+    if (rows.length === 0) return;
+    
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      systemState.bios.selectedIdx = (systemState.bios.selectedIdx + 1) % rows.length;
+      selectBiosItem(systemState.bios.selectedIdx);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      systemState.bios.selectedIdx = (systemState.bios.selectedIdx - 1 + rows.length) % rows.length;
+      selectBiosItem(systemState.bios.selectedIdx);
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const tabs = ['main', 'security', 'boot', 'exit'];
+      let currTabIdx = tabs.indexOf(systemState.bios.activeTab);
+      currTabIdx = (currTabIdx - 1 + tabs.length) % tabs.length;
+      switchBiosTab(tabs[currTabIdx]);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      const tabs = ['main', 'security', 'boot', 'exit'];
+      let currTabIdx = tabs.indexOf(systemState.bios.activeTab);
+      currTabIdx = (currTabIdx + 1) % tabs.length;
+      switchBiosTab(tabs[currTabIdx]);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const activeRow = rows[systemState.bios.selectedIdx];
+      if (activeRow) {
+        activeRow.click();
+      }
+    } else if (e.key === 'F10') {
+      e.preventDefault();
+      exitBiosSetup(true);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      exitBiosSetup(false);
+    }
+  };
+  
+  document.addEventListener('keydown', biosKeyHandler);
+  
+  setTimeout(() => {
+    selectBiosItem(0);
+  }, 50);
+}
