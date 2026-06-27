@@ -46,6 +46,7 @@ const systemState = {
     ACADEMY_APP: '/usr/bin/tomb-academy',
     IDS_APP: '/usr/bin/tomb-ids',
     CONTROLCENTER_APP: '/usr/bin/tomb-controlcenter',
+    CHAT_APP: '/usr/bin/tomb-chat',
     PQC_KEY_BROKER: 'https://keybroker.tomb-os.sec/v1',
     COMPLIANCE_MODE: 'STRICT_GDPR_CCPA_DPDP'
   },
@@ -456,6 +457,13 @@ const windowConfig = {
     height: 500,
     icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="#E95420"/></svg>`,
     getContent: () => getImporterContent()
+  },
+  chat: {
+    title: "Tomb Secure Messenger (E2EE PQC Quantum Enclave)",
+    width: 760,
+    height: 520,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z" fill="#E95420"/></svg>`,
+    getContent: () => getChatContent()
   },
   terminal: {
     title: "sec-admin@tomb-os: ~",
@@ -1102,6 +1110,13 @@ function handleTerminalCommand(e, input) {
         case 'controlcenter':
           openWindow('controlcenter');
           output = `[CLI LAUNCH] Executing ${systemState.env.CONTROLCENTER_APP} ... Opening Control Center App Launcher!`;
+          break;
+        case 'tomb-chat':
+        case 'chat':
+        case 'messenger':
+          openWindow('chat');
+          output = `[CLI LAUNCH] Executing ${systemState.env.CHAT_APP} ... Opening Tomb Secure Messenger (E2EE PQC Quantum Enclave)!`;
+          logAudit(`Productivity app launched from terminal: tomb-chat`);
           break;
         case 'build-iso':
         case 'update-iso':
@@ -4055,9 +4070,155 @@ function runImporterMigration(sourceName) {
 }
 
 // ==========================================
+// TOMB SECURE MESSENGER (WHATSAPP META / SIGNAL PROTOCOL)
+// ==========================================
+let currentChatContact = 'sec-admin';
+let isChatEphemeralActive = false;
+
+function getChatContent() {
+  return `
+    <div class="app-chat-container" style="display: flex; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #111b21;">
+      <!-- Sidebar Contact List -->
+      <div style="width: 260px; background: #111b21; border-right: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column;">
+        <div style="padding: 14px; background: #202c33; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05);">
+          <div style="font-weight: 700; font-size: 14px; color: #25D366; display: flex; align-items: center; gap: 6px;">
+            <span>💬 Tomb Messenger</span>
+            <span style="font-size: 9px; background: rgba(37,211,102,0.15); padding: 2px 6px; border-radius: 10px; color: #25D366;">E2EE PQC</span>
+          </div>
+        </div>
+        <div style="padding: 10px; background: #111b21;">
+          <input type="text" placeholder="Search contacts or chats..." style="width: 100%; padding: 7px 12px; border-radius: 8px; border: none; background: #202c33; color: #fff; font-size: 11px; outline: none; box-sizing: border-box;" />
+        </div>
+        <div style="flex: 1; overflow-y: auto;">
+          <div onclick="switchChatContact('sec-admin', '🔐 Sec-Admin Enclave')" class="chat-contact-item active" style="padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03); background: rgba(255,255,255,0.06);">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: #25D366; color: #111; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">SA</div>
+            <div style="flex: 1; overflow: hidden;">
+              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span>🔐 Sec-Admin Enclave</span><span style="font-size: 10px; color: #8696a0;">16:52</span></div>
+              <div style="font-size: 11px; color: #8696a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Kyber-1024 lattice key verified ✓✓</div>
+            </div>
+          </div>
+          <div onclick="switchChatContact('soc-analyst', '🛡️ SOC Threat Intel Analyst')" class="chat-contact-item" style="padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03);">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: #007AFF; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">ST</div>
+            <div style="flex: 1; overflow: hidden;">
+              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span>🛡️ SOC Threat Intel</span><span style="font-size: 10px; color: #8696a0;">14:30</span></div>
+              <div style="font-size: 11px; color: #8696a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Suricata packet stream clear.</div>
+            </div>
+          </div>
+          <div onclick="switchChatContact('key-broker', '🔑 PQC Key Broker Intermediary')" class="chat-contact-item" style="padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03);">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: #E95420; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">KB</div>
+            <div style="flex: 1; overflow: hidden;">
+              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span>🔑 Key Broker Channel</span><span style="font-size: 10px; color: #8696a0;">11:15</span></div>
+              <div style="font-size: 11px; color: #8696a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Handshake channel active KB-994102</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Active Conversation View -->
+      <div style="flex: 1; display: flex; flex-direction: column; background: #0b141a; position: relative;">
+        <!-- Chat Top Bar -->
+        <div style="padding: 10px 16px; background: #202c33; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05);">
+          <div>
+            <div id="chat-active-name" style="font-weight: 700; font-size: 13px; color: #fff;">🔐 Sec-Admin Enclave</div>
+            <div style="font-size: 10px; color: #25D366;">online • End-to-End Encrypted (Signal Protocol / Meta Open Spec + Kyber PQC)</div>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <button onclick="toggleChatEphemeral()" id="chat-ephemeral-btn" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 10px; cursor: pointer;">💣 Ephemeral Off</button>
+            <button onclick="alert('Initiating Quantum-Encrypted Voice Call...')" style="background: transparent; border: none; color: #aebac1; cursor: pointer; font-size: 14px;">📞</button>
+            <button onclick="alert('Initiating HD Video Conference Enclave...')" style="background: transparent; border: none; color: #aebac1; cursor: pointer; font-size: 14px;">📹</button>
+          </div>
+        </div>
+
+        <!-- Security Protocol Banner -->
+        <div style="background: #182229; padding: 6px 12px; text-align: center; font-size: 10.5px; color: #ffe87c; border-bottom: 1px solid rgba(255,255,255,0.03);">
+          🔒 Messages and calls are end-to-end encrypted using Open-Source Meta / Signal Double Ratchet protocol and Kyber-1024 post-quantum lattices. No one outside of this chat, not even Tomb OS, can read or listen to them.
+        </div>
+
+        <!-- Message Thread Scroll Container -->
+        <div id="chat-thread" style="flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;">
+          <div style="align-self: flex-start; background: #202c33; padding: 8px 12px; border-radius: 8px; max-width: 70%; font-size: 12px; line-height: 1.4;">
+            <div>Sec-Admin session initialized. Hardware TPM 2.0 enclave keys locked.</div>
+            <div style="font-size: 9px; color: #8696a0; text-align: right; margin-top: 4px;">16:50</div>
+          </div>
+          <div style="align-self: flex-end; background: #005c4b; padding: 8px 12px; border-radius: 8px; max-width: 70%; font-size: 12px; line-height: 1.4;">
+            <div>All message payloads verified under Signal Protocol Double Ratchet specification.</div>
+            <div style="font-size: 9px; color: #e9edef; text-align: right; margin-top: 4px; display: flex; justify-content: flex-end; align-items: center; gap: 4px;"><span>16:52</span><span style="color: #53bdeb;">✓✓</span></div>
+          </div>
+        </div>
+
+        <!-- Chat Input Area -->
+        <div style="padding: 10px 16px; background: #202c33; display: flex; align-items: center; gap: 10px;">
+          <button onclick="alert('Attaching Sealed Encrypted File...')" style="background: transparent; border: none; color: #8696a0; font-size: 16px; cursor: pointer;">📎</button>
+          <input type="text" id="chat-msg-input" onkeydown="if(event.key==='Enter')sendChatMessage()" placeholder="Type a secure message..." style="flex: 1; padding: 9px 14px; border-radius: 8px; border: none; background: #2a3942; color: #fff; font-size: 12px; outline: none;" />
+          <button onclick="sendChatMessage()" style="background: #00a884; border: none; color: #fff; padding: 8px 14px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 12px;">Send ➔</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function switchChatContact(id, name) {
+  currentChatContact = id;
+  const nameEl = document.getElementById('chat-active-name');
+  if (nameEl) nameEl.textContent = name;
+}
+
+function toggleChatEphemeral() {
+  isChatEphemeralActive = !isChatEphemeralActive;
+  const btn = document.getElementById('chat-ephemeral-btn');
+  if (btn) {
+    if (isChatEphemeralActive) {
+      btn.textContent = '💣 Ephemeral On (30s)';
+      btn.style.background = 'rgba(233,84,32,0.3)';
+      btn.style.borderColor = '#E95420';
+    } else {
+      btn.textContent = '💣 Ephemeral Off';
+      btn.style.background = 'rgba(255,255,255,0.08)';
+      btn.style.borderColor = 'rgba(255,255,255,0.15)';
+    }
+  }
+}
+
+function sendChatMessage() {
+  const input = document.getElementById('chat-msg-input');
+  const thread = document.getElementById('chat-thread');
+  if (!input || !thread || !input.value.trim()) return;
+
+  const text = input.value.trim();
+  input.value = '';
+
+  const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+  const msgEl = document.createElement('div');
+  msgEl.style.cssText = 'align-self: flex-end; background: #005c4b; padding: 8px 12px; border-radius: 8px; max-width: 70%; font-size: 12px; line-height: 1.4; animation: fadeIn 0.2s ease;';
+  msgEl.innerHTML = `
+    <div>${text}</div>
+    <div style="font-size: 9px; color: #e9edef; text-align: right; margin-top: 4px; display: flex; justify-content: flex-end; align-items: center; gap: 4px;">
+      <span>${timeStr}</span><span style="color: #53bdeb;">✓✓</span>
+    </div>
+  `;
+  thread.appendChild(msgEl);
+  thread.scrollTop = thread.scrollHeight;
+
+  logAudit(`Tomb Messenger: Sent E2EE payload via Signal/Meta open protocol to ${currentChatContact}`);
+
+  // Auto response simulation
+  setTimeout(() => {
+    const replyEl = document.createElement('div');
+    replyEl.style.cssText = 'align-self: flex-start; background: #202c33; padding: 8px 12px; border-radius: 8px; max-width: 70%; font-size: 12px; line-height: 1.4; animation: fadeIn 0.2s ease;';
+    replyEl.innerHTML = `
+      <div>[PQC ENCLAVE ACK] Received payload sealed with Kyber-1024 lattice key. Verified 100% authentic.</div>
+      <div style="font-size: 9px; color: #8696a0; text-align: right; margin-top: 4px;">${timeStr}</div>
+    `;
+    thread.appendChild(replyEl);
+    thread.scrollTop = thread.scrollHeight;
+  }, 1000);
+}
+
+// ==========================================
 // TOMB CONTROL CENTER & APPLICATION LAUNCHER
 // ==========================================
 const allAppLauncherList = [
+  { id: 'chat', name: 'Tomb Secure Messenger', category: 'Productivity', icon: '💬', desc: 'E2EE Post-Quantum Instant Messaging & Ephemeral Chat', zone: 'personal' },
   { id: 'terminal', name: 'Hardened Terminal', category: 'System', icon: '💻', desc: 'CLI system diagnostics & admin tools', zone: 'work' },
   { id: 'browser', name: 'Chromium Web Browser', category: 'Internet', icon: '🌐', desc: 'Live web browsing & sandboxed downloads', zone: 'untrusted' },
   { id: 'notes', name: 'Tomb Secure Notes', category: 'Productivity', icon: '📝', desc: 'Encrypted notepad & cheat sheet manager', zone: 'personal' },
