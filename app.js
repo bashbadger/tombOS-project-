@@ -47,6 +47,14 @@ const systemState = {
     IDS_APP: '/usr/bin/tomb-ids',
     CONTROLCENTER_APP: '/usr/bin/tomb-controlcenter',
     CHAT_APP: '/usr/bin/tomb-chat',
+    DISCORD_BOT_TOKEN: 'MTE5ODIxMzA4OTAxMTI4OTAxMA.Gk9A4x.mock_discord_bot_token_encrypted',
+    DISCORD_WEBHOOK_URL: 'https://discord.com/api/webhooks/119821/tomb_os_security_log',
+    REDDIT_CLIENT_ID: 'rd_oauth_tombos_884129',
+    REDDIT_CLIENT_SECRET: 'rd_secret_encrypted_pqc_vault',
+    TELEGRAM_BOT_TOKEN: '689124019:AAFx981023_telegram_bot_token',
+    TWITTER_BEARER_TOKEN: 'AAAAAAAAAAAAAAAAAAAAA_tomb_os_twitter_v2_bearer',
+    SLACK_WEBHOOK_URL: 'https://hooks.slack.com/services/T00/B00/X00_tomb_slack',
+    MATRIX_HOMESERVER_URL: 'https://matrix.org/_matrix/client/r0',
     PQC_KEY_BROKER: 'https://keybroker.tomb-os.sec/v1',
     COMPLIANCE_MODE: 'STRICT_GDPR_CCPA_DPDP'
   },
@@ -3981,8 +3989,9 @@ function getImporterContent() {
       <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
         <button class="importer-tab active" onclick="switchImporterTab(this, 'apple')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid var(--ubuntu-orange); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">🍏 Apple Ecosystem (iCloud/iOS)</button>
         <button class="importer-tab" onclick="switchImporterTab(this, 'google')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">🌐 Google Workspace & Chrome</button>
-        <button class="importer-tab" onclick="switchImporterTab(this, 'windows')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">🪟 Microsoft Windows 10/11</button>
-        <button class="importer-tab" onclick="switchImporterTab(this, 'mac')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">💻 macOS & Linux SSH Keys</button>
+        <button class="importer-tab" onclick="switchImporterTab(this, 'windows')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">🪟 Windows 10/11</button>
+        <button class="importer-tab" onclick="switchImporterTab(this, 'mac')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">💻 macOS & Linux SSH</button>
+        <button class="importer-tab" onclick="switchImporterTab(this, 'social')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">💬 Social APIs (Discord/Reddit)</button>
       </div>
 
       <div id="importer-panel-apple" class="importer-panel" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px;">
@@ -4028,6 +4037,20 @@ function getImporterContent() {
           <label><input type="checkbox" checked id="imp-m-shell" /> Shell Profiles & Aliases (.zshrc, .bash_history)</label>
         </div>
         <button onclick="runImporterMigration('macOS / Linux')" style="background: #4AF626; border: none; color: #111; padding: 8px 16px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer;">Execute macOS / Linux Import →</button>
+      </div>
+
+      <div id="importer-panel-social" class="importer-panel hidden" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px;">
+        <h4 style="margin: 0 0 10px 0; color: #5865F2; font-size: 14px;">💬 Link Social Platforms & API Key Webhook Bridges</h4>
+        <p style="font-size: 12px; color: #ccc; line-height: 1.5; margin-bottom: 12px;">Connect active API tokens for Discord, Reddit, Telegram, Twitter/X, Slack, and Matrix to relay encrypted alerts and chat streams into Tomb Secure Messenger.</p>
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #ddd; margin-bottom: 16px;">
+          <label><input type="checkbox" checked id="imp-s-discord" /> 👾 Discord Bot API & Webhook Stream (${systemState.env.DISCORD_WEBHOOK_URL ? 'Linked' : 'Configured'})</label>
+          <label><input type="checkbox" checked id="imp-s-reddit" /> 🤖 Reddit OAuth Client API (${systemState.env.REDDIT_CLIENT_ID})</label>
+          <label><input type="checkbox" checked id="imp-s-telegram" /> ✈️ Telegram Bot API Bridge (${systemState.env.TELEGRAM_BOT_TOKEN ? 'Active' : 'Configured'})</label>
+          <label><input type="checkbox" checked id="imp-s-twitter" /> 🐦 Twitter / X v2 Bearer API Integration</label>
+          <label><input type="checkbox" checked id="imp-s-slack" /> 💬 Slack Webhook Security Incident Relays</label>
+          <label><input type="checkbox" checked id="imp-s-matrix" /> 🟢 Matrix Synapse E2EE Federation Bridge</label>
+        </div>
+        <button onclick="runImporterMigration('Social Platforms (Discord, Reddit, Telegram, Twitter)')" style="background: #5865F2; border: none; color: #fff; padding: 8px 16px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer;">Verify & Connect Social API Bridges →</button>
       </div>
 
       <div id="importer-status-output" style="margin-top: 14px; display: none; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 14px; font-family: var(--font-mono); font-size: 11.5px; color: #4AF626; line-height: 1.6;"></div>
