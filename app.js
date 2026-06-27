@@ -246,6 +246,16 @@ function initDockDragAndDrop() {
       dockInner.appendChild(draggingItem);
     }
   });
+
+  // Onclick dock background or middle click -> set dock = horizontal bottom centered
+  const dockEl = document.getElementById('dock');
+  if (dockEl) {
+    dockEl.addEventListener('click', (e) => {
+      if (e.target === dockEl || e.target === dockInner) {
+        applyUIDockPosition('bottom');
+      }
+    });
+  }
 }
 
 // Update System Clock
