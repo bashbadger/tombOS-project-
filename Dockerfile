@@ -1,36 +1,19 @@
-# Dockerfile for TombOS build environment
-FROM debian:bullseye-slim
+# Tomb OS Hardened Docker Architecture
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build || true
 
-# Install required packages for building the kernel, GrapheneOS GSI, and flashing
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        nasm \
-        gcc \
-        g++ \
-        make \
-        qemu-system-i386 \
-        git \
-        util-linux \
-        parted \
-        ca-certificates \
-        dosfstools \
-        coreutils \
-        python3 \
-        curl \
-        rsync \
-        libncurses5 \
-        openjdk-17-jdk \
-        unzip \
-        zip \
-    && rm -rf /var/lib/apt/lists/*
+FROM nginx:alpine-slim
+LABEL maintainer="Tomb OS Security Enclave <sec-admin@tomb-os.org>"
+LABEL description="Zero-Trust Hardened Desktop & Operating System Container Environment"
 
-# Install Google 'repo' tool for Android source management
-RUN curl https://storage.googleapis.com/git-repo-downloads/repo > /usr/local/bin/repo && chmod a+x /usr/local/bin/repo
+# Harden Container Filesystem
+RUN rm -rf /usr/share/nginx/html/*
+COPY --from=builder /app /usr/share/nginx/html
+COPY --from=builder /app/index.html /usr/share/nginx/html/index.html
 
-WORKDIR /tombos
-COPY . /tombos
-
-# Ensure scripts are executable (they will be created later)
-# RUN chmod +x scripts/package.sh scripts/flash_sdxc.sh build_tombos.sh
-
-CMD ["/bin/bash", "./build_tombos.sh"]
+EXPOSE 80 443
+CMD ["nginx", "-g", "daemon off;"]

@@ -1447,6 +1447,15 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
         inet6 ::1  prefixlen 128  scopeid 0x10<host>
         loop  txqueuelen 1000  (Local Loopback)`;
           break;
+        case 'docker':
+        case 'docker-compose':
+          output = `CONTAINER ID   IMAGE                  COMMAND                  CREATED         STATUS         PORTS                  NAMES
+a9f182bc41e0   tombos_hardened:latest "nginx -g 'daemon of…"   12 minutes ago   Up 12 minutes  0.0.0.0:8080->80/tcp   tombos_hardened_desktop
+c41b802de9a1   alpine:latest          "sh -c 'echo [IDS CO…"   12 minutes ago   Up 12 minutes                         tombos_ids_suricata
+
+[DOCKER SECURITY CONTAINER STATE]: ACTIVE (Read-Only RootFS, Drop-All Capabilities)`;
+          logAudit(`Docker container daemon status inspected via CLI.`);
+          break;
         case 'reboot':
           if (args[1] === '--bios') {
             executeRebootToBios();
