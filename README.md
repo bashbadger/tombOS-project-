@@ -9,18 +9,19 @@ Welcome to **Tomb OS**, the world's most secure, post-quantum resilient, and arc
 ---
 
 ## 📋 Table of Contents
-1. [🌟 Core Security Architecture](#-core-security-architecture)
-2. [🚀 Quick Start & Installation Options](#-quick-start--installation-options)
+1. [🗺️ Project Engineering Roadmap](ROADMAP.md)
+2. [🌟 Core Security Architecture](#-core-security-architecture)
+3. [🚀 Quick Start & Installation Options](#-quick-start--installation-options)
    - [Option A: Native macOS Application (Electron)](#option-a-native-macos-application-electron)
    - [Option B: Hardened Docker Container Infrastructure](#option-b-hardened-docker-container-infrastructure)
    - [Option C: Bare-Metal x86_64 ISO Installation](#option-c-bare-metal-x86_64-iso-installation)
    - [Option D: Live SD XC & External NVMe Disk Flashing](#option-d-live-sd-xc--external-nvme-disk-flashing)
    - [Option E: Universal Smartphone Mobile Deployment (GrapheneOS GSI)](#option-e-universal-smartphone-mobile-deployment-grapheneos-gsi)
-3. [🔑 Mandatory Administrative Setup & Hardware 2FA](#-mandatory-administrative-setup--hardware-2fa)
-4. [💾 Importing Files from External Drives (USB / SD / NVMe)](#-importing-files-from-external-drives-usb--sd--nvme)
-5. [🤖 OpenAI GPT-4o Intelligence Configuration](#-openai-gpt-4o-intelligence-configuration)
-6. [💻 Hardened Terminal Command Reference](#-hardened-terminal-command-reference)
-7. [📂 Repository Structure](#-repository-structure)
+4. [🔑 Mandatory Administrative Setup & Hardware 2FA](#-mandatory-administrative-setup--hardware-2fa)
+5. [💾 Importing Files from External Drives (USB / SD / NVMe)](#-importing-files-from-external-drives-usb--sd--nvme)
+6. [🤖 OpenAI GPT-4o Intelligence Configuration](#-openai-gpt-4o-intelligence-configuration)
+7. [💻 Hardened Terminal Command Reference](#-hardened-terminal-command-reference)
+8. [📂 Repository Structure](#-repository-structure)
 
 ---
 
