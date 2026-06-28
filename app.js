@@ -537,6 +537,13 @@ const windowConfig = {
     icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="#E95420"/></svg>`,
     getContent: () => getImporterContent()
   },
+  accessory: {
+    title: "External Hardware Security Accessory Manager (YubiKey / Titan / HSM)",
+    width: 740,
+    height: 520,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M7 2v11h3v9l7-12h-4l4-8z" fill="#007AFF"/></svg>`,
+    getContent: () => getAccessoryContent()
+  },
   chat: {
     title: "Tomb Secure Messenger (E2EE PQC Quantum Enclave)",
     width: 760,
@@ -4544,6 +4551,7 @@ const allAppLauncherList = [
   { id: 'cis', name: 'CIS Security Auditor', category: 'Compliance', icon: '📋', desc: 'Linux kernel & system hardening benchmarks', zone: 'secure' },
   { id: 'soc2', name: 'SOC 2 Compliance Auditor', category: 'Compliance', icon: '⚖️', desc: 'Trust services criteria compliance tracking', zone: 'secure' },
   { id: 'globalcom', name: 'Global Compliance Hub', category: 'Compliance', icon: '🌍', desc: 'GDPR, CCPA, DPDP & PIPL privacy frameworks', zone: 'secure' },
+  { id: 'accessory', name: 'External Security Accessory Manager', category: 'Security', icon: '🔌', desc: 'Pair & configure YubiKey NFC, Titan Keys, HSMs & Biometric Readers', zone: 'secure' },
   { id: 'vault', name: 'Cryptographic Key Vault', category: 'Security', icon: '🔑', desc: 'AES-256 and Kyber PQC payload encryption', zone: 'personal' },
   { id: 'ultimate', name: 'Ultimate Hardening Center', category: 'Security', icon: '🦾', desc: 'Zero Trust Architecture, seL4 microkernel & TPM', zone: 'secure' },
   { id: 'hypervisor', name: 'Hypervisor VM Manager', category: 'System', icon: '🖥️', desc: 'Xen Dom0 virtual machine & isolation zones', zone: 'secure' },
@@ -5477,4 +5485,71 @@ function setupBiosKeyListeners() {
   setTimeout(() => {
     selectBiosItem(0);
   }, 50);
+}
+
+// ==========================================
+// EXTERNAL HARDWARE SECURITY ACCESSORY MANAGER
+// ==========================================
+function getAccessoryContent() {
+  return `
+    <div class="app-accessory-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #141414; padding: 20px; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px; margin-bottom: 18px;">
+        <div>
+          <h2 style="margin: 0; font-size: 20px; color: #007AFF; font-weight: 700;">🔌 External Hardware Security Accessory Manager</h2>
+          <div style="font-size: 12px; color: var(--ubuntu-light-grey); margin-top: 2px;">Pair & configure YubiKeys, Titan Keys, Smart Cards & Hardware Security Modules (HSM)</div>
+        </div>
+        <span style="font-size: 10px; background: rgba(0,122,255,0.2); color: #007AFF; padding: 4px 10px; border-radius: 12px; font-family: var(--font-mono); font-weight: 600;">WebAuthn FIDO2 Active</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px;">
+          <h4 style="margin: 0 0 10px 0; color: #fff; font-size: 14px;">📡 Paired Security Accessories (2)</h4>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(74,246,38,0.3); border-radius: 6px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 12.5px; font-weight: 600; color: #fff;">🔑 YubiKey 5 NFC (SN: 9941028)</div>
+                <div style="font-size: 10.5px; color: var(--ubuntu-light-grey);">FIDO2 / U2F / OpenPGP Smart Card</div>
+              </div>
+              <span style="font-size: 9px; background: rgba(74,246,38,0.15); color: #4AF626; padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono);">PRIMARY</span>
+            </div>
+            <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,204,0,0.3); border-radius: 6px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 12.5px; font-weight: 600; color: #fff;">🛡️ Google Titan Security Key</div>
+                <div style="font-size: 10.5px; color: var(--ubuntu-light-grey);">NFC / Bluetooth LE Hardware Token</div>
+              </div>
+              <span style="font-size: 9px; background: rgba(255,204,0,0.15); color: #ffcc00; padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono);">BACKUP</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(0,122,255,0.3); border-radius: 8px; padding: 16px;">
+          <h4 style="margin: 0 0 10px 0; color: #007AFF; font-size: 14px;">➕ Pair New Security Accessory</h4>
+          <p style="font-size: 12px; color: #ccc; line-height: 1.5; margin-bottom: 14px;">Insert USB security key, tap NFC accessory, or attach biometric reader to bind hardware FIDO2 attestation keys.</p>
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;">
+            <button onclick="pairHardwareAccessory('YubiKey 5Ci / NFC')" style="background: #007AFF; color: #fff; border: none; padding: 8px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: left;">📡 Pair YubiKey NFC / USB-C Security Key →</button>
+            <button onclick="pairHardwareAccessory('Google Titan Key')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 8px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: left;">🛡️ Pair Google Titan Security Key →</button>
+            <button onclick="pairHardwareAccessory('PKCS#11 Hardware Security Module (HSM)')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 8px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: left;">💾 Pair PKCS#11 Cryptographic HSM Token →</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="accessory-pairing-output" style="display: none; background: rgba(0,0,0,0.5); border: 1px solid #007AFF; border-radius: 6px; padding: 14px; font-family: var(--font-mono); font-size: 11.5px; color: #007AFF; line-height: 1.6;"></div>
+    </div>
+  `;
+}
+
+function pairHardwareAccessory(name) {
+  const out = document.getElementById('accessory-pairing-output');
+  if (!out) return;
+  out.style.display = 'block';
+  out.innerHTML = `[WEBAUTHN INITIATED] Waiting for hardware interaction on ${name}...<br/>▶ Please insert or tap your security accessory now...`;
+
+  setTimeout(() => {
+    out.innerHTML += `<br/>▶ [ATTESTATION VERIFIED] Received hardware challenge signature from ${name}. Validating attestation certificate...`;
+  }, 1000);
+
+  setTimeout(() => {
+    out.innerHTML += `<br/>✅ <strong>SUCCESS: Hardware Security Accessory '${name}' paired cleanly! Bound to TPM 2.0 enclave and administrative session unlock profile.</strong>`;
+    logAudit(`Paired new external hardware security accessory: ${name}`);
+  }, 2000);
 }
