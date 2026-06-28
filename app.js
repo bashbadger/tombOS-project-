@@ -3611,10 +3611,34 @@ function renderBrowserPageContent(url) {
       </div>
     `;
   } else {
+    // SYSTEM BROWSER DEFAULT-DENY ZERO-TRUST FIREWALL POLICY
+    const allowed = ['https://tomb-os.org', 'https://github.com', 'https://matrix.org', 'https://example.com'];
+    const isWhitelisted = allowed.some(a => url.startsWith(a));
+
+    if (!isWhitelisted) {
+      logAudit(`[System Browser Default-Deny Block] Blocked connection request to unverified domain: ${url}`);
+      return `
+        <div style="max-width: 620px; margin: 40px auto; background: #1a0d0d; border: 1px solid #ff3b30; border-radius: 12px; padding: 28px; text-align: center; font-family: 'Outfit', sans-serif;">
+          <div style="font-size: 48px; margin-bottom: 12px;">🔴</div>
+          <h2 style="margin: 0 0 10px 0; color: #ff3b30; font-size: 22px; font-weight: 700;">ACCESS BLOCKED BY DEFAULT-DENY POLICY</h2>
+          <div style="font-family: var(--font-mono); font-size: 12px; background: rgba(0,0,0,0.4); color: #ffbaba; padding: 10px; border-radius: 6px; margin-bottom: 18px; word-break: break-all;">
+            Target URL: ${escapeHTML(url)}
+          </div>
+          <p style="color: #ccc; font-size: 13px; line-height: 1.6; margin-bottom: 20px;">
+            System Web Browser operates on a <strong>Strict Zero-Trust Default-Deny Firewall Rule</strong>. Network sockets to unverified external domains are blocked at the kernel level until explicitly granted administrative access.
+          </p>
+          <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button onclick="navigateBrowserUrl('https://tombos.sec/defense-portal')" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 16px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600;">Return to Defense Portal</button>
+            <button onclick="alert('Domain whitelisting request sent to Sec-Admin Enclave!')" style="background: #ff3b30; border: none; color: #fff; padding: 8px 16px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600;">Request Temporary Exception →</button>
+          </div>
+        </div>
+      `;
+    }
+
     return `
       <div style="width: 100%; height: 100%; min-height: 400px; display: flex; flex-direction: column;">
         <div style="background: rgba(0,0,0,0.4); padding: 6px 12px; font-size: 11px; color: var(--sec-green, #4AF626); font-family: var(--font-mono); border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
-          <span>🌐 LIVE INTERNET CONNECTION: Connected to ${escapeHTML(url)}</span>
+          <span>🌐 LIVE INTERNET CONNECTION: Connected to ${escapeHTML(url)} (WHITELISTED)</span>
           <a href="${escapeHTML(url)}" target="_blank" style="color: #007AFF; text-decoration: underline;">Open External Window ↗</a>
         </div>
         <iframe src="${escapeHTML(url)}" style="width: 100%; flex: 1; min-height: 380px; border: none; background: #fff; border-radius: 0 0 6px 6px;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
