@@ -30,6 +30,34 @@
     </div>
   </div>
 
+  <!-- Administrative Security Setup Modal (Prompted during OS Installation / First Boot) -->
+  <div id="admin-setup-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); z-index: 30000; display: flex; align-items: center; justify-content: center; font-family: 'Outfit', sans-serif;">
+    <div style="background: #181818; border: 1px solid var(--ubuntu-orange); border-radius: 12px; width: 460px; padding: 28px; box-shadow: 0 12px 32px rgba(233,84,32,0.3); color: #fff;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px;">
+        <span style="font-size: 32px;">🔐</span>
+        <div>
+          <h3 style="margin: 0; font-size: 19px; color: var(--ubuntu-orange); font-weight: 700;">Tomb OS Installation Setup</h3>
+          <div style="font-size: 12px; color: var(--ubuntu-light-grey); margin-top: 2px;">Create Administrator Account Password (`sec-admin`)</div>
+        </div>
+      </div>
+      <p style="font-size: 13px; color: #ccc; line-height: 1.5; margin-bottom: 18px;">
+        As part of our zero-trust sovereign architecture, please define a master administrative passphrase. This password encrypts your local TPM 2.0 enclave and authorizes root system commands.
+      </p>
+      <form onsubmit="saveAdminPassword(event)">
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 12px; font-weight: 600; color: var(--sec-yellow); margin-bottom: 6px;">Set Administrative Passphrase:</label>
+          <input type="password" id="setup-admin-pass" required placeholder="Enter strong master password..." style="width: 100%; padding: 10px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: #222; color: #fff; font-family: var(--font-mono); font-size: 13px; outline: none; box-sizing: border-box;" />
+        </div>
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; font-size: 12px; font-weight: 600; color: var(--sec-yellow); margin-bottom: 6px;">Confirm Passphrase:</label>
+          <input type="password" id="setup-admin-pass-confirm" required placeholder="Confirm master password..." style="width: 100%; padding: 10px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: #222; color: #fff; font-family: var(--font-mono); font-size: 13px; outline: none; box-sizing: border-box;" />
+        </div>
+        <div id="setup-pass-error" style="display: none; color: #ff3b30; font-size: 12px; margin-bottom: 14px; font-family: var(--font-mono);"></div>
+        <button type="submit" style="width: 100%; background: var(--ubuntu-orange); color: #fff; border: none; padding: 12px; border-radius: 6px; font-weight: 700; font-size: 14px; cursor: pointer; transition: background 0.2s;">Initialize Sovereign OS & Save Key →</button>
+      </form>
+    </div>
+  </div>
+
   <!-- Main Desktop Environment -->
   <div id="desktop-wrapper" class="desktop-wrapper hidden dock-left">
     <!-- GNOME Top Bar -->

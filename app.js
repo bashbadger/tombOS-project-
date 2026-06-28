@@ -202,7 +202,12 @@ window.addEventListener('DOMContentLoaded', () => {
         desktopWrapper.classList.remove('hidden');
         setTimeout(() => {
           bootScreen.classList.add('hidden');
-          openWindow('readme');
+          const modal = document.getElementById('admin-setup-modal');
+          if (!systemState.adminPasswordSet && modal) {
+            modal.classList.remove('hidden');
+          } else {
+            openWindow('readme');
+          }
         }, 800);
       }, 300);
     }
@@ -216,6 +221,29 @@ window.addEventListener('DOMContentLoaded', () => {
   initializeTheme();
   initDockDragAndDrop();
 });
+
+function saveAdminPassword(e) {
+  e.preventDefault();
+  const p1 = document.getElementById('setup-admin-pass');
+  const p2 = document.getElementById('setup-admin-pass-confirm');
+  const err = document.getElementById('setup-pass-error');
+  const modal = document.getElementById('admin-setup-modal');
+
+  if (!p1 || !p2 || !p1.value) return;
+  if (p1.value !== p2.value) {
+    if (err) {
+      err.style.display = 'block';
+      err.textContent = '❌ Error: Passphrases do not match. Please verify your entries.';
+    }
+    return;
+  }
+
+  systemState.adminPasswordSet = true;
+  systemState.adminPasswordHash = btoa(p1.value);
+  if (modal) modal.classList.add('hidden');
+  logAudit('Sec-Admin Master Passphrase initialized and sealed inside hardware TPM 2.0 enclave.');
+  openWindow('readme');
+}
 
 // Drag and Drop Rearrange Dock Apps
 function initDockDragAndDrop() {
