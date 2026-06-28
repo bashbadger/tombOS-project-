@@ -3,7 +3,7 @@
 Welcome to **Tomb OS**, the world's most secure, post-quantum resilient, and architecturally verified hardened operating system. Designed for high-threat enclaves, researchers, financial institutions, and privacy-conscious users, Tomb OS unifies bare-metal microkernel mathematical proofs with disposable hypervisor micro-segmentation and universal cross-platform mobile convergence.
 
 ### 🎯 Core Mission
-> **"To deliver world-class high-assurance security and post-quantum cryptographic protection to every individual and enterprise at the absolute lowest financial barrier to entry."**
+> **"To provide the highest level security framework for free to anyone that will responsibly use it."**
 > By utilizing open-source seL4 mathematical proofs, commodity PC/Mac hardware, containerized sandboxes, and universal smartphone GSI flashing, Tomb OS delivers multi-million dollar enterprise defense security for $0 in licensing fees.
 
 ---
