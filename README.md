@@ -179,3 +179,8 @@ Tomb OS is distributed under open security licenses. Built for absolute user pri
 
 ## ⚖️ Legal Disclaimer & Responsible Use Notice
 > **DISCLAIMER: Any and all illegal use of the content or contents of this page will be prosecuted to the fullest extent of the law.**
+
+---
+
+## 🕊️ Good Faith & Global Focused Action Charter
+> **"Only good faith and world-focused action are to be taken with any appendix of the program, applications, compiler, assemblers, or software herein."**
