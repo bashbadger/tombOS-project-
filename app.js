@@ -203,8 +203,11 @@ window.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
           bootScreen.classList.add('hidden');
           const modal = document.getElementById('admin-setup-modal');
+          const lock = document.getElementById('session-lock-screen');
           if (!systemState.adminPasswordSet && modal) {
             modal.classList.remove('hidden');
+          } else if (lock) {
+            lock.classList.remove('hidden');
           } else {
             openWindow('readme');
           }
@@ -242,6 +245,29 @@ function saveAdminPassword(e) {
   systemState.adminPasswordHash = btoa(p1.value);
   if (modal) modal.classList.add('hidden');
   logAudit('Sec-Admin Master Passphrase initialized and sealed inside hardware TPM 2.0 enclave.');
+  openWindow('readme');
+}
+
+function unlockSessionScreen(e) {
+  e.preventDefault();
+  const input = document.getElementById('session-pass-input');
+  const err = document.getElementById('session-pass-error');
+  const lock = document.getElementById('session-lock-screen');
+
+  if (!input || !input.value) return;
+  const hash = btoa(input.value);
+
+  if (systemState.adminPasswordHash && hash !== systemState.adminPasswordHash) {
+    if (err) {
+      err.style.display = 'block';
+      err.textContent = '❌ INCORRECT PASSPHRASE: Access denied. (TPM 2.0 enclave locked)';
+    }
+    logAudit('[SECURITY ALERT] Failed login authentication attempt on sec-admin session.');
+    return;
+  }
+
+  if (lock) lock.classList.add('hidden');
+  logAudit('Sec-Admin authenticated successfully. TPM 2.0 enclave unlocked.');
   openWindow('readme');
 }
 
