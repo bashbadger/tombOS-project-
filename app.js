@@ -562,6 +562,13 @@ const windowConfig = {
     icon: `<svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="8" fill="#FF3B30"/></svg>`,
     getContent: () => getTaskRecorderContent()
   },
+  installer: {
+    title: "Tomb OS Software Package Installer & Security App Store",
+    width: 760,
+    height: 540,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="#007AFF"/></svg>`,
+    getContent: () => getInstallerContent()
+  },
   chat: {
     title: "Tomb Secure Messenger (E2EE PQC Quantum Enclave)",
     width: 760,
@@ -4598,6 +4605,7 @@ const allAppLauncherList = [
   { id: 'cis', name: 'CIS Security Auditor', category: 'Compliance', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#007AFF"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>`, desc: 'Linux kernel & system hardening benchmarks', zone: 'secure' },
   { id: 'soc2', name: 'SOC 2 Compliance Auditor', category: 'Compliance', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#FFCC00"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm0-8h-2V7h2v2zm4 8h-2v-4h2v4zm0-6h-2V7h2v2z"/></svg>`, desc: 'Trust services criteria compliance tracking', zone: 'secure' },
   { id: 'globalcom', name: 'Global Compliance Hub', category: 'Compliance', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#4AF626"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>`, desc: 'GDPR, CCPA, DPDP & PIPL privacy frameworks', zone: 'secure' },
+  { id: 'installer', name: 'Software Package Installer & Store', category: 'System', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#007AFF"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>`, desc: 'Install new tools, VPNs, penetration testing suites & desktop apps', zone: 'work' },
   { id: 'taskrecorder', name: 'AI Task Recorder & Macro Auto-Pilot', category: 'Productivity', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#FF3B30"><circle cx="12" cy="12" r="8" fill="#FF3B30"/><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" fill="#FFF"/></svg>`, desc: 'Record task workflows for autonomous AI re-execution', zone: 'personal' },
   { id: 'accessory', name: 'External Security Accessory Manager', category: 'Security', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#007AFF"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>`, desc: 'Pair & configure YubiKey NFC, Titan Keys, HSMs & Biometric Readers', zone: 'secure' },
   { id: 'vault', name: 'Cryptographic Key Vault', category: 'Security', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#FFCC00"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>`, desc: 'AES-256 and Kyber PQC payload encryption', zone: 'personal' },
@@ -5717,4 +5725,63 @@ function runAiTaskMacro(macroId) {
     out.innerHTML += `<br/>✅ <strong>AUTONOMOUS AI EXECUTION COMPLETE: Task '${macro.name}' completed 100% cleanly without manual re-work!</strong>`;
     logAudit(`OpenAI GPT-4o autonomously re-executed task macro: ${macro.name}`);
   }, (macro.steps.length + 1) * 800);
+}
+
+// ==========================================
+// SOFTWARE PACKAGE INSTALLER & APP STORE
+// ==========================================
+function getInstallerContent() {
+  const availablePkgs = [
+    { id: 'wireguard', name: 'WireGuard PQC VPN Enclave', category: 'Networking', desc: 'Post-quantum encrypted kernel mesh VPN tunnel' },
+    { id: 'nmap', name: 'Nmap Port & Security Scanner', category: 'SecOps', desc: 'Network exploration & vulnerability discovery utility' },
+    { id: 'wireshark', name: 'Wireshark Packet Inspector', category: 'SecOps', desc: 'Deep packet inspection and protocol analysis suite' },
+    { id: 'tor-browser', name: 'Tor Onion Router Browser', category: 'Privacy', desc: 'Multi-hop anonymous onion routing web browser' },
+    { id: 'metasploit', name: 'Metasploit Penetration Suite', category: 'SecOps', desc: 'Exploit development and security verification framework' },
+    { id: 'signal-desktop', name: 'Signal Private Messenger', category: 'Communication', desc: 'Open-source E2EE messaging desktop client' }
+  ];
+
+  return `
+    <div class="app-installer-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #141414; padding: 20px; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px; margin-bottom: 18px;">
+        <div>
+          <h2 style="margin: 0; font-size: 20px; color: #007AFF; font-weight: 700;">📦 Software Package Installer & Security Store</h2>
+          <div style="font-size: 12px; color: var(--ubuntu-light-grey); margin-top: 2px;">Discover, verify checksums & install new sandboxed applications cleanly into Tomb OS</div>
+        </div>
+        <span style="font-size: 10px; background: rgba(0,122,255,0.2); color: #007AFF; padding: 4px 10px; border-radius: 12px; font-family: var(--font-mono); font-weight: 600;">GPG Repository Signed</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px;">
+        ${availablePkgs.map(p => `
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; justify-space-between;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span style="font-weight: 700; font-size: 13.5px; color: #fff;">${escapeHTML(p.name)}</span>
+                <span style="font-size: 9px; background: rgba(0,122,255,0.15); color: #007AFF; padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono);">${p.category}</span>
+              </div>
+              <p style="font-size: 11.5px; color: #aaa; line-height: 1.4; margin: 0 0 12px 0;">${escapeHTML(p.desc)}</p>
+            </div>
+            <button onclick="installSoftwarePackage('${p.id}', '${escapeHTML(p.name)}')" style="background: #007AFF; color: #fff; border: none; padding: 7px; border-radius: 4px; font-size: 11.5px; font-weight: 700; cursor: pointer;">Install Package →</button>
+          </div>
+        `).join('')}
+      </div>
+
+      <div id="pkg-install-output" style="display: none; background: rgba(0,0,0,0.5); border: 1px solid #007AFF; border-radius: 6px; padding: 14px; font-family: var(--font-mono); font-size: 11.5px; color: #007AFF; line-height: 1.6;"></div>
+    </div>
+  `;
+}
+
+function installSoftwarePackage(pkgId, pkgName) {
+  const out = document.getElementById('pkg-install-output');
+  if (!out) return;
+  out.style.display = 'block';
+  out.innerHTML = `[PACKAGE MANAGER] Fetching GPG signed repository manifest for '${pkgName}' (${pkgId})...<br/>▶ Verifying SHA-256 cryptographic checksums & AppArmor profile templates...`;
+
+  setTimeout(() => {
+    out.innerHTML += `<br/>▶ [SANDBOX PROVISIONING] Allocating isolated VM container storage sector... Mounting read-only binaries...`;
+  }, 900);
+
+  setTimeout(() => {
+    out.innerHTML += `<br/>✅ <strong>SUCCESS: Application '${pkgName}' installed cleanly into Tomb OS! Added to Control Center launcher.</strong>`;
+    logAudit(`Installed new application package '${pkgName}' (${pkgId}) cleanly into sandboxed zone.`);
+  }, 1800);
 }
