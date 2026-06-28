@@ -174,3 +174,8 @@ tombOS-project-/
 
 ## ⚖️ License & Open Security Guarantee
 Tomb OS is distributed under open security licenses. Built for absolute user privacy, zero telemetry, and maximum post-quantum resilience.
+
+---
+
+## ⚖️ Legal Disclaimer & Responsible Use Notice
+> **DISCLAIMER: Any and all illegal use of the content or contents of this page will be prosecuted to the fullest extent of the law.**

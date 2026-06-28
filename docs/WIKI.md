@@ -70,3 +70,8 @@ Tomb OS partitions modern data security controls into standalone, toggleable mod
 - **Bare-Metal x86_64 ISO**: Bootable OS image (`tombos_secure_amd64.iso`).
 - **Live SD XC / NVMe Drive**: Portable bootable media flasher (`./scripts/flash_sdxc.sh`).
 - **Universal Smartphone Mobile GSI**: Project Treble GrapheneOS integration (`./scripts/flash_phone.sh`).
+
+---
+
+## ⚖️ Legal Disclaimer & Responsible Use Notice
+> **DISCLAIMER: Any and all illegal use of the content or contents of this page will be prosecuted to the fullest extent of the law.**
