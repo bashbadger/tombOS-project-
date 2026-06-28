@@ -3742,6 +3742,16 @@ function renderBrowserPageContent(url) {
           </div>
         </div>
 
+        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(0,122,255,0.3); border-radius: 6px; padding: 16px; margin: 18px 0;">
+          <h4 style="margin: 0 0 10px 0; color: #007AFF; font-size: 14px;">⚡ Upload Web File (Real-Time Auto-Sanitization Active)</h4>
+          <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Select or upload any file from the internet. The Tomb OS Sanitization Daemon automatically intercepts the upload stream, strips embedded executable macros, scrubs tracking PII, and deposits clean files into <code>/home/sec-admin/downloads/</code>.</p>
+          <div style="display: flex; gap: 8px;">
+            <input type="file" id="web-upload-input" onchange="uploadAndSanitizeWebFile(this)" style="font-size: 12px; color: #ccc;" />
+            <button onclick="simulateWebFileUpload('confidential_report_v1.docx')" style="background: #007AFF; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600;">Simulate Web Upload & Auto-Clean →</button>
+          </div>
+          <div id="web-upload-sanitizer-output" style="display: none; margin-top: 12px; background: rgba(0,0,0,0.5); border: 1px solid #4AF626; border-radius: 4px; padding: 10px; font-family: var(--font-mono); font-size: 11px; color: #4AF626; line-height: 1.5;"></div>
+        </div>
+
         <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 16px; margin: 18px 0;">
           <h4 style="margin: 0 0 10px 0; color: var(--sec-yellow, #ffcc00); font-size: 14px;">⚡ Interactive Security Sandbox Simulations</h4>
           <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -3832,6 +3842,32 @@ function triggerBrowserDownloadTrigger() {
     status.innerHTML = `🛡️ [APPARMOR BLOCK] Unauthorized download execute request intercepted! Access to host filesystem denied. Logged to system audit daemon.`;
   }
   logAudit(`[AppArmor sandbox violation] Blocked unauthorized executable download attempt by chromium-browser`);
+}
+
+function uploadAndSanitizeWebFile(input) {
+  if (input && input.files && input.files[0]) {
+    simulateWebFileUpload(input.files[0].name);
+  }
+}
+
+function simulateWebFileUpload(fileName) {
+  const out = document.getElementById('web-upload-sanitizer-output');
+  if (!out) return;
+  out.style.display = 'block';
+  out.innerHTML = `[SANITIZATION DAEMON] Intercepted incoming web upload stream for '${fileName}'...<br/>▶ Provisioning RAM volatile quarantine buffer...`;
+
+  setTimeout(() => {
+    out.innerHTML += `<br/>▶ [THREAT STRIPPING] Scanning payload signatures... Neutralized embedded VBA macros & zero-day buffer overflow scripts.`;
+  }, 800);
+
+  setTimeout(() => {
+    out.innerHTML += `<br/>▶ [PRIVACY DE-IDENTIFICATION] Scrubbing EXIF geolocation metadata, author tracking tags, and device GUIDs...`;
+  }, 1500);
+
+  setTimeout(() => {
+    out.innerHTML += `<br/>✅ <strong>CLEANSED & STORED: 100% Disarmed file saved to '/home/sec-admin/downloads/clean_${fileName}'. Verified safe!</strong>`;
+    logAudit(`Real-time web upload sanitizer disarmed and cleaned uploaded file: ${fileName}`);
+  }, 2300);
 }
 
 // ==========================================
