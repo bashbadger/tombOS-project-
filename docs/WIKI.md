@@ -80,3 +80,23 @@ Tomb OS partitions modern data security controls into standalone, toggleable mod
 
 ## 🕊️ Good Faith & Global Focused Action Charter
 > **"Only good faith and world-focused action are to be taken with any appendix of the program, applications, compiler, assemblers, or software herein."**
+
+
+---
+
+## 📂 Repository File-by-File Technical Wiki Directory
+
+Below is the complete architectural documentation index for every file in the Tomb OS repository:
+
+- 📄 **[index.html & demo.html](./files/index_html.md)** — Desktop UI Environment, Lock Screens & Modals Markup
+- ⚙️ **[app.js](./files/app_js.md)** — Master System Logic, Terminal CLI Engine, VM Dispatcher & Feature Modules
+- 🎨 **[style.css](./files/style_css.md)** — Glassmorphism Design Tokens, Custom Properties & UI Stylesheet
+- 🖥️ **[electron/main.js](./files/electron_main_js.md)** — Native macOS Desktop Application Launcher & WebAuthn Bridge
+- 💻 **[kernel/kernel.c](./files/kernel_c.md)** — Bare-Metal C Microkernel Entry Point, Memory Paging & System Descriptors
+- ⚡ **[kernel/sel4_ipc.c & sel4_ipc.h](./files/sel4_ipc.md)** — Formally Verified Capability Gates & Synchronous IPC Dispatcher
+- 🚀 **[kernel/boot.asm & linker.ld](./files/boot_asm.md)** — Multiboot x86_64 Assembly Bootloader & ELF Linker Script
+- 🌐 **[kernel/xen_dom0.cfg](./files/xen_dom0.cfg.md)** — Xen Hypervisor Control Domain & Micro-VM Isolation Config
+- 🐳 **[Dockerfile & docker-compose.yml](./files/docker_infrastructure.md)** — Read-Only Container Infrastructure & Microservices
+- 🌐 **[nginx.conf & kong.yml](./files/network_gateways.md)** — Reverse Proxy Security Headers & Zero-Trust API Gateway Rules
+- ⚡ **[Deployment & Flashing Scripts](./files/flashing_scripts.md)** — Smartphone Fastboot Flasher (`flash_phone.sh`), SD Card Flasher (`flash_sdxc.sh`), Docker Runner & Installer Scripts
+- 🤖 **[Services, Config & Documentation](./files/services_and_config.md)** — ML Threat Hunter Sidecar, `package.json`, `README.md` & Compliance Audits
