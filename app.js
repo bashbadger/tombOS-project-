@@ -1407,23 +1407,65 @@ lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
         case 'brute-bios':
           executeRebootToBios();
           return;
-        case 'gpg':
-          if (args[1] === '-c') {
-            const content = args.slice(2).join(' ');
-            if (!content) {
-              output = `Usage: gpg -c [message_to_encrypt]`;
-            } else {
-              const b64 = btoa(unescape(encodeURIComponent(content)));
-              output = `-----BEGIN PPG SIGNED MESSAGE-----
-Hash: SHA256
-
-Symmetric Cipher: AES-256
-Salted Payload: ${b64.slice(0, 12)}X9F..${b64.slice(-8)}==
------END PPG SIGNED MESSAGE-----`;
-            }
-          } else {
-            output = `Usage: gpg -c [plaintext_string]`;
-          }
+        case 'ls':
+          output = `bin  boot  dev  etc  home  lib  mnt  proc  root  sbin  sys  tmp  usr  var`;
+          break;
+        case 'pwd':
+          output = `/home/sec-admin`;
+          break;
+        case 'cd':
+          output = `[CHDIR] Moved to directory: ${escapeHTML(args[1] || '/home/sec-admin')}`;
+          break;
+        case 'uname':
+          output = `Linux tomb-os 6.10.0-tomb-hardened #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux`;
+          break;
+        case 'uptime':
+          output = ` 18:06:45 up 42 min, 1 user, load average: 0.04, 0.08, 0.12`;
+          break;
+        case 'top':
+        case 'htop':
+          output = `Tasks: 48 total, 1 running, 47 sleeping, 0 stopped, 0 zombie
+%Cpu(s): 0.8 us, 0.3 sy, 0.0 ni, 98.9 id, 0.0 wa, 0.0 hi, 0.0 si
+MiB Mem : 128.0 total,  84.2 free,  28.4 used,  15.4 buff/cache
+  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+    1 root      20   0   12844   3412   2890 S   0.0   2.6   0:01.12 init (seL4)
+  102 sec-admin 20   0  142890  12410   8920 S   0.3   9.7   0:04.25 tomb-desktop
+  405 sec-admin 20   0   18420   4210   3100 R   0.1   3.2   0:00.08 htop`;
+          break;
+        case 'ps':
+          output = `  PID TTY          TIME CMD
+    1 ?        00:00:01 init
+  102 tty1     00:00:04 tomb-desktop
+  408 tty1     00:00:00 ps`;
+          break;
+        case 'df':
+          output = `Filesystem     1K-blocks      Used Available Use% Mounted on
+/dev/sda1       61440000  12480000  48960000  21% /
+tmpfs             131072      4096    126976   4% /tmp
+overlayfs       61440000  12480000  48960000  21% /home/sec-admin`;
+          break;
+        case 'free':
+          output = `               total        used        free      shared  buff/cache   available
+Mem:          131072       29084       86240        4096       15748       97892
+Swap:              0           0           0`;
+          break;
+        case 'ping':
+          const pingTarget = escapeHTML(args[1] || '1.1.1.1');
+          output = `PING ${pingTarget} (${pingTarget}) 56(84) bytes of data.
+64 bytes from ${pingTarget}: icmp_seq=1 ttl=58 time=12.4 ms
+64 bytes from ${pingTarget}: icmp_seq=2 ttl=58 time=11.8 ms
+--- ${pingTarget} ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1001ms`;
+          break;
+        case 'curl':
+        case 'wget':
+          output = `[SANDBOXED HTTP] Fetching headers from ${escapeHTML(args[1] || 'https://tomb-os.org')}... HTTP/2 200 OK (TLS v1.3 Kyber-1024)`;
+          break;
+        case 'dmesg':
+          output = `[    0.000000] Linux version 6.10.0-tomb-hardened (sec-admin@build-enclave)
+[    0.000000] Command line: BOOT_IMAGE=/vmlinuz-tomb quiet sel4.enabled=1
+[    0.004120] x86/fpu: Supporting XSAVE feature 0x001
+[    0.104251] seL4: Verified IPC capability tables. Initialized Dom0 hypervisor domains.`;
           break;
         default:
           output = `bash: command not found: ${cmd}. Type 'help' to review authorized diagnostics toolkits.`;
