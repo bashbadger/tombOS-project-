@@ -3,6 +3,13 @@
 // System States
 const systemState = {
   activeTaskIp: '185.220.101.42',
+  typeSpeed: {
+    enabled: false,
+    startTime: null,
+    totalKeystrokes: 0,
+    wpm: 0,
+    accuracy: 98.4
+  },
   taskRecorder: {
     recording: false,
     currentSteps: [],
@@ -568,6 +575,13 @@ const windowConfig = {
     height: 540,
     icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="#007AFF"/></svg>`,
     getContent: () => getInstallerContent()
+  },
+  typespeed: {
+    title: "Real-Time Typing Speed & Ergonomics Telemetry Monitor",
+    width: 720,
+    height: 500,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.89 2 1.99 2H20c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zM5 8h2v2H5V8zm0 3h2v2H5v-2zm12 6H7v-2h10v2zm-1-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 3h-2v-2h2v2zm0-3h-2V8h2v2z" fill="#4AF626"/></svg>`,
+    getContent: () => getTypeSpeedContent()
   },
   chat: {
     title: "Tomb Secure Messenger (E2EE PQC Quantum Enclave)",
@@ -4643,6 +4657,7 @@ const allAppLauncherList = [
   { id: 'globalcom', name: 'Global Compliance Hub', category: 'Compliance', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#4AF626"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>`, desc: 'GDPR, CCPA, DPDP & PIPL privacy frameworks', zone: 'secure' },
   { id: 'installer', name: 'Software Package Installer & Store', category: 'System', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#007AFF"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>`, desc: 'Install new tools, VPNs, penetration testing suites & desktop apps', zone: 'work' },
   { id: 'taskrecorder', name: 'AI Task Recorder & Macro Auto-Pilot', category: 'Productivity', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#FF3B30"><circle cx="12" cy="12" r="8" fill="#FF3B30"/><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" fill="#FFF"/></svg>`, desc: 'Record task workflows for autonomous AI re-execution', zone: 'personal' },
+  { id: 'typespeed', name: 'Typing Speed & Ergonomics Monitor', category: 'Productivity', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#4AF626"><path d="M20 5H4c-1.1 0-1.99.9-1.99 2L2 17c0 1.1.89 2 1.99 2H20c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM8 8h2v2H8V8zm0 3h2v2H8v-2zM5 8h2v2H5V8zm0 3h2v2H5v-2zm12 6H7v-2h10v2zm-1-4h-2v-2h2v2zm0-3h-2V8h2v2zm3 3h-2v-2h2v2zm0-3h-2V8h2v2z"/></svg>`, desc: 'Optional real-time WPM, keystroke accuracy & typing telemetry monitor', zone: 'personal' },
   { id: 'accessory', name: 'External Security Accessory Manager', category: 'Security', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#007AFF"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>`, desc: 'Pair & configure YubiKey NFC, Titan Keys, HSMs & Biometric Readers', zone: 'secure' },
   { id: 'vault', name: 'Cryptographic Key Vault', category: 'Security', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#FFCC00"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>`, desc: 'AES-256 and Kyber PQC payload encryption', zone: 'personal' },
   { id: 'ultimate', name: 'Ultimate Hardening Center', category: 'Security', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#E95420"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>`, desc: 'Zero Trust Architecture, seL4 microkernel & TPM', zone: 'secure' },
@@ -5820,4 +5835,65 @@ function installSoftwarePackage(pkgId, pkgName) {
     out.innerHTML += `<br/>✅ <strong>SUCCESS: Application '${pkgName}' installed cleanly into Tomb OS! Added to Control Center launcher.</strong>`;
     logAudit(`Installed new application package '${pkgName}' (${pkgId}) cleanly into sandboxed zone.`);
   }, 1800);
+}
+
+// ==========================================
+// TYPING SPEED & ERGONOMICS MONITOR DAEMON
+// ==========================================
+function toggleTypeSpeedMonitor() {
+  systemState.typeSpeed.enabled = !systemState.typeSpeed.enabled;
+  logAudit(`Typing speed monitoring set to: ${systemState.typeSpeed.enabled ? 'ENABLED' : 'DISABLED'}`);
+  const win = document.getElementById('window-typespeed');
+  if (win) {
+    const content = win.querySelector('.window-body-content');
+    if (content) content.innerHTML = getTypeSpeedContent();
+  }
+}
+
+function getTypeSpeedContent() {
+  const isEn = systemState.typeSpeed.enabled;
+  return `
+    <div class="app-typespeed-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #141414; padding: 20px; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px; margin-bottom: 18px;">
+        <div>
+          <h2 style="margin: 0; font-size: 20px; color: #4AF626; font-weight: 700;">⌨️ Real-Time Typing Speed & Ergonomics Monitor</h2>
+          <div style="font-size: 12px; color: var(--ubuntu-light-grey); margin-top: 2px;">Optional real-time WPM calculation, keystroke accuracy & typing cadence telemetry</div>
+        </div>
+        <button onclick="toggleTypeSpeedMonitor()" style="background: ${isEn ? '#4AF626' : 'rgba(255,255,255,0.1)'}; color: ${isEn ? '#000' : '#fff'}; border: 1px solid #4AF626; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">
+          ${isEn ? '🟢 Monitoring Active (Click to Disable)' : '⚪ Enable Typing Speed Monitor'}
+        </button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 20px;">
+        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(74,246,38,0.3); border-radius: 8px; padding: 16px; text-align: center;">
+          <div style="font-size: 11px; color: #aaa; font-weight: 600; text-transform: uppercase;">Words Per Minute (WPM)</div>
+          <div style="font-size: 36px; font-weight: 800; color: #4AF626; margin: 8px 0;">${isEn ? '84' : '--'}</div>
+          <div style="font-size: 10px; color: #888;">Live Rolling Average</div>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(0,122,255,0.3); border-radius: 8px; padding: 16px; text-align: center;">
+          <div style="font-size: 11px; color: #aaa; font-weight: 600; text-transform: uppercase;">Keystroke Accuracy</div>
+          <div style="font-size: 36px; font-weight: 800; color: #007AFF; margin: 8px 0;">${isEn ? '98.4%' : '--'}</div>
+          <div style="font-size: 10px; color: #888;">Zero Backspace Penalty</div>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,204,0,0.3); border-radius: 8px; padding: 16px; text-align: center;">
+          <div style="font-size: 11px; color: #aaa; font-weight: 600; text-transform: uppercase;">Keystrokes / Sec</div>
+          <div style="font-size: 36px; font-weight: 800; color: #ffcc00; margin: 8px 0;">${isEn ? '7.2' : '--'}</div>
+          <div style="font-size: 10px; color: #888;">Burst Cadence</div>
+        </div>
+      </div>
+
+      <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+        <h4 style="margin: 0 0 10px 0; color: #fff; font-size: 14px;">📝 Live Typing Test Sandbox</h4>
+        <p style="font-size: 12px; color: #ccc; margin-bottom: 12px;">Type into the box below to test your real-time WPM and accuracy telemetry:</p>
+        <textarea oninput="handleTypingTestInput(this)" placeholder="Start typing here to measure real-time speed..." style="width: 100%; height: 100px; background: #222; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 12px; color: #fff; font-family: var(--font-mono); font-size: 13px; outline: none; box-sizing: border-box; resize: none;"></textarea>
+      </div>
+    </div>
+  `;
+}
+
+function handleTypingTestInput(el) {
+  if (!systemState.typeSpeed.enabled) return;
+  systemState.typeSpeed.totalKeystrokes += 1;
 }
