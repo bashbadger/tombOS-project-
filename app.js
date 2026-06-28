@@ -1007,6 +1007,11 @@ function closeWindow(appId, e) {
   const dot = document.getElementById(`dot-${appId}`);
   if (dot) dot.classList.add('hidden');
   
+  if (appId === 'browser' && systemState.activeBrowserVmId) {
+    logAudit(`Destroyed dedicated Xen Micro-VM instance [${systemState.activeBrowserVmId}] & scrubbed allocated RAM.`);
+    systemState.activeBrowserVmId = null;
+  }
+
   if (appId === 'render') {
     resetRenderPlay();
   }
@@ -3613,8 +3618,22 @@ function translateIncomingMessage(template) {
 // ==========================================
 function getBrowserContent() {
   const currentUrl = systemState.browserUrl || 'https://tombos.sec/defense-portal';
+  if (!systemState.activeBrowserVmId) {
+    systemState.activeBrowserVmId = 'DomU-VM-' + Math.floor(10000 + Math.random() * 90000);
+    logAudit(`Allocated dedicated Xen Micro-VM instance [${systemState.activeBrowserVmId}] for browser window.`);
+  }
+  const vmId = systemState.activeBrowserVmId;
+
   return `
     <div class="app-browser-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #121212;">
+      <div style="background: #181818; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 4px 12px; display: flex; justify-content: space-between; align-items: center; font-size: 10.5px; font-family: var(--font-mono);">
+        <span style="color: #4AF626; display: flex; align-items: center; gap: 6px;">
+          <span>🖥️ DEDICATED MICRO-VM: <strong>${vmId}</strong></span>
+          <span style="background: rgba(74,246,38,0.15); padding: 1px 6px; border-radius: 4px;">512MB RAM ISOLATED</span>
+        </span>
+        <span style="color: var(--sec-yellow);">seL4 Microkernel Hardware Sandbox</span>
+      </div>
+
       <div class="browser-toolbar" style="background: #1f1f1f; padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 8px;">
         <button style="background: transparent; border: none; color: #aaa; cursor: pointer; font-size: 14px;" onclick="navigateBrowserUrl('https://tombos.sec/defense-portal')">◀</button>
         <button style="background: transparent; border: none; color: #aaa; cursor: pointer; font-size: 14px;" onclick="navigateBrowserUrl('${currentUrl}')">🔄</button>
@@ -3622,7 +3641,7 @@ function getBrowserContent() {
           <span style="font-size: 12px;">🔒</span>
           <input type="text" id="browser-url-input" value="${currentUrl}" onkeydown="handleBrowserUrlKey(event)" style="flex: 1; background: transparent; border: none; color: #fff; font-family: var(--font-mono); font-size: 12px; outline: none;" />
         </div>
-        <span style="font-size: 10px; padding: 2px 6px; border-radius: 4px; background: rgba(255,59,48,0.2); color: #ff3b30; border: 1px solid rgba(255,59,48,0.4); font-family: var(--font-mono); font-weight: 600;">UNTRUSTED ZONE (AppArmor Sandboxed)</span>
+        <span style="font-size: 10px; padding: 2px 6px; border-radius: 4px; background: rgba(255,59,48,0.2); color: #ff3b30; border: 1px solid rgba(255,59,48,0.4); font-family: var(--font-mono); font-weight: 600;">UNTRUSTED ZONE (${vmId})</span>
       </div>
 
       <div class="browser-viewport" id="browser-viewport" style="flex: 1; overflow-y: auto; padding: 20px; background: #181818;">
