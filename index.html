@@ -203,6 +203,20 @@
 
     <!-- Desktop Area -->
     <main id="desktop">
+      <!-- Default Tombstone Watermark Logo Centerpiece -->
+      <div id="desktop-tombstone-watermark" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; opacity: 0.12; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 0; user-select: none;">
+        <svg viewBox="0 0 100 120" width="280" height="336" style="filter: drop-shadow(0 0 20px rgba(233,84,32,0.4));">
+          <!-- Tombstone Outline -->
+          <path d="M20 110 V 40 A 30 30 0 0 1 80 40 V 110 Z" fill="none" stroke="var(--ubuntu-orange)" stroke-width="4" stroke-linejoin="round" />
+          <!-- Cross / Emblem -->
+          <path d="M50 35 V 75 M35 50 H 65" stroke="#4AF626" stroke-width="4" stroke-linecap="round" />
+          <!-- Base Baseboard -->
+          <path d="M10 110 H 90" stroke="var(--ubuntu-orange)" stroke-width="6" stroke-linecap="round" />
+        </svg>
+        <div style="font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: 6px; color: #fff; margin-top: 14px; text-transform: uppercase; text-shadow: 0 0 10px rgba(255,255,255,0.3);">TOMB OS</div>
+        <div style="font-family: var(--font-mono); font-size: 10px; color: #4AF626; letter-spacing: 2px; margin-top: 4px;">PQC HARDENED • IMMUTABLE CELL KERNEL</div>
+      </div>
+
       <!-- Desktop Icons -->
       <div class="desktop-icons">
         <div class="desktop-icon" onclick="openWindow('readme')">

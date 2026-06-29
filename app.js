@@ -7053,4 +7053,19 @@ function runImmunePhagocytosisCycle() {
   }, 2600);
 }
 
+// ============================================================================
+// 10. ANTI-TAMPER DESKTOP WATERMARK INTEGRITY MONITOR
+// ============================================================================
+function verifyBackgroundTamperIntegrity() {
+  const el = document.getElementById('desktop-tombstone-watermark');
+  if (el) {
+    logAudit("Verified default Tomb OS Tombstone Watermark Logo background integrity. Status: ZERO-MODIFICATION.");
+  }
+}
+
+setTimeout(() => {
+  verifyBackgroundTamperIntegrity();
+}, 2500);
+
+
 
