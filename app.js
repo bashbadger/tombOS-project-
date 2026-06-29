@@ -4965,14 +4965,17 @@ function getThemeContent() {
     { id: 'tombdark', name: 'Tomb Dark', accent: '#E95420', darkBase: '#11000a', secondary: '#2c001e' },
     { id: 'cyberblue', name: 'Cyber Blue', accent: '#00e5ff', darkBase: '#050b14', secondary: '#0c1b33' },
     { id: 'crimson', name: 'Tomb Crimson', accent: '#FF3B30', darkBase: '#1e0000', secondary: '#3c0000' },
-    { id: 'gold', name: 'Royal Gold', accent: '#FFCC00', darkBase: '#1a1100', secondary: '#332200' }
+    { id: 'gold', name: 'Royal Gold', accent: '#FFCC00', darkBase: '#1a1100', secondary: '#332200' },
+    { id: 'synthwave', name: 'Synthwave Magenta', accent: '#FF007F', darkBase: '#120024', secondary: '#4A0072' },
+    { id: 'obsidian', name: 'Obsidian Stealth', accent: '#8E8E93', darkBase: '#000000', secondary: '#1C1C1E' }
   ];
 
   const wallpapers = [
     { id: 'gradient-aubergine', name: 'Gradient Aubergine' },
     { id: 'tomb-dark', name: 'Tomb Dark' },
     { id: 'cyberpunk-green', name: 'Cyberpunk Green' },
-    { id: 'deep-space-blue', name: 'Deep Space Blue' }
+    { id: 'deep-space-blue', name: 'Deep Space Blue' },
+    { id: 'matrix-neon', name: 'Matrix Cyber Grid' }
   ];
 
   const fonts = [
