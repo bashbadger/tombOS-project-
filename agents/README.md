@@ -515,6 +515,59 @@ Once internet connectivity is restored:
 2. The local outbox cache is systematically read and sent sequentially to the target webhooks (Slack, MS Teams, Google Chat, Discord, etc.).
 3. Once successfully delivered, cached items are securely scrubbed from local storage.
 
+---
+
+## 📶 7. Cellular Backup Alerting (Twilio SMS/MMS)
+
+To guarantee message delivery when localized Wi-Fi or Ethernet internet connects fail but cellular towers are operational, configure the **Twilio SMS Outbound gateway** as a fallback mechanism:
+
+1. Register a Twilio Developer Account and acquire a Twilio Cellular Phone Number.
+2. Retrieve your Account SID and Auth Token.
+3. Launch the agent with the cellular configuration parameters:
+   ```bash
+   TWILIO_ACCOUNT_SID="ACxxxxxxxxxxxxxxxx" TWILIO_AUTH_TOKEN="your_auth_token" TWILIO_PHONE_NUMBER="+1234567890" CELLULAR_ALERT_RECIPIENT="+1987654321" npm start
+   ```
+
+---
+
+## ☁️ 8. Cloud Hosting & High-Availability Deployment
+
+To deploy the Tomb OS Agent mesh as a highly available, persistent cloud microservice:
+
+### ☁️ AWS (Amazon Web Services) ECS / Fargate
+Deploy the Docker container serverless on AWS ECS without managing server nodes:
+1. Push the container to AWS ECR:
+   ```bash
+   aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.us-east-1.amazonaws.com
+   docker tag tombos-agent-mesh:latest <aws_account_id>.dkr.ecr.us-east-1.amazonaws.com/tombos-agent-mesh:latest
+   docker push <aws_account_id>.dkr.ecr.us-east-1.amazonaws.com/tombos-agent-mesh:latest
+   ```
+2. Create an ECS Task Definition utilizing the image and set appropriate memory/CPU sizes (e.g. 0.5 vCPU and 1GB RAM) with secure secret parameters for platform tokens.
+
+### ☁️ GCP (Google Cloud Platform) Cloud Run
+Run the agent mesh serverless in GCP:
+1. Deploy directly to Cloud Run:
+   ```bash
+   gcloud run deploy tomb-agent-mesh \
+     --image gcr.io/<gcp_project_id>/tombos-agent-mesh \
+     --platform managed \
+     --allow-unauthenticated \
+     --region us-central1
+   ```
+
+### ☁️ Azure Container Instances (ACI)
+Quickly launch container groups on Azure:
+```bash
+az container create \
+  --resource-group tombosGroup \
+  --name tomb-agent-mesh \
+  --image <registry_url>/tombos-agent-mesh:latest \
+  --cpu 1 \
+  --memory 1.5 \
+  --environment-variables NODE_ENV=production
+```
+
+
 
 
 
