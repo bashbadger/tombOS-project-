@@ -506,6 +506,13 @@ function syncComplianceDials() {
 
 // Window Management Configuration
 const windowConfig = {
+  openclaw: {
+    title: "OpenClaw v1.0 [Captain Claw Retro Platformer]",
+    width: 720,
+    height: 520,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" fill="#FFCC00"/></svg>`,
+    getContent: () => getOpenClawContent()
+  },
   tombcraft: {
     title: "TombCraft v0.1 [HIDDEN]",
     width: 660,
@@ -4705,7 +4712,8 @@ const allAppLauncherList = [
   { id: 'hypervisor', name: 'Hypervisor VM Manager', category: 'System', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#007AFF"><path d="M20 3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14H4v-4h7v4zm0-6H4V7h7v4zm9 6h-7v-4h7v4zm0-6h-7V7h7v4z"/></svg>`, desc: 'Xen Dom0 virtual machine & isolation zones', zone: 'secure' },
   { id: 'teacher', name: 'AI Teacher & Translator', category: 'Education', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#9C27B0"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12A10 10 0 0 1 12 2zm1 5h-2v4H7v2h4v4h2v-4h4v-2h-4V7z"/></svg>`, desc: 'Multi-lingual rule translator & agent hub', zone: 'secure' },
   { id: 'theme', name: 'UI Customization Center', category: 'System', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#E95420"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.22 19.58 10.57 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-4 9c-.83 0-1.5-.67-1.5-1.5S7.17 9 8 9s1.5.67 1.5 1.5S8.83 12 8 12zm4 0c-.83 0-1.5-.67-1.5-1.5S11.17 9 12 9s1.5.67 1.5 1.5S12.83 12 12 12zm4 0c-.83 0-1.5-.67-1.5-1.5S15.17 9 16 9s1.5.67 1.5 1.5S16.83 12 16 12z"/></svg>`, desc: 'Theme colors, font size & glassmorphism', zone: 'personal' },
-  { id: 'readme', name: 'System Architecture Guide', category: 'System', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#E95420"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM13 9V3.5L18.5 9H13z"/></svg>`, desc: 'Tomb OS documentation & security manifesto', zone: 'personal' }
+  { id: 'readme', name: 'System Architecture Guide', category: 'System', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#E95420"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM13 9V3.5L18.5 9H13z"/></svg>`, desc: 'Tomb OS documentation & security manifesto', zone: 'personal' },
+  { id: 'openclaw', name: 'OpenClaw Retro Platformer', category: 'Gaming', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#FFCC00"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`, desc: 'Captain Claw 1997 pirate platformer game engine', zone: 'personal' }
 ];
 
 function getControlCenterContent() {
@@ -5829,7 +5837,8 @@ function getInstallerContent() {
     { id: 'wireshark', name: 'Wireshark Packet Inspector', category: 'SecOps', desc: 'Deep packet inspection and protocol analysis suite' },
     { id: 'tor-browser', name: 'Tor Onion Router Browser', category: 'Privacy', desc: 'Multi-hop anonymous onion routing web browser' },
     { id: 'metasploit', name: 'Metasploit Penetration Suite', category: 'SecOps', desc: 'Exploit development and security verification framework' },
-    { id: 'signal-desktop', name: 'Signal Private Messenger', category: 'Communication', desc: 'Open-source E2EE messaging desktop client' }
+    { id: 'signal-desktop', name: 'Signal Private Messenger', category: 'Communication', desc: 'Open-source E2EE messaging desktop client' },
+    { id: 'openclaw', name: 'OpenClaw Retro Platformer Engine', category: 'Gaming', desc: 'Reimplementation of Captain Claw 1997 classic pirate action engine' }
   ];
 
   return `
@@ -5989,3 +5998,288 @@ function getSecurityHubContent() {
     </div>
   `;
 }
+
+// ==========================================
+// OPENCLAW RETRO PLATFORMER GAME ENGINE
+// ==========================================
+function getOpenClawContent() {
+  setTimeout(() => initOpenClawGame(), 100);
+  return `
+    <div class="app-openclaw-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: var(--font-mono); background: #0c0c0c; overflow: hidden;">
+      <div style="padding: 8px 14px; background: #181818; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="color: #FFCC00; font-weight: 700; font-size: 13px;">🐱 Captain Claw (OpenClaw Engine)</span>
+          <span style="font-size: 10px; background: rgba(255,204,0,0.15); color: #FFCC00; padding: 2px 6px; border-radius: 4px;">Level 1: Pirate Fortress</span>
+        </div>
+        <div id="openclaw-hud" style="font-size: 11px; display: flex; gap: 14px;">
+          <span id="oc-score" style="color: #FFCC00; font-weight: 600;">Gold: 0</span>
+          <span id="oc-lives" style="color: #ff3b30; font-weight: 600;">❤️ ❤️ ❤️</span>
+        </div>
+      </div>
+      <div style="flex: 1; position: relative; background: #111; display: flex; justify-content: center; align-items: center;">
+        <canvas id="openclaw-canvas" width="690" height="420" style="display: block; background: #1a1e29; image-rendering: pixelated; border: 1px solid rgba(255,255,255,0.1);"></canvas>
+      </div>
+      <div style="padding: 6px 14px; background: #141414; border-top: 1px solid rgba(255,255,255,0.1); font-size: 10px; color: #888; display: flex; justify-content: space-between;">
+        <span>Controls: <strong>A/D</strong> or <strong>←/→</strong> Move | <strong>W / Space</strong> Jump | <strong>F / Enter</strong> Sword Slash</span>
+        <span style="color: #007AFF;">Installed via Tomb OS Package Manager</span>
+      </div>
+    </div>
+  `;
+}
+
+function initOpenClawGame() {
+  const canvas = document.getElementById('openclaw-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  let score = 0;
+  let lives = 3;
+  let gameOver = false;
+
+  const player = {
+    x: 50,
+    y: 300,
+    width: 24,
+    height: 36,
+    vx: 0,
+    vy: 0,
+    speed: 4,
+    jumpStrength: -11,
+    grounded: false,
+    attacking: false,
+    attackTimer: 0,
+    direction: 1 // 1 right, -1 left
+  };
+
+  const gravity = 0.5;
+
+  const platforms = [
+    { x: 0, y: 380, width: 700, height: 40, color: '#3e2723' }, // Ground
+    { x: 120, y: 300, width: 120, height: 16, color: '#5d4037' },
+    { x: 300, y: 240, width: 140, height: 16, color: '#5d4037' },
+    { x: 500, y: 180, width: 120, height: 16, color: '#5d4037' },
+    { x: 200, y: 140, width: 100, height: 16, color: '#5d4037' }
+  ];
+
+  let coins = [
+    { x: 150, y: 270, collected: false },
+    { x: 180, y: 270, collected: false },
+    { x: 340, y: 210, collected: false },
+    { x: 380, y: 210, collected: false },
+    { x: 530, y: 150, collected: false },
+    { x: 230, y: 110, collected: false }
+  ];
+
+  let enemies = [
+    { x: 320, y: 210, width: 22, height: 30, vx: 1, minX: 300, maxX: 420, alive: true },
+    { x: 520, y: 150, width: 22, height: 30, vx: -1, minX: 500, maxX: 600, alive: true }
+  ];
+
+  const keys = {};
+
+  const handleKeyDown = (e) => {
+    keys[e.key] = true;
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+      if (document.activeElement === canvas || canvas.contains(document.activeElement)) {
+        e.preventDefault();
+      }
+    }
+  };
+
+  const handleKeyUp = (e) => {
+    keys[e.key] = false;
+  };
+
+  window.addEventListener('keydown', handleKeyDown);
+  window.addEventListener('keyup', handleKeyUp);
+
+  function update() {
+    if (gameOver) return;
+
+    // Movement
+    if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
+      player.vx = -player.speed;
+      player.direction = -1;
+    } else if (keys['ArrowRight'] || keys['d'] || keys['D']) {
+      player.vx = player.speed;
+      player.direction = 1;
+    } else {
+      player.vx = 0;
+    }
+
+    if ((keys['ArrowUp'] || keys['w'] || keys['W'] || keys[' ']) && player.grounded) {
+      player.vy = player.jumpStrength;
+      player.grounded = false;
+    }
+
+    if ((keys['Enter'] || keys['f'] || keys['F']) && !player.attacking) {
+      player.attacking = true;
+      player.attackTimer = 15;
+    }
+
+    if (player.attacking) {
+      player.attackTimer--;
+      if (player.attackTimer <= 0) {
+        player.attacking = false;
+      }
+    }
+
+    // Apply Gravity
+    player.vy += gravity;
+    player.x += player.vx;
+    player.y += player.vy;
+
+    // Boundary check
+    if (player.x < 0) player.x = 0;
+    if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+
+    // Platform collisions
+    player.grounded = false;
+    for (let p of platforms) {
+      if (
+        player.x < p.x + p.width &&
+        player.x + player.width > p.x &&
+        player.y + player.height >= p.y &&
+        player.y + player.height <= p.y + p.height + player.vy
+      ) {
+        player.y = p.y - player.height;
+        player.vy = 0;
+        player.grounded = true;
+      }
+    }
+
+    // Collect coins
+    for (let c of coins) {
+      if (!c.collected && Math.hypot(player.x + 12 - c.x, player.y + 18 - c.y) < 20) {
+        c.collected = true;
+        score += 100;
+        const scoreEl = document.getElementById('oc-score');
+        if (scoreEl) scoreEl.textContent = `Gold: ${score}`;
+      }
+    }
+
+    // Update Enemies
+    for (let enemy of enemies) {
+      if (!enemy.alive) continue;
+      enemy.x += enemy.vx;
+      if (enemy.x <= enemy.minX || enemy.x + enemy.width >= enemy.maxX) {
+        enemy.vx *= -1;
+      }
+
+      // Attack enemy check
+      if (player.attacking) {
+        const attackX = player.direction === 1 ? player.x + player.width : player.x - 30;
+        if (
+          attackX < enemy.x + enemy.width &&
+          attackX + 30 > enemy.x &&
+          player.y < enemy.y + enemy.height &&
+          player.y + player.height > enemy.y
+        ) {
+          enemy.alive = false;
+          score += 250;
+          const scoreEl = document.getElementById('oc-score');
+          if (scoreEl) scoreEl.textContent = `Gold: ${score}`;
+        }
+      }
+
+      // Player hurt check
+      if (
+        enemy.alive &&
+        player.x < enemy.x + enemy.width &&
+        player.x + player.width > enemy.x &&
+        player.y < enemy.y + enemy.height &&
+        player.y + player.height > enemy.y
+      ) {
+        lives--;
+        const livesEl = document.getElementById('oc-lives');
+        if (livesEl) livesEl.textContent = '❤️ '.repeat(Math.max(0, lives));
+        player.x = 50;
+        player.y = 300;
+        if (lives <= 0) {
+          gameOver = true;
+        }
+      }
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Background Sky
+    ctx.fillStyle = '#1e2638';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw Platforms
+    for (let p of platforms) {
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x, p.y, p.width, p.height);
+      ctx.fillStyle = '#4ea367'; // Grass top
+      ctx.fillRect(p.x, p.y, p.width, 4);
+    }
+
+    // Draw Coins
+    for (let c of coins) {
+      if (!c.collected) {
+        ctx.fillStyle = '#FFCC00';
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#FFA500';
+        ctx.stroke();
+      }
+    }
+
+    // Draw Enemies (Red Pirates)
+    for (let enemy of enemies) {
+      if (enemy.alive) {
+        ctx.fillStyle = '#ff3b30';
+        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+        // Pirate hat
+        ctx.fillStyle = '#111';
+        ctx.fillRect(enemy.x - 2, enemy.y - 6, enemy.width + 4, 6);
+      }
+    }
+
+    // Draw Player (Captain Claw - Pirate Cat)
+    ctx.fillStyle = '#007AFF'; // Blue coat
+    ctx.fillRect(player.x, player.y + 10, player.width, player.height - 10);
+    ctx.fillStyle = '#ffcc80'; // Head
+    ctx.fillRect(player.x + 2, player.y, 20, 12);
+    ctx.fillStyle = '#d84315'; // Pirate hat
+    ctx.fillRect(player.x - 2, player.y - 6, 28, 6);
+
+    // Sword attack animation
+    if (player.attacking) {
+      ctx.fillStyle = '#e0e0e0';
+      const swordX = player.direction === 1 ? player.x + player.width : player.x - 24;
+      ctx.fillRect(swordX, player.y + 14, 24, 6);
+    }
+
+    // Game Over overlay
+    if (gameOver) {
+      ctx.fillStyle = 'rgba(0,0,0,0.85)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ff3b30';
+      ctx.font = '700 24px var(--font-mono)';
+      ctx.textAlign = 'center';
+      ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 10);
+      ctx.fillStyle = '#fff';
+      ctx.font = '14px var(--font-mono)';
+      ctx.fillText(`Final Gold Score: ${score}`, canvas.width / 2, canvas.height / 2 + 20);
+    }
+  }
+
+  function loop() {
+    update();
+    draw();
+    if (document.getElementById('openclaw-canvas')) {
+      requestAnimationFrame(loop);
+    } else {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    }
+  }
+
+  loop();
+}
+
