@@ -202,6 +202,23 @@ Since Apple iMessage lacks a direct public HTTP API, agents interface via macOS 
      BLUEBUBBLES_SERVER_URL="http://192.168.1.15:8567" BLUEBUBBLES_PASSWORD="your_secure_password" npm start
      ```
 
+### 💬 Signal Private Messenger Integration
+Signal requires a local helper daemon (like `signal-cli` or `signal-cli-rest-api`) running as an HTTP REST bridge on your server:
+1. **Run the Signal REST API container**:
+   ```bash
+   docker run -d \
+     --name signal-api \
+     -p 8080:8080 \
+     -v ~/.local/share/signal-cli:/var/lib/signal-cli \
+     bbernhard/signal-cli-rest-api:latest
+   ```
+2. **Register/Link your Signal account** via the REST API endpoint (refer to signal-cli docs to link as a secondary device).
+3. **Configure the agent** with the Signal REST API endpoints:
+   ```bash
+   SIGNAL_API_URL="http://localhost:8080" SIGNAL_SENDER_NUMBER="+1234567890" SIGNAL_RECIPIENT_NUMBER="+1987654321" npm start
+   ```
+
+
 
 
 
