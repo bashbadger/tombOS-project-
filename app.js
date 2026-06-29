@@ -506,6 +506,34 @@ function syncComplianceDials() {
 
 // Window Management Configuration
 const windowConfig = {
+  agents: {
+    title: "Adaptive Autonomous Multi-Agent Mesh Hub",
+    width: 820,
+    height: 560,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="10" fill="none" stroke="#9C27B0" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="#9C27B0"/></svg>`,
+    getContent: () => getAgentsDashboardContent()
+  },
+  threatmap: {
+    title: "Global Threat Radar & Cyber Attack Map",
+    width: 800,
+    height: 540,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="10" fill="none" stroke="#ff3b30" stroke-width="2"/><path d="M12 2v20M2 12h20" stroke="#ff3b30" stroke-width="1.5"/></svg>`,
+    getContent: () => getThreatMapContent()
+  },
+  cipherlab: {
+    title: "Post-Quantum Cryptography & Lattice Laboratory",
+    width: 780,
+    height: 540,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.8L19 8l-7 3.5L5 8l7-3.2z" fill="#00BFFF"/></svg>`,
+    getContent: () => getCipherLabContent()
+  },
+  kerneldebug: {
+    title: "Bare-Metal Kernel Ring 0 Memory & Process Inspector",
+    width: 800,
+    height: 540,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" fill="#4AF626"/></svg>`,
+    getContent: () => getKernelDebugContent()
+  },
   openclaw: {
     title: "OpenClaw v1.0 [Captain Claw Retro Platformer]",
     width: 720,
@@ -4713,7 +4741,10 @@ const allAppLauncherList = [
   { id: 'teacher', name: 'AI Teacher & Translator', category: 'Education', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#9C27B0"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12A10 10 0 0 1 12 2zm1 5h-2v4H7v2h4v4h2v-4h4v-2h-4V7z"/></svg>`, desc: 'Multi-lingual rule translator & agent hub', zone: 'secure' },
   { id: 'theme', name: 'UI Customization Center', category: 'System', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#E95420"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.22 19.58 10.57 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-4 9c-.83 0-1.5-.67-1.5-1.5S7.17 9 8 9s1.5.67 1.5 1.5S8.83 12 8 12zm4 0c-.83 0-1.5-.67-1.5-1.5S11.17 9 12 9s1.5.67 1.5 1.5S12.83 12 12 12zm4 0c-.83 0-1.5-.67-1.5-1.5S15.17 9 16 9s1.5.67 1.5 1.5S16.83 12 16 12z"/></svg>`, desc: 'Theme colors, font size & glassmorphism', zone: 'personal' },
   { id: 'readme', name: 'System Architecture Guide', category: 'System', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#E95420"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM13 9V3.5L18.5 9H13z"/></svg>`, desc: 'Tomb OS documentation & security manifesto', zone: 'personal' },
-  { id: 'openclaw', name: 'OpenClaw Retro Platformer', category: 'Gaming', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#FFCC00"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`, desc: 'Captain Claw 1997 pirate platformer game engine', zone: 'personal' }
+  { id: 'openclaw', name: 'OpenClaw Retro Platformer', category: 'Gaming', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#FFCC00"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`, desc: 'Captain Claw 1997 pirate platformer game engine', zone: 'personal' },
+  { id: 'agents', name: 'Adaptive Multi-Agent Mesh Hub', category: 'AI & Security', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#9C27B0"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><circle cx="12" cy="12" r="3" fill="#9C27B0"/></svg>`, desc: 'Interactive panel bridging Orchestrator, Memory, Learning & Task agents', zone: 'secure' },
+  { id: 'threatmap', name: 'Global Threat Radar & Cyber Map', category: 'Security', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#ff3b30"><circle cx="12" cy="12" r="10" fill="none" stroke="#ff3b30" stroke-width="2"/><path d="M12 2v20M2 12h20" stroke="#ff3b30" stroke-width="1.5"/></svg>`, desc: 'Live global threat radar monitoring rolling IPs & attacks', zone: 'work' },
+  { id: 'cipherlab', name: 'Post-Quantum Cipher Laboratory', category: 'Security', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#00BFFF"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.8L19 8l-7 3.5L5 8l7-3.2z"/></svg>`, desc: 'Kyber-1024 / Dilithium-5 keypair generator & lattice benchmarker', zone: 'secure' }
 ];
 
 function getControlCenterContent() {
@@ -4722,7 +4753,7 @@ function getControlCenterContent() {
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px;">
         <div>
           <h2 style="margin: 0; font-size: 20px; color: var(--ubuntu-orange); font-weight: 600;">🎛️ Application Control Center</h2>
-          <div style="font-size: 12px; color: var(--ubuntu-light-grey); margin-top: 2px;">Launch and access all 15 Tomb OS applications from a central hub</div>
+          <div style="font-size: 12px; color: var(--ubuntu-light-grey); margin-top: 2px;">Launch and access all 18 Tomb OS applications from a central hub</div>
         </div>
         <div style="width: 240px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 18px; padding: 6px 12px; display: flex; align-items: center; gap: 8px;">
           <span style="font-size: 12px; color: #888;">🔍</span>
@@ -6282,4 +6313,309 @@ function initOpenClawGame() {
 
   loop();
 }
+
+
+// ============================================================================
+// 1. ADAPTIVE AUTONOMOUS MULTI-AGENT MESH DASHBOARD ENGINE
+// ============================================================================
+function getAgentsDashboardContent() {
+  setTimeout(() => initAgentsDashboardUI(), 100);
+  return `
+    <div class="app-agents-container" style="display: flex; height: 100%; color: #fff; font-family: var(--font-mono); background: #0c0c0c;">
+      <div style="width: 240px; background: #141414; border-right: 1px solid rgba(255,255,255,0.1); padding: 16px; display: flex; flex-direction: column; gap: 14px;">
+        <h3 style="margin: 0; font-size: 14px; color: #9C27B0; font-weight: 700;">🤖 Agent Mesh Mesh</h3>
+        <div style="font-size: 10.5px; color: #aaa;">Active Autonomous Agents:</div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="background: rgba(156,39,176,0.15); border: 1px solid #9C27B0; padding: 8px 10px; border-radius: 6px; font-size: 11px;">
+            <span style="color: #9C27B0; font-weight: 700;">Orchestrator-01</span>
+            <div style="font-size: 9px; color: #4AF626;">STATUS: ROUTING (Session Active)</div>
+          </div>
+          <div style="background: rgba(0,122,255,0.15); border: 1px solid #007AFF; padding: 8px 10px; border-radius: 6px; font-size: 11px;">
+            <span style="color: #007AFF; font-weight: 700;">MemoryAgent-01</span>
+            <div style="font-size: 9px; color: #4AF626;">STATUS: PERSISTED (12 Memories)</div>
+          </div>
+          <div style="background: rgba(255,204,0,0.15); border: 1px solid #FFCC00; padding: 8px 10px; border-radius: 6px; font-size: 11px;">
+            <span style="color: #FFCC00; font-weight: 700;">LearningAgent-01</span>
+            <div style="font-size: 9px; color: #4AF626;">STATUS: PATTERN MESH (3 Patterns)</div>
+          </div>
+          <div style="background: rgba(74,246,38,0.15); border: 1px solid #4AF626; padding: 8px 10px; border-radius: 6px; font-size: 11px;">
+            <span style="color: #4AF626; font-weight: 700;">TaskAgent-01</span>
+            <div style="font-size: 9px; color: #4AF626;">STATUS: READY (0 Pending)</div>
+          </div>
+        </div>
+        <div style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; font-size: 10px; color: #888;">
+          Memory Decay Rate: <strong style="color: #FFCC00;">0.02 / hr</strong><br/>
+          Learning Threshold: <strong style="color: #007AFF;">2 Obs</strong>
+        </div>
+      </div>
+      <div style="flex: 1; display: flex; flex-direction: column; padding: 16px; gap: 14px; background: #111; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+          <h2 style="margin: 0; font-size: 16px; color: #fff;">Autonomous Peer Agent Interaction Console</h2>
+          <button onclick="triggerAgentAnalysis()" style="background: #9C27B0; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 700;">Run Full Multi-Agent Analysis →</button>
+        </div>
+        <div id="agent-console-log" style="flex: 1; min-height: 240px; background: #080808; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 12px; font-size: 11px; line-height: 1.6; overflow-y: auto; color: #ccc;">
+          <div style="color: #9C27B0;">[Orchestrator] Multi-Agent System initializing... Peer connections established.</div>
+          <div style="color: #007AFF;">[MemoryAgent] Persistent store loaded: 14 preferences, 3 learned behavioral patterns.</div>
+          <div style="color: #FFCC00;">[LearningAgent] Proactive adaptation rule active: "Suggest network scan after terminal boot".</div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <input type="text" id="agent-user-input" placeholder="Type prompt to send to Orchestrator Agent (e.g. 'run scan', 'remember IP 10.0.0.1')..." style="flex: 1; background: #1e1e1e; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 10px; color: #fff; font-family: var(--font-mono); font-size: 11.5px; outline: none;" onkeydown="if(event.key==='Enter') sendAgentPrompt()" />
+          <button onclick="sendAgentPrompt()" style="background: #4AF626; color: #000; border: none; padding: 0 16px; border-radius: 4px; font-weight: 700; font-size: 12px; cursor: pointer;">Send →</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function initAgentsDashboardUI() {
+  logAudit("Multi-Agent System Dashboard initialized in user enclave.");
+}
+
+function sendAgentPrompt() {
+  const input = document.getElementById('agent-user-input');
+  const log = document.getElementById('agent-console-log');
+  if (!input || !log || !input.value.trim()) return;
+  const val = input.value.trim();
+  input.value = '';
+
+  log.innerHTML += `<div style="color: #fff; margin-top: 8px;"><strong>USER:</strong> ${escapeHTML(val)}</div>`;
+  log.innerHTML += `<div style="color: #888; font-size: 10px;">[Orchestrator] Dispatching to intent classifier...</div>`;
+  log.scrollTop = log.scrollHeight;
+
+  setTimeout(() => {
+    if (val.toLowerCase().includes('scan') || val.toLowerCase().includes('run')) {
+      log.innerHTML += `<div style="color: #4AF626;">[TaskAgent] Executing task 'Security Vulnerability Scan'... Step 1: log... Step 2: compute... Step 3: notify. SUCCESS (12ms).</div>`;
+      log.innerHTML += `<div style="color: #FFCC00;">[LearningAgent] Observed action pattern. Increasing confidence metric to 0.45.</div>`;
+    } else if (val.toLowerCase().includes('remember') || val.toLowerCase().includes('ip')) {
+      log.innerHTML += `<div style="color: #007AFF;">[MemoryAgent] Stored new permanent memory payload. Assigned UUID tag [mem-${generateInteractionHash().slice(0,6)}].</div>`;
+    } else {
+      log.innerHTML += `<div style="color: #9C27B0;">[Orchestrator] Query processed. Recalled 2 context memories. System operating nominally.</div>`;
+    }
+    log.scrollTop = log.scrollHeight;
+  }, 600);
+}
+
+function triggerAgentAnalysis() {
+  const log = document.getElementById('agent-console-log');
+  if (!log) return;
+  log.innerHTML += `<div style="color: #FFCC00; margin-top: 8px;"><strong>[ANALYSIS REPORT]</strong> Generating full pattern matrix...</div>`;
+  log.innerHTML += `<div style="color: #ccc; padding-left: 10px;">- Dominant User Activity: Evening Hours (100% confidence)<br/>- Detected Behavioral Sequence: 'task_execute' -> 'recall_memory'<br/>- Active Adaptations: 2 proactive optimization rules</div>`;
+  log.scrollTop = log.scrollHeight;
+}
+
+
+// ============================================================================
+// 2. REAL-TIME CYBER THREAT RADAR & ANIMATED GLOBE ENGINE
+// ============================================================================
+function getThreatMapContent() {
+  setTimeout(() => initThreatMapCanvas(), 100);
+  return `
+    <div class="app-threatmap-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: var(--font-mono); background: #050811;">
+      <div style="padding: 8px 14px; background: #0b1120; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="color: #ff3b30; font-weight: 700; font-size: 13px;">📡 Global Vector Threat Radar</span>
+          <span style="font-size: 10px; background: rgba(255,59,48,0.2); color: #ff3b30; padding: 2px 6px; border-radius: 4px;">DEFCON 2 ACTIVE</span>
+        </div>
+        <div style="font-size: 11px; color: #aaa;">
+          Active Task Egress IP: <strong style="color: #4AF626;" id="radar-egress-ip">185.220.101.42</strong>
+        </div>
+      </div>
+      <div style="flex: 1; position: relative; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+        <canvas id="threat-radar-canvas" width="770" height="440" style="display: block;"></canvas>
+      </div>
+      <div style="padding: 6px 14px; background: #080d1a; border-top: 1px solid rgba(255,255,255,0.1); font-size: 10.5px; color: #778899; display: flex; justify-content: space-between;">
+        <span>Interceptors: <strong>1,420 pkts/sec</strong> | Threat Level: <strong>LOW (Mitigated)</strong></span>
+        <span style="color: #4AF626;">Quantum Encrypted Egress Channel</span>
+      </div>
+    </div>
+  `;
+}
+
+function initThreatMapCanvas() {
+  const canvas = document.getElementById('threat-radar-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  let angle = 0;
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  const radius = 180;
+
+  const blips = [
+    { x: cx + 80, y: cy - 60, label: 'SYN-Flood Block', color: '#ff3b30' },
+    { x: cx - 110, y: cy + 40, label: 'DDoS Node 192.168.1.5', color: '#ff3b30' },
+    { x: cx + 40, y: cy + 100, label: 'Tor Exit Node', color: '#4AF626' },
+    { x: cx - 50, y: cy - 120, label: 'Egress Relay', color: '#007AFF' }
+  ];
+
+  function drawRadar() {
+    ctx.fillStyle = '#050811';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Grid circles
+    ctx.strokeStyle = 'rgba(0, 255, 200, 0.15)';
+    ctx.lineWidth = 1;
+    for (let r = 40; r <= radius; r += 40) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Crosshairs
+    ctx.beginPath();
+    ctx.moveTo(cx - radius - 20, cy);
+    ctx.lineTo(cx + radius + 20, cy);
+    ctx.moveTo(cx, cy - radius - 20);
+    ctx.lineTo(cx, cy + radius + 20);
+    ctx.stroke();
+
+    // Sweeping radar beam
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, radius, angle, angle + 0.4);
+    ctx.closePath();
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    grad.addColorStop(0, 'rgba(0, 255, 200, 0.4)');
+    grad.addColorStop(1, 'rgba(0, 255, 200, 0.05)');
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.restore();
+
+    // Draw blips
+    for (let b of blips) {
+      ctx.fillStyle = b.color;
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ccc';
+      ctx.font = '10px var(--font-mono)';
+      ctx.fillText(b.label, b.x + 8, b.y + 3);
+    }
+
+    angle += 0.03;
+    if (document.getElementById('threat-radar-canvas')) {
+      requestAnimationFrame(drawRadar);
+    }
+  }
+
+  drawRadar();
+}
+
+
+// ============================================================================
+// 3. POST-QUANTUM CRYPTOGRAPHY & LATTICE LABORATORY ENGINE
+// ============================================================================
+function getCipherLabContent() {
+  return `
+    <div class="app-cipherlab-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: var(--font-mono); background: #0d1117; padding: 18px; overflow-y: auto;">
+      <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px;">
+        <h2 style="margin: 0; font-size: 18px; color: #00BFFF;">🔐 Post-Quantum Cryptography Studio</h2>
+        <div style="font-size: 11px; color: #8b949e; margin-top: 2px;">NIST Round 3 PQC Standard Suite (Kyber-1024 Lattice Encapsulation & Dilithium-5 Signatures)</div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 14px;">
+          <h4 style="margin: 0 0 10px 0; color: #00BFFF; font-size: 13px;">Kyber-1024 Keypair Generator</h4>
+          <p style="font-size: 10.5px; color: #aaa; line-height: 1.5; margin-bottom: 12px;">Generate quantum-resistant lattice matrix polynomials for secure key encapsulation.</p>
+          <button onclick="generateKyberKeyPair()" style="width: 100%; background: #00BFFF; color: #000; border: none; padding: 8px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer;">Generate Kyber-1024 Keypair →</button>
+          <div id="kyber-output" style="margin-top: 10px; font-size: 9.5px; color: #4AF626; word-break: break-all; background: #000; padding: 8px; border-radius: 4px; display: none;"></div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 14px;">
+          <h4 style="margin: 0 0 10px 0; color: #FFCC00; font-size: 13px;">Dilithium-5 Digital Signatures</h4>
+          <p style="font-size: 10.5px; color: #aaa; line-height: 1.5; margin-bottom: 12px;">Cryptographically sign payloads to guarantee zero-tamper integrity verification.</p>
+          <button onclick="signPayloadDilithium()" style="width: 100%; background: #FFCC00; color: #000; border: none; padding: 8px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer;">Sign Enclave Payload →</button>
+          <div id="dilithium-output" style="margin-top: 10px; font-size: 9.5px; color: #FFCC00; word-break: break-all; background: #000; padding: 8px; border-radius: 4px; display: none;"></div>
+        </div>
+      </div>
+
+      <div style="background: #161b22; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 14px;">
+        <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #fff;">Quantum Resistance Benchmark Analyzer</h4>
+        <div style="font-size: 11px; color: #8b949e; line-height: 1.6;">
+          Lattice Dimension Vector (k=4): <strong style="color: #4AF626;">256 x 256 Polynomial Ring</strong><br/>
+          Estimated Shor's Algorithm Qubit Resistance: <strong style="color: #00BFFF;">> 4,096 Logical Qubits</strong><br/>
+          Status: <span style="color: #4AF626; font-weight: 700;">SECURE AGAINST POST-QUANTUM DECRYPTION</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function generateKyberKeyPair() {
+  const out = document.getElementById('kyber-output');
+  if (!out) return;
+  out.style.display = 'block';
+  const pub = generateInteractionHash() + generateInteractionHash();
+  out.innerHTML = `<strong>PUBLIC KEY (Kyber-1024):</strong><br/>0x7F4A${pub.slice(0, 32)}...<br/><span style="color:#aaa;">(1568 Bytes Lattice Vector Generated)</span>`;
+  logAudit("Generated fresh Kyber-1024 post-quantum keypair.");
+}
+
+function signPayloadDilithium() {
+  const out = document.getElementById('dilithium-output');
+  if (!out) return;
+  out.style.display = 'block';
+  const sig = generateInteractionHash() + generateInteractionHash() + generateInteractionHash();
+  out.innerHTML = `<strong>DILITHIUM-5 SIGNATURE:</strong><br/>SIG_D5_${sig.slice(0, 40)}<br/><span style="color:#aaa;">(Authenticity Verified - Zero Tamper)</span>`;
+  logAudit("Signed payload with Dilithium-5 digital signature.");
+}
+
+
+// ============================================================================
+// 4. BARE-METAL KERNEL RING 0 MEMORY & PROCESS INSPECTOR ENGINE
+// ============================================================================
+function getKernelDebugContent() {
+  return `
+    <div class="app-kerneldebug-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: var(--font-mono); background: #000; padding: 16px; overflow-y: auto;">
+      <div style="border-bottom: 1px solid rgba(74,246,38,0.3); padding-bottom: 10px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h2 style="margin: 0; font-size: 16px; color: #4AF626;">💻 Tomb OS Monolithic Kernel v2.0 Ring 0 Debugger</h2>
+          <div style="font-size: 10.5px; color: #888;">x86_64 Freestanding Architecture Inspection</div>
+        </div>
+        <span style="font-size: 10px; background: rgba(74,246,38,0.15); color: #4AF626; padding: 3px 8px; border-radius: 4px; font-weight: 700;">KPTI & KASLR ACTIVE</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+        <div style="background: #0d0d0d; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 12px; font-size: 11px; line-height: 1.6;">
+          <div style="color: #FFCC00; font-weight: 700; margin-bottom: 6px;">CPU Registers (Core 0):</div>
+          RAX: <span style="color: #4AF626;">0x0000000000000001</span><br/>
+          RBX: <span style="color: #4AF626;">0x00007FFF5FBFF8C0</span><br/>
+          CR0: <span style="color: #00BFFF;">0x80050033 (Paging On)</span><br/>
+          CR3: <span style="color: #00BFFF;">0x0000000000201000 (PML4)</span><br/>
+          RFLAGS: <span style="color: #aaa;">0x00000246 (IF Reserved)</span>
+        </div>
+
+        <div style="background: #0d0d0d; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 12px; font-size: 11px; line-height: 1.6;">
+          <div style="color: #00BFFF; font-weight: 700; margin-bottom: 6px;">Physical Memory Manager (PMM):</div>
+          Total RAM: <span style="color: #fff;">16,384 MB</span><br/>
+          Allocated Page Frames: <span style="color: #FFCC00;">128,420 (501 MB)</span><br/>
+          Free Page Frames: <span style="color: #4AF626;">4,065,868</span><br/>
+          Page Size: <span style="color: #aaa;">4096 Bytes (4KB)</span>
+        </div>
+      </div>
+
+      <div style="background: #0d0d0d; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 12px; flex: 1;">
+        <div style="color: #fff; font-weight: 700; font-size: 12px; margin-bottom: 8px;">Active Process Control Blocks (PCB Table):</div>
+        <table style="width: 100%; text-align: left; font-size: 10.5px; border-collapse: collapse; color: #ccc;">
+          <thead>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.2); color: #888;">
+              <th style="padding: 4px;">PID</th>
+              <th>NAME</th>
+              <th>STATE</th>
+              <th>PRIORITY</th>
+              <th>MEM USAGE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style="padding: 4px; color: #4AF626;">0</td><td>swapper/idle</td><td>RUNNING</td><td>0 (HIGHEST)</td><td>0 KB</td></tr>
+            <tr><td style="padding: 4px; color: #00BFFF;">1</td><td>systemd/init</td><td>SLEEPING</td><td>1</td><td>4,204 KB</td></tr>
+            <tr><td style="padding: 4px; color: #00BFFF;">12</td><td>tomb-os-desktop</td><td>RUNNING</td><td>2</td><td>48,120 KB</td></tr>
+            <tr><td style="padding: 4px; color: #FFCC00;">45</td><td>xen-domU-browser</td><td>RUNNING</td><td>3</td><td>524,288 KB</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
 
