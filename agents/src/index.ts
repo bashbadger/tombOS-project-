@@ -12,6 +12,7 @@ export * from './agents/TaskAgent';
 export * from './agents/ImmuneSystemAgent';
 export * from './memory/MemoryStore';
 export * from './memory/NetworkSyncStore';
+export * from './utils/CrossPlatformRelay';
 
 import { OrchestratorAgent } from './agents/OrchestratorAgent';
 import { ImmuneSystemAgent } from './agents/ImmuneSystemAgent';

@@ -567,6 +567,38 @@ az container create \
   --environment-variables NODE_ENV=production
 ```
 
+---
+
+## 🔌 9. Cross-Platform Message Relays (e.g., Discord ↔ Snapchat)
+
+Tomb OS features a highly configurable message routing router (`CrossPlatformRelay`). This component enables incoming messages from one platform (e.g., Discord) to be automatically processed by the agents and forwarded to another platform (e.g., Snapchat) or vice versa.
+
+### ⚙️ How It Works
+1. When a message is received at a configured webhook (e.g., Discord webhook stream), the source agent intercepts the message.
+2. The `CrossPlatformRelay` checks if the relay config is active.
+3. If active, it invokes the target API client (using the target platform's configured tokens) to re-transmit/relay the message payloads to the destination thread.
+
+### 🚀 Configuration Environment Variables
+
+To activate a specific cross-platform relay channel, start the agent mesh with the following environment configurations:
+
+* **Enable Relay**: `RELAY_ENABLED="true"`
+* **Source Platform**: `RELAY_SOURCE="discord"` (Supported: `discord`, `whatsapp`, `signal`, `imessage`, `slack`, etc.)
+* **Destination Platform**: `RELAY_DEST="snapchat"` (Supported: `snapchat`, `telegram`, `wechat`, `teams`, etc.)
+
+### 💻 Start Daemon Commands
+
+* **Relay from Discord to Snapchat**:
+  ```bash
+  RELAY_ENABLED="true" RELAY_SOURCE="discord" RELAY_DEST="snapchat" DISCORD_WEBHOOK_URL="https://discord.com/..." SNAPCHAT_CLIENT_ID="xxx" SNAPCHAT_CLIENT_SECRET="xxx" npm start
+  ```
+
+* **Relay from Snapchat to Discord**:
+  ```bash
+  RELAY_ENABLED="true" RELAY_SOURCE="snapchat" RELAY_DEST="discord" SNAPCHAT_CLIENT_ID="xxx" SNAPCHAT_CLIENT_SECRET="xxx" DISCORD_WEBHOOK_URL="https://discord.com/..." npm start
+  ```
+
+
 
 
 
