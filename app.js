@@ -5969,7 +5969,8 @@ function getInstallerContent() {
     { id: 'tor-browser', name: 'Tor Onion Router Browser', category: 'Privacy', desc: 'Multi-hop anonymous onion routing web browser' },
     { id: 'metasploit', name: 'Metasploit Penetration Suite', category: 'SecOps', desc: 'Exploit development and security verification framework' },
     { id: 'signal-desktop', name: 'Signal Private Messenger', category: 'Communication', desc: 'Open-source E2EE messaging desktop client' },
-    { id: 'openclaw', name: 'OpenClaw Retro Platformer Engine', category: 'Gaming', desc: 'Reimplementation of Captain Claw 1997 classic pirate action engine' }
+    { id: 'openclaw', name: 'OpenClaw Retro Platformer Engine', category: 'Gaming', desc: 'Reimplementation of Captain Claw 1997 classic pirate action engine' },
+    { id: 'qubes-kernel', name: 'Qubes OS Hardened Xen Micro-VM Kernel', category: 'Kernel & Hypervisor', desc: 'Freestanding C Xen Dom0 hypervisor & color-coded microkernel isolation' }
   ];
 
   return `
@@ -6009,12 +6010,21 @@ function installSoftwarePackage(pkgId, pkgName) {
   out.innerHTML = `[PACKAGE MANAGER] Fetching GPG signed repository manifest for '${pkgName}' (${pkgId})...<br/>▶ Verifying SHA-256 cryptographic checksums & AppArmor profile templates...`;
 
   setTimeout(() => {
-    out.innerHTML += `<br/>▶ [SANDBOX PROVISIONING] Allocating isolated VM container storage sector... Mounting read-only binaries...`;
+    if (pkgId === 'qubes-kernel') {
+      out.innerHTML += `<br/>▶ [XEN DOM0 DEPLOYMENT] Staging Qubes OS freestanding C microkernel (qubes_kernel.c) & seL4 capability gates...`;
+    } else {
+      out.innerHTML += `<br/>▶ [SANDBOX PROVISIONING] Allocating isolated VM container storage sector... Mounting read-only binaries...`;
+    }
   }, 900);
 
   setTimeout(() => {
-    out.innerHTML += `<br/>✅ <strong>SUCCESS: Application '${pkgName}' installed cleanly into Tomb OS! Added to Control Center launcher.</strong>`;
-    logAudit(`Installed new application package '${pkgName}' (${pkgId}) cleanly into sandboxed zone.`);
+    if (pkgId === 'qubes-kernel') {
+      out.innerHTML += `<br/>✅ <strong>SUCCESS: Qubes OS Hardened Xen Micro-VM Kernel installed! GRUB2 updated for Dom0 execution.</strong>`;
+      logAudit(`Installed Qubes OS Hardened Xen Micro-VM Kernel module into hardware bootloader.`);
+    } else {
+      out.innerHTML += `<br/>✅ <strong>SUCCESS: Application '${pkgName}' installed cleanly into Tomb OS! Added to Control Center launcher.</strong>`;
+      logAudit(`Installed new application package '${pkgName}' (${pkgId}) cleanly into sandboxed zone.`);
+    }
   }, 1800);
 }
 
