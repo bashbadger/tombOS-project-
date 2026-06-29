@@ -130,8 +130,8 @@ const systemState = {
   notes: {
     activeNoteId: 'n1',
     list: [
-      { id: 'n1', title: '🛡️ Security Audit Checklist', content: '1. Verify ufw status is ACTIVE.\n2. Ensure AppArmor profiles are enforcing.\n3. Run sysctl -a to check SYN cookies.\n4. Audit root login attempts via auditd logs.' },
-      { id: 'n2', title: '⚡ Terminal Cheat Sheet', content: 'ls -la       # List all files with permissions\nwhoami       # Show current user context\nufw status   # Check firewall rules\naa-status    # Inspect AppArmor containment' }
+      { id: 'n1', title: ' Security Audit Checklist', content: '1. Verify ufw status is ACTIVE.\n2. Ensure AppArmor profiles are enforcing.\n3. Run sysctl -a to check SYN cookies.\n4. Audit root login attempts via auditd logs.' },
+      { id: 'n2', title: ' Terminal Cheat Sheet', content: 'ls -la       # List all files with permissions\nwhoami       # Show current user context\nufw status   # Check firewall rules\naa-status    # Inspect AppArmor containment' }
     ]
   },
   hypervisor: {
@@ -265,7 +265,7 @@ function saveAdminPassword(e) {
   if (p1.value !== p2.value) {
     if (err) {
       err.style.display = 'block';
-      err.textContent = '❌ Error: Passphrases do not match. Please verify your entries.';
+      err.textContent = ' Error: Passphrases do not match. Please verify your entries.';
     }
     return;
   }
@@ -289,7 +289,7 @@ function unlockSessionScreen(e) {
   if (systemState.adminPasswordHash && hash !== systemState.adminPasswordHash) {
     if (err) {
       err.style.display = 'block';
-      err.textContent = '❌ INCORRECT PASSPHRASE: Access denied. (TPM 2.0 enclave locked)';
+      err.textContent = ' INCORRECT PASSPHRASE: Access denied. (TPM 2.0 enclave locked)';
     }
     logAudit('[SECURITY ALERT] Failed login authentication attempt on sec-admin session.');
     return;
@@ -946,7 +946,7 @@ const windowConfig = {
         <div class="vault-tabs">
           <button class="vault-tab active" onclick="switchVaultTab(this, 'encrypt')">Encrypt Text</button>
           <button class="vault-tab" onclick="switchVaultTab(this, 'decrypt')">Decrypt Text</button>
-          <button class="vault-tab" onclick="switchVaultTab(this, 'file')">📁 2-Way File Encryption</button>
+          <button class="vault-tab" onclick="switchVaultTab(this, 'file')"> 2-Way File Encryption</button>
         </div>
         <div class="vault-body" id="vault-panel-encrypt">
           <div class="vault-group">
@@ -1009,7 +1009,7 @@ const windowConfig = {
 
         <div class="vault-body hidden" id="vault-panel-file">
           <div style="background: rgba(0,0,0,0.2); border: 1px dashed var(--ubuntu-orange); border-radius: 8px; padding: 16px; text-align: center; margin-bottom: 14px;">
-            <div style="font-size: 24px; margin-bottom: 6px;">📁</div>
+            <div style="font-size: 24px; margin-bottom: 6px;"></div>
             <div style="font-weight: 600; font-size: 13px; color: #fff;">2-Way Symmetric File Encryption Pipeline</div>
             <div style="font-size: 11px; color: var(--ubuntu-light-grey); margin-top: 4px;">Select a system file to encrypt or decrypt with AES-256 / PQC lattice keys</div>
           </div>
@@ -1018,10 +1018,10 @@ const windowConfig = {
             <div class="vault-group">
               <label for="vault-file-select">Target System File</label>
               <select class="vault-select" id="vault-file-select">
-                <option value="confidential_report.pdf">📄 confidential_report.pdf (1.2 MB)</option>
-                <option value="shadow_passwords.txt">🔑 shadow_passwords.txt (4.2 KB)</option>
-                <option value="database_backup.sql">💾 database_backup.sql (48.5 MB)</option>
-                <option value="api_tokens.json">🔐 api_tokens.json (1.8 KB)</option>
+                <option value="confidential_report.pdf"> confidential_report.pdf (1.2 MB)</option>
+                <option value="shadow_passwords.txt"> shadow_passwords.txt (4.2 KB)</option>
+                <option value="database_backup.sql"> database_backup.sql (48.5 MB)</option>
+                <option value="api_tokens.json"> api_tokens.json (1.8 KB)</option>
               </select>
             </div>
             <div class="vault-group">
@@ -1031,8 +1031,8 @@ const windowConfig = {
           </div>
 
           <div style="display: flex; gap: 10px; margin-top: 10px;">
-            <button class="vault-btn-action" style="flex: 1; background: var(--ubuntu-orange);" onclick="runVaultFileEncrypt()">🔒 Encrypt File (2-Way)</button>
-            <button class="vault-btn-action" style="flex: 1; background: rgba(0,122,255,0.3); border: 1px solid #007AFF;" onclick="runVaultFileDecrypt()">🔓 Decrypt File (2-Way)</button>
+            <button class="vault-btn-action" style="flex: 1; background: var(--ubuntu-orange);" onclick="runVaultFileEncrypt()"> Encrypt File (2-Way)</button>
+            <button class="vault-btn-action" style="flex: 1; background: rgba(0,122,255,0.3); border: 1px solid #007AFF;" onclick="runVaultFileDecrypt()"> Decrypt File (2-Way)</button>
           </div>
 
           <div class="vault-group" style="margin-top: 12px;">
@@ -1193,9 +1193,9 @@ function openWindow(appId) {
         </select>
       </div>
       <div class="window-controls">
-        <button class="window-btn minimize" onclick="minimizeWindow('${appId}', event)" title="Minimize" aria-label="Minimize Window">─</button>
-        <button class="window-btn maximize" onclick="maximizeWindow('${appId}', event)" title="Maximize" aria-label="Maximize Window">⬜</button>
-        <button class="window-btn close" onclick="closeWindow('${appId}', event)" title="Close" aria-label="Close Window">✕</button>
+        <button class="window-btn minimize" onclick="minimizeWindow('${appId}', event)" title="Minimize" aria-label="Minimize Window"></button>
+        <button class="window-btn maximize" onclick="maximizeWindow('${appId}', event)" title="Maximize" aria-label="Maximize Window"></button>
+        <button class="window-btn close" onclick="closeWindow('${appId}', event)" title="Close" aria-label="Close Window"></button>
       </div>
     </div>
     <div class="window-content">
@@ -1496,11 +1496,11 @@ function handleTerminalCommand(e, input) {
         case 'tomb-iso':
           const isoHash = generateInteractionHash();
           output = `[ISO BUILD DAEMON] Initiating bootable Tomb OS ISO compilation...
-▶ Bundling Xen Dom0 Hypervisor & seL4 Microkernel binaries...
-▶ Compiling Kyber-1024 / Dilithium-5 Post-Quantum Cryptography engines...
-▶ Integrating Global Compliance Hub (GDPR, CCPA, DPDP, PIPL, LGPD)...
-▶ Packaging Control Center, Tomb Notes, 2-Way File Encryption & Importer tools...
-✅ SUCCESS: Bootable ISO Image updated successfully!
+ Bundling Xen Dom0 Hypervisor & seL4 Microkernel binaries...
+ Compiling Kyber-1024 / Dilithium-5 Post-Quantum Cryptography engines...
+ Integrating Global Compliance Hub (GDPR, CCPA, DPDP, PIPL, LGPD)...
+ Packaging Control Center, Tomb Notes, 2-Way File Encryption & Importer tools...
+ SUCCESS: Bootable ISO Image updated successfully!
 Output File: /tombos/tombos_secure_amd64.iso (Size: 4.8 GB)
 SHA256 Checksum: [${isoHash}]
 Ready for live SD card / USB flashing or deployment.`;
@@ -1675,8 +1675,8 @@ fs.protected_symlinks = 1`;
         case 'gpt4':
           const queryPrompt = escapeHTML(args.slice(1).join(' ') || 'analyze active threat surface');
           output = `[OPENAI GPT-4o AI ENGINE] Connecting via TLS v1.3 Kyber-1024 quantum tunnel...
-▶ Prompt: "${queryPrompt}"
-🤖 OpenAI GPT-4o Response:
+ Prompt: "${queryPrompt}"
+ OpenAI GPT-4o Response:
 "Analysis complete. Active Tomb OS kernel is running 100% zero-trust verified with seL4 microkernel formal IPC capabilities, AppArmor MAC profiles, and hardware TPM 2.0 enclave sealing. Zero security vulnerabilities detected."`;
           logAudit(`Executed OpenAI GPT-4o intelligence query via CLI.`);
           break;
@@ -2306,7 +2306,7 @@ Handshake Channel ID: ${handshakeId} (Authenticated PQC Key Broker Intermediary)
 Step 1: Establishing authenticated key exchange channel to transfer master keys...
 Step 2: Key exchange verified. Executing AES-256 2-Way symmetric sealing on '${fileName}'...
 
-🔒 ENCRYPTION COMPLETE:
+ ENCRYPTION COMPLETE:
 Output File: /home/sec-admin/vault/${fileName}.tomb-enc
 Encrypted File Hash: SHA256(0x7A90..F21B)
 Keybroker Transfer Logged to Audit Daemon.`;
@@ -2332,7 +2332,7 @@ Handshake Channel ID: ${handshakeId} (Authenticated PQC Key Broker Intermediary)
 Step 1: Authenticating key transfer intermediary channel...
 Step 2: Decrypting 2-Way binary stream using key '${key.slice(0, 4)}***'...
 
-🔓 DECRYPTION COMPLETE:
+ DECRYPTION COMPLETE:
 Restored Original File: /home/sec-admin/vault/${fileName}
 Integrity Verification: PASS (Match 100%)
 File Unsealed & Ready for Use.`;
@@ -2861,7 +2861,7 @@ function renderUltimateWrapper() {
 
       <div style="margin-top: 16px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,204,0,0.4); border-radius: 8px; padding: 16px;">
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-          <span style="font-size: 18px;">⚠️</span>
+          <span style="font-size: 18px;"></span>
           <h4 style="margin: 0; color: #FFCC00; font-size: 14px; font-weight: 700;">Zero-Trust Password Reset & Recovery Security Advisory</h4>
         </div>
         
@@ -2966,7 +2966,7 @@ function executeSystemPasswordReset() {
   const newPass = input?.value?.trim();
   if (!newPass || newPass.length < 8) {
     status.style.color = '#ff3b30';
-    status.innerHTML = `❌ SECURITY ENFORCED: New master password must be at least 8 characters.`;
+    status.innerHTML = ` SECURITY ENFORCED: New master password must be at least 8 characters.`;
     return;
   }
 
@@ -2975,7 +2975,7 @@ function executeSystemPasswordReset() {
 
   setTimeout(() => {
     status.style.color = '#4AF626';
-    status.innerHTML = `🔐 <strong>SUCCESS: System Master Password updated! Hardware TPM keyrings re-seeded with Kyber-1024 entropy.</strong><br/>⚠️ Zero-trust attestation gates re-locked and sealed.`;
+    status.innerHTML = ` <strong>SUCCESS: System Master Password updated! Hardware TPM keyrings re-seeded with Kyber-1024 entropy.</strong><br/> Zero-trust attestation gates re-locked and sealed.`;
     logAudit("Executed hardware password reset routine. Re-seeded TPM 2.0 keyrings with 600,000 PBKDF2 iterations and Kyber-1024 entropy.");
     if (input) input.value = '';
   }, 1600);
@@ -3522,7 +3522,7 @@ function getRenderContent() {
       <div class="render-controls">
         <div>
           <button class="render-btn-play" onclick="toggleRenderPlay()" id="render-play-btn">
-            ${isPlaying ? '❚❚ Pause' : '▶ Play'}
+            ${isPlaying ? ' Pause' : ' Play'}
           </button>
           <button class="render-btn-play" style="margin-left: 5px;" onclick="resetRenderPlay()">
             Stop / Reset
@@ -3549,12 +3549,12 @@ function toggleRenderPlay() {
       systemState.render.intervalId = null;
     }
     const playBtn = document.getElementById('render-play-btn');
-    if (playBtn) playBtn.textContent = '▶ Play';
+    if (playBtn) playBtn.textContent = ' Play';
   } else {
     // Play
     systemState.render.isPlaying = true;
     const playBtn = document.getElementById('render-play-btn');
-    if (playBtn) playBtn.textContent = '❚❚ Pause';
+    if (playBtn) playBtn.textContent = ' Pause';
     
     systemState.render.intervalId = setInterval(() => {
       systemState.render.playProgress += 1;
@@ -3577,7 +3577,7 @@ function resetRenderPlay() {
   }
   
   const playBtn = document.getElementById('render-play-btn');
-  if (playBtn) playBtn.textContent = '▶ Play';
+  if (playBtn) playBtn.textContent = ' Play';
   
   updateRenderPlayUI();
 }
@@ -3597,9 +3597,9 @@ function updateRenderPlayUI() {
   if (scene) {
     let activeScene = "Scene 1: System Boot & Kernel Audits";
     if (playProgress >= 25 && playProgress < 60) {
-      activeScene = "⚠️ Scene 2: Firewall Breach & Port Scan Intrusion";
+      activeScene = " Scene 2: Firewall Breach & Port Scan Intrusion";
     } else if (playProgress >= 60) {
-      activeScene = "🛡️ Scene 3: Crypt Shield Isolation & seL4 Hardening Proof";
+      activeScene = " Scene 3: Crypt Shield Isolation & seL4 Hardening Proof";
     }
     scene.textContent = activeScene;
     systemState.render.activeScene = activeScene;
@@ -3690,44 +3690,44 @@ function startMovieRendering() {
 // ==========================================
 const translationTemplates = [
   {
-    lang: "🇷🇺 Russian",
+    lang: " Russian",
     original: "Обнаружена атака методом подбора пароля SSH с IP-адреса 91.240.118.66",
     english: "SSH brute-force attack detected from IP 91.240.118.66",
     src: "91.240.118.66"
   },
   {
-    lang: "🇨🇳 Chinese",
-    original: "检测到端口扫描，扫描端口范围：21, 22, 23, 80",
+    lang: " Chinese",
+    original: "21, 22, 23, 80",
     english: "Port scan detected, scanned ports: 21, 22, 23, 80",
     src: "45.143.203.14"
   },
   {
-    lang: "🇪🇸 Spanish",
+    lang: " Spanish",
     original: "Intento de inyección SQL detectado en HTTP GET /login",
     english: "SQL Injection attempt detected in HTTP GET /login",
     src: "185.220.101.5"
   },
   {
-    lang: "🇫🇷 French",
+    lang: " French",
     original: "AppArmor a bloqué la lecture non autorisée de /etc/shadow par chromium-browser",
     english: "AppArmor blocked unauthorized read on /etc/shadow by chromium-browser",
     src: "localhost"
   },
   {
-    lang: "🇩🇪 German",
+    lang: " German",
     original: "ICMP-Flood-Paketvolumen hat den Grenzwert überschritten",
     english: "ICMP flood packet volume has exceeded the limit",
     src: "192.168.1.102"
   },
   {
-    lang: "🇯🇵 Japanese",
-    original: "IPアドレス 185.220.101.5 からの SQL インジェクション攻撃を検出しました",
+    lang: " Japanese",
+    original: "IP 185.220.101.5  SQL ",
     english: "SQL Injection attack detected from IP address 185.220.101.5",
     src: "185.220.101.5"
   },
   {
-    lang: "🇰🇷 Korean",
-    original: "SSH 무차별 대입 공격 감지: IP 91.240.118.66",
+    lang: " Korean",
+    original: "SSH    : IP 91.240.118.66",
     english: "SSH brute-force attack detected: IP 91.240.118.66",
     src: "91.240.118.66"
   }
@@ -3740,10 +3740,10 @@ function getTeacherContent() {
     <div class="app-teacher-container">
       <div class="teacher-tabs">
         <button class="teacher-tab ${activeTab === 'translator' ? 'active' : ''}" onclick="switchTeacherTab('translator')">
-          🌐 Live Language Translator
+           Live Language Translator
         </button>
         <button class="teacher-tab ${activeTab === 'teacher' ? 'active' : ''}" onclick="switchTeacherTab('teacher')">
-          🧠 Interactive Agent Teacher
+           Interactive Agent Teacher
         </button>
       </div>
 
@@ -3913,18 +3913,18 @@ function getBrowserContent() {
     <div class="app-browser-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #121212;">
       <div style="background: #181818; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 4px 12px; display: flex; justify-content: space-between; align-items: center; font-size: 10.5px; font-family: var(--font-mono);">
         <span style="color: #4AF626; display: flex; align-items: center; gap: 6px;">
-          <span>🖥️ DEDICATED MICRO-VM: <strong>${vmId}</strong></span>
+          <span> DEDICATED MICRO-VM: <strong>${vmId}</strong></span>
           <span style="background: rgba(74,246,38,0.15); padding: 1px 6px; border-radius: 4px;">512MB RAM ISOLATED</span>
-          <span style="background: rgba(0,122,255,0.2); color: #007AFF; padding: 1px 6px; border-radius: 4px;">🌐 ROLLING IP: ${systemState.activeTaskIp}</span>
+          <span style="background: rgba(0,122,255,0.2); color: #007AFF; padding: 1px 6px; border-radius: 4px;"> ROLLING IP: ${systemState.activeTaskIp}</span>
         </span>
         <span style="color: var(--sec-yellow);">seL4 Microkernel Hardware Sandbox</span>
       </div>
 
       <div class="browser-toolbar" style="background: #1f1f1f; padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 8px;">
-        <button style="background: transparent; border: none; color: #aaa; cursor: pointer; font-size: 14px;" onclick="navigateBrowserUrl('https://tombos.sec/defense-portal')">◀</button>
-        <button style="background: transparent; border: none; color: #aaa; cursor: pointer; font-size: 14px;" onclick="navigateBrowserUrl('${currentUrl}')">🔄</button>
+        <button style="background: transparent; border: none; color: #aaa; cursor: pointer; font-size: 14px;" onclick="navigateBrowserUrl('https://tombos.sec/defense-portal')"></button>
+        <button style="background: transparent; border: none; color: #aaa; cursor: pointer; font-size: 14px;" onclick="navigateBrowserUrl('${currentUrl}')"></button>
         <div style="flex: 1; background: #2a2a2a; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 4px 12px; display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 12px;">🔒</span>
+          <span style="font-size: 12px;"></span>
           <input type="text" id="browser-url-input" value="${currentUrl}" onkeydown="handleBrowserUrlKey(event)" style="flex: 1; background: transparent; border: none; color: #fff; font-family: var(--font-mono); font-size: 12px; outline: none;" />
         </div>
         <span style="font-size: 10px; padding: 2px 6px; border-radius: 4px; background: rgba(255,59,48,0.2); color: #ff3b30; border: 1px solid rgba(255,59,48,0.4); font-family: var(--font-mono); font-weight: 600;">UNTRUSTED ZONE (${vmId})</span>
@@ -3942,23 +3942,23 @@ function renderBrowserPageContent(url) {
     return `
       <div style="max-width: 680px; margin: 0 auto; background: #222; border-radius: 8px; padding: 24px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 8px 24px rgba(0,0,0,0.5);">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px; margin-bottom: 18px;">
-          <h2 style="margin: 0; color: var(--ubuntu-orange, #E95420); font-size: 20px;">🛡️ Tomb OS Security Defense Portal</h2>
+          <h2 style="margin: 0; color: var(--ubuntu-orange, #E95420); font-size: 20px;"> Tomb OS Security Defense Portal</h2>
           <span style="font-size: 11px; background: rgba(74,246,38,0.15); color: #4AF626; padding: 3px 8px; border-radius: 12px; font-family: var(--font-mono);">Live Telemetry Connected</span>
         </div>
         <p style="color: #ccc; font-size: 13.5px; line-height: 1.6;">Welcome to the internal web security portal. This Chromium instance runs inside the <strong>Untrusted Red Zone VM sandbox</strong>. AppArmor MAC controls continuously monitor all filesystem I/O calls executed by this browser.</p>
         
         <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 16px; margin: 18px 0;">
-          <h4 style="margin: 0 0 10px 0; color: var(--sec-yellow, #ffcc00); font-size: 14px;">🌐 Live Internet Browsing & Web Quick-Links</h4>
+          <h4 style="margin: 0 0 10px 0; color: var(--sec-yellow, #ffcc00); font-size: 14px;"> Live Internet Browsing & Web Quick-Links</h4>
           <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Type any live web address into the URL bar above or click one of the live web targets below to reach out to the live internet:</p>
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button onclick="navigateBrowserUrl('https://example.com')" style="background: rgba(74,246,38,0.15); border: 1px solid #4AF626; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600;">🌐 Example.com (Live)</button>
-            <button onclick="navigateBrowserUrl('https://wikipedia.org')" style="background: rgba(0,122,255,0.2); border: 1px solid #007AFF; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600;">📖 Wikipedia (Live)</button>
-            <button onclick="navigateBrowserUrl('https://bing.com')" style="background: rgba(255,204,0,0.2); border: 1px solid #ffcc00; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600;">🔍 Bing Search (Live)</button>
+            <button onclick="navigateBrowserUrl('https://example.com')" style="background: rgba(74,246,38,0.15); border: 1px solid #4AF626; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600;"> Example.com (Live)</button>
+            <button onclick="navigateBrowserUrl('https://wikipedia.org')" style="background: rgba(0,122,255,0.2); border: 1px solid #007AFF; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600;"> Wikipedia (Live)</button>
+            <button onclick="navigateBrowserUrl('https://bing.com')" style="background: rgba(255,204,0,0.2); border: 1px solid #ffcc00; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600;"> Bing Search (Live)</button>
           </div>
         </div>
 
         <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(0,122,255,0.3); border-radius: 6px; padding: 16px; margin: 18px 0;">
-          <h4 style="margin: 0 0 10px 0; color: #007AFF; font-size: 14px;">⚡ Upload Web File (Real-Time Auto-Sanitization Active)</h4>
+          <h4 style="margin: 0 0 10px 0; color: #007AFF; font-size: 14px;"> Upload Web File (Real-Time Auto-Sanitization Active)</h4>
           <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Select or upload any file from the internet. The Tomb OS Sanitization Daemon automatically intercepts the upload stream, strips embedded executable macros, scrubs tracking PII, and deposits clean files into <code>/home/sec-admin/downloads/</code>.</p>
           <div style="display: flex; gap: 8px;">
             <input type="file" id="web-upload-input" onchange="uploadAndSanitizeWebFile(this)" style="font-size: 12px; color: #ccc;" />
@@ -3968,7 +3968,7 @@ function renderBrowserPageContent(url) {
         </div>
 
         <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 16px; margin: 18px 0;">
-          <h4 style="margin: 0 0 10px 0; color: var(--sec-yellow, #ffcc00); font-size: 14px;">⚡ Interactive Security Sandbox Simulations</h4>
+          <h4 style="margin: 0 0 10px 0; color: var(--sec-yellow, #ffcc00); font-size: 14px;"> Interactive Security Sandbox Simulations</h4>
           <div style="display: flex; gap: 10px; flex-wrap: wrap;">
             <button onclick="triggerBrowserDownloadTrigger()" style="background: rgba(255,59,48,0.2); border: 1px solid #ff3b30; color: #fff; padding: 8px 14px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600;">Simulate Unauthorized Executable Download</button>
             <button onclick="navigateBrowserUrl('https://security-onion.internal')" style="background: rgba(0,122,255,0.2); border: 1px solid #007AFF; color: #fff; padding: 8px 14px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: 600;">Open Security Onion Portal →</button>
@@ -3981,7 +3981,7 @@ function renderBrowserPageContent(url) {
   } else if (url.includes('security-onion') || url === 'https://security-onion.internal') {
     return `
       <div style="max-width: 680px; margin: 0 auto; background: #1e2530; border-radius: 8px; padding: 24px; border: 1px solid rgba(0,122,255,0.3);">
-        <h2 style="margin: 0 0 12px 0; color: #007AFF; font-size: 20px;">🧅 Security Onion Enterprise Threat Feed</h2>
+        <h2 style="margin: 0 0 12px 0; color: #007AFF; font-size: 20px;"> Security Onion Enterprise Threat Feed</h2>
         <p style="color: #ddd; font-size: 13px; line-height: 1.6;">Monitoring global IDS packet signatures, Suricata alerts, and automated SOC 2 compliance mappings.</p>
         <div style="background: #111823; padding: 14px; border-radius: 6px; font-family: var(--font-mono); font-size: 11.5px; color: #4AF626; margin-top: 14px;">
           [SYSTEM OK] All nodes operational. Zero compromised endpoints across Red/Blue/Secure hypervisor zones.
@@ -3997,7 +3997,7 @@ function renderBrowserPageContent(url) {
       logAudit(`[System Browser Default-Deny Block] Blocked connection request to unverified domain: ${url}`);
       return `
         <div style="max-width: 620px; margin: 40px auto; background: #1a0d0d; border: 1px solid #ff3b30; border-radius: 12px; padding: 28px; text-align: center; font-family: 'Outfit', sans-serif;">
-          <div style="font-size: 48px; margin-bottom: 12px;">🔴</div>
+          <div style="font-size: 48px; margin-bottom: 12px;"></div>
           <h2 style="margin: 0 0 10px 0; color: #ff3b30; font-size: 22px; font-weight: 700;">ACCESS BLOCKED BY DEFAULT-DENY POLICY</h2>
           <div style="font-family: var(--font-mono); font-size: 12px; background: rgba(0,0,0,0.4); color: #ffbaba; padding: 10px; border-radius: 6px; margin-bottom: 18px; word-break: break-all;">
             Target URL: ${escapeHTML(url)}
@@ -4016,7 +4016,7 @@ function renderBrowserPageContent(url) {
     return `
       <div style="width: 100%; height: 100%; min-height: 400px; display: flex; flex-direction: column;">
         <div style="background: rgba(0,0,0,0.4); padding: 6px 12px; font-size: 11px; color: var(--sec-green, #4AF626); font-family: var(--font-mono); border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
-          <span>🌐 LIVE INTERNET CONNECTION: Connected to ${escapeHTML(url)} (WHITELISTED)</span>
+          <span> LIVE INTERNET CONNECTION: Connected to ${escapeHTML(url)} (WHITELISTED)</span>
           <a href="${escapeHTML(url)}" target="_blank" style="color: #007AFF; text-decoration: underline;">Open External Window ↗</a>
         </div>
         <iframe src="${escapeHTML(url)}" style="width: 100%; flex: 1; min-height: 380px; border: none; background: #fff; border-radius: 0 0 6px 6px;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
@@ -4054,7 +4054,7 @@ function triggerBrowserDownloadTrigger() {
   const status = document.getElementById('browser-sandbox-status');
   if (status) {
     status.style.display = 'block';
-    status.innerHTML = `🛡️ [APPARMOR BLOCK] Unauthorized download execute request intercepted! Access to host filesystem denied. Logged to system audit daemon.`;
+    status.innerHTML = ` [APPARMOR BLOCK] Unauthorized download execute request intercepted! Access to host filesystem denied. Logged to system audit daemon.`;
   }
   logAudit(`[AppArmor sandbox violation] Blocked unauthorized executable download attempt by chromium-browser`);
 }
@@ -4069,18 +4069,18 @@ function simulateWebFileUpload(fileName) {
   const out = document.getElementById('web-upload-sanitizer-output');
   if (!out) return;
   out.style.display = 'block';
-  out.innerHTML = `[SANITIZATION DAEMON] Intercepted incoming web upload stream for '${fileName}'...<br/>▶ Provisioning RAM volatile quarantine buffer...`;
+  out.innerHTML = `[SANITIZATION DAEMON] Intercepted incoming web upload stream for '${fileName}'...<br/> Provisioning RAM volatile quarantine buffer...`;
 
   setTimeout(() => {
-    out.innerHTML += `<br/>▶ [THREAT STRIPPING] Scanning payload signatures... Neutralized embedded VBA macros & zero-day buffer overflow scripts.`;
+    out.innerHTML += `<br/> [THREAT STRIPPING] Scanning payload signatures... Neutralized embedded VBA macros & zero-day buffer overflow scripts.`;
   }, 800);
 
   setTimeout(() => {
-    out.innerHTML += `<br/>▶ [PRIVACY DE-IDENTIFICATION] Scrubbing EXIF geolocation metadata, author tracking tags, and device GUIDs...`;
+    out.innerHTML += `<br/> [PRIVACY DE-IDENTIFICATION] Scrubbing EXIF geolocation metadata, author tracking tags, and device GUIDs...`;
   }, 1500);
 
   setTimeout(() => {
-    out.innerHTML += `<br/>✅ <strong>CLEANSED & STORED: 100% Disarmed file saved to '/home/sec-admin/downloads/clean_${fileName}'. Verified safe!</strong>`;
+    out.innerHTML += `<br/> <strong>CLEANSED & STORED: 100% Disarmed file saved to '/home/sec-admin/downloads/clean_${fileName}'. Verified safe!</strong>`;
     logAudit(`Real-time web upload sanitizer disarmed and cleaned uploaded file: ${fileName}`);
   }, 2300);
 }
@@ -4095,11 +4095,11 @@ const securityLessons = [
     category: "Data Structures & Algorithms",
     description: "Master foundational memory layouts, O(1) hash table lookups, and array manipulations across C, Python & JS.",
     content: `
-      <h5>💻 Target Terminal Command</h5>
+      <h5> Target Terminal Command</h5>
       <div style="background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 4px; font-family: var(--font-mono); color: var(--sec-green, #4AF626); margin-bottom: 12px;">$ notes</div>
       <h5>Overview & Objectives</h5>
       <p>Arrays provide contiguous indexed memory buffers. Hash Tables map key-value pairs using hash functions for O(1) constant time search complexity.</p>
-      <h5>💡 Real-World Production Use Cases</h5>
+      <h5> Real-World Production Use Cases</h5>
       <ul>
         <li><strong>High-Throughput Caching:</strong> Building Redis-style in-memory key-value stores.</li>
         <li><strong>Big-O Space & Time Optimization:</strong> Reducing O(N^2) search loops down to O(N) linear time using Hash Maps.</li>
@@ -4115,11 +4115,11 @@ const securityLessons = [
     category: "Data Structures & Algorithms",
     description: "Understand hierarchical tree nodes, Binary Search Trees (BST), Breadth-First Search (BFS), and DFS.",
     content: `
-      <h5>💻 Target Terminal Command</h5>
+      <h5> Target Terminal Command</h5>
       <div style="background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 4px; font-family: var(--font-mono); color: var(--sec-green, #4AF626); margin-bottom: 12px;">$ sysctl -a</div>
       <h5>Overview & Objectives</h5>
       <p>Trees and Graphs model interconnected networks, filesystem directories, and dependency graphs. Graph traversal algorithms power routing engines.</p>
-      <h5>💡 Real-World Production Use Cases</h5>
+      <h5> Real-World Production Use Cases</h5>
       <ul>
         <li><strong>Dependency Resolution:</strong> Resolving package dependency trees in npm, pip, and apt.</li>
         <li><strong>Database Indexing:</strong> Using B-Trees and LSM Trees to index millions of records in PostgreSQL.</li>
@@ -4135,11 +4135,11 @@ const securityLessons = [
     category: "Software Engineering",
     description: "Learn Single Responsibility, Open/Closed, Interface Segregation, and Dependency Inversion design patterns.",
     content: `
-      <h5>💻 Target Terminal Command</h5>
+      <h5> Target Terminal Command</h5>
       <div style="background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 4px; font-family: var(--font-mono); color: var(--sec-green, #4AF626); margin-bottom: 12px;">$ cat .env</div>
       <h5>Overview & Objectives</h5>
       <p>SOLID design principles ensure codebases remain maintainable, testable, and loosely coupled as engineering teams scale.</p>
-      <h5>💡 Real-World Production Use Cases</h5>
+      <h5> Real-World Production Use Cases</h5>
       <ul>
         <li><strong>Enterprise Microservices:</strong> Decoupling storage layers from business logic to enable painless cloud migrations.</li>
         <li><strong>Test-Driven Development (TDD):</strong> Injecting mock dependencies to achieve 100% unit test coverage.</li>
@@ -4155,11 +4155,11 @@ const securityLessons = [
     category: "Multi-Language Foundations",
     description: "Compare manual memory management (malloc/free) in C with Rust borrow checking and zero-cost abstractions.",
     content: `
-      <h5>💻 Target Terminal Command</h5>
+      <h5> Target Terminal Command</h5>
       <div style="background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 4px; font-family: var(--font-mono); color: var(--sec-green, #4AF626); margin-bottom: 12px;">$ vault</div>
       <h5>Overview & Objectives</h5>
       <p>Systems languages operate near bare-metal hardware. C offers pointer arithmetic, while Rust guarantees memory safety at compile time.</p>
-      <h5>💡 Real-World Production Use Cases</h5>
+      <h5> Real-World Production Use Cases</h5>
       <ul>
         <li><strong>Operating System Kernel Dev:</strong> Writing device drivers and microkernel IPC mechanisms.</li>
         <li><strong>High-Frequency Trading & Games:</strong> Eliminating garbage collection pauses for microsecond latency.</li>
@@ -4175,11 +4175,11 @@ const securityLessons = [
     category: "Linux Fundamentals",
     description: "Learn how Linux structures files, directories, hidden files, and access permissions in Unix filesystems.",
     content: `
-      <h5>💻 Target Terminal Command</h5>
+      <h5> Target Terminal Command</h5>
       <div style="background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 4px; font-family: var(--font-mono); color: var(--sec-green, #4AF626); margin-bottom: 12px;">$ ls -la</div>
       <h5>Overview & Objectives</h5>
       <p>The Linux filesystem is organized in a hierarchical tree starting at the root directory (<code>/</code>). Administrators use file inspection tools to verify permissions, file owners, and hidden configurations.</p>
-      <h5>💡 Real-World Production Use Cases</h5>
+      <h5> Real-World Production Use Cases</h5>
       <ul>
         <li><strong>Server Audit & Malware Forensics:</strong> Finding hidden malware scripts or backdoor web shells disguised as dot-files.</li>
         <li><strong>Web Server Configuration Checks:</strong> Verifying file permissions on <code>/var/www/html/</code>.</li>
@@ -4195,11 +4195,11 @@ const securityLessons = [
     category: "Linux Fundamentals",
     description: "Understand Linux multi-user privileges, UID contexts, and administrative root access.",
     content: `
-      <h5>💻 Target Terminal Command</h5>
+      <h5> Target Terminal Command</h5>
       <div style="background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 4px; font-family: var(--font-mono); color: var(--sec-green, #4AF626); margin-bottom: 12px;">$ whoami</div>
       <h5>Overview & Objectives</h5>
       <p>Linux operates under strict multi-user permissions. User accounts run either as unprivileged users or privileged root accounts (UID 0).</p>
-      <h5>💡 Real-World Production Use Cases</h5>
+      <h5> Real-World Production Use Cases</h5>
       <ul>
         <li><strong>Automated Deployment Scripts:</strong> Including <code>whoami</code> checks in bash deployment scripts to verify privileged access.</li>
       </ul>
@@ -4214,7 +4214,7 @@ const securityLessons = [
     category: "Network Security",
     description: "Learn how Linux packet filtering engines inspect inbound and outbound traffic to block port scanners.",
     content: `
-      <h5>💻 Target Terminal Command</h5>
+      <h5> Target Terminal Command</h5>
       <div style="background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 4px; font-family: var(--font-mono); color: var(--sec-green, #4AF626); margin-bottom: 12px;">$ ufw status</div>
       <h5>Overview & Objectives</h5>
       <p>Uncomplicated Firewall (UFW) manages Netfilter packet rules on Linux servers to block unsolicited inbound connection requests on exposed ports.</p>
@@ -4229,7 +4229,7 @@ const securityLessons = [
     category: "Cryptography",
     description: "Learn symmetric payload encryption using AES-256 and post-quantum lattice cryptography.",
     content: `
-      <h5>💻 Target Terminal Command</h5>
+      <h5> Target Terminal Command</h5>
       <div style="background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 4px; font-family: var(--font-mono); color: var(--sec-green, #4AF626); margin-bottom: 12px;">$ gpg -c secretdata</div>
       <h5>Overview & Objectives</h5>
       <p>Protecting confidential files at rest requires strong symmetric payload ciphers (AES-256) and lattice-based key exchange mechanisms.</p>
@@ -4251,7 +4251,7 @@ function getLearningContent() {
     <div class="app-learning-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif;">
       <div class="learning-header" style="background: rgba(0,0,0,0.25); padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <h3 style="margin: 0; font-size: 16px; color: var(--ubuntu-orange, #E95420); font-weight: 600;">🎓 Tomb Security Academy</h3>
+          <h3 style="margin: 0; font-size: 16px; color: var(--ubuntu-orange, #E95420); font-weight: 600;"> Tomb Security Academy</h3>
           <div style="font-size: 11px; color: var(--ubuntu-light-grey, #aea79f);">Interactive Cybersecurity Lessons & Terminal Exercises</div>
         </div>
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -4267,10 +4267,10 @@ function getLearningContent() {
 
       <div class="learning-tabs" style="display: flex; background: rgba(0,0,0,0.15); border-bottom: 1px solid rgba(255,255,255,0.08);">
         <button class="teacher-tab ${activeTab === 'lessons' ? 'active' : ''}" onclick="switchLearningTab('lessons')" style="padding: 10px 20px; border: none; background: ${activeTab === 'lessons' ? 'rgba(233,84,32,0.2)' : 'transparent'}; color: ${activeTab === 'lessons' ? '#fff' : 'var(--ubuntu-light-grey)'}; border-bottom: 2px solid ${activeTab === 'lessons' ? 'var(--ubuntu-orange)' : 'transparent'}; cursor: pointer; font-weight: 600; font-size: 12.5px;">
-          📚 Security Lessons
+           Security Lessons
         </button>
         <button class="teacher-tab ${activeTab === 'exercises' ? 'active' : ''}" onclick="switchLearningTab('exercises')" style="padding: 10px 20px; border: none; background: ${activeTab === 'exercises' ? 'rgba(233,84,32,0.2)' : 'transparent'}; color: ${activeTab === 'exercises' ? '#fff' : 'var(--ubuntu-light-grey)'}; border-bottom: 2px solid ${activeTab === 'exercises' ? 'var(--ubuntu-orange)' : 'transparent'}; cursor: pointer; font-weight: 600; font-size: 12.5px;">
-          💻 Terminal Command Exercises
+           Terminal Command Exercises
         </button>
       </div>
 
@@ -4292,7 +4292,7 @@ function renderLessonsTab(lesson, selectedIdx) {
           <div onclick="selectLessonModule(${idx})" style="padding: 10px; margin-bottom: 4px; border-radius: 6px; cursor: pointer; background: ${isSel ? 'rgba(233,84,32,0.25)' : 'rgba(255,255,255,0.03)'}; border: 1px solid ${isSel ? 'var(--ubuntu-orange)' : 'transparent'}; transition: all 0.2s;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
               <span style="font-size: 10px; padding: 1px 5px; border-radius: 3px; background: rgba(255,255,255,0.1); color: var(--sec-yellow); font-family: var(--font-mono);">${l.category}</span>
-              ${isDone ? '<span style="color: var(--sec-green); font-size: 12px;">✓ Completed</span>' : ''}
+              ${isDone ? '<span style="color: var(--sec-green); font-size: 12px;"> Completed</span>' : ''}
             </div>
             <div style="font-size: 12px; font-weight: 600; color: #fff; line-height: 1.3;">${l.title}</div>
           </div>
@@ -4313,7 +4313,7 @@ function renderLessonsTab(lesson, selectedIdx) {
         ${lesson.content}
       </div>
       <div style="background: rgba(255,255,0,0.05); border: 1px solid rgba(255,255,0,0.2); border-radius: 8px; padding: 14px;">
-        <div style="font-weight: 600; color: var(--sec-yellow); font-size: 12px; margin-bottom: 4px;">🎯 Practical Exercise Target:</div>
+        <div style="font-weight: 600; color: var(--sec-yellow); font-size: 12px; margin-bottom: 4px;"> Practical Exercise Target:</div>
         <div style="font-size: 12.5px; color: #eee;">${lesson.exercisePrompt}</div>
       </div>
     </div>
@@ -4393,10 +4393,10 @@ function submitAcademyCmd() {
     if (!systemState.learning.completedExercises.includes(lesson.id)) {
       systemState.learning.completedExercises.push(lesson.id);
     }
-    systemState.learning.exerciseFeedback = `✅ SUCCESS: Command '${val}' executed cleanly! ${lesson.rewardText}`;
+    systemState.learning.exerciseFeedback = ` SUCCESS: Command '${val}' executed cleanly! ${lesson.rewardText}`;
     logAudit(`Academy student successfully executed terminal exercise: '${val}' for module ${lesson.id}`);
   } else {
-    systemState.learning.exerciseFeedback = `❌ EXERCISE MISMATCH: Submitted '${val}'. Expected target command is '${lesson.expectedCmd}'. Try typing '${lesson.expectedCmd}'!`;
+    systemState.learning.exerciseFeedback = ` EXERCISE MISMATCH: Submitted '${val}'. Expected target command is '${lesson.expectedCmd}'. Try typing '${lesson.expectedCmd}'!`;
   }
   updateLearningUI();
 }
@@ -4422,7 +4422,7 @@ function getNotesContent() {
     <div class="app-notes-container" style="display: flex; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #1a1a1a;">
       <div class="notes-sidebar" style="width: 230px; border-right: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.2); display: flex; flex-direction: column;">
         <div style="padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-weight: 600; font-size: 13px; color: var(--ubuntu-orange);">📝 My Secure Notes</span>
+          <span style="font-weight: 600; font-size: 13px; color: var(--ubuntu-orange);"> My Secure Notes</span>
           <button onclick="createNewNote()" style="background: var(--ubuntu-orange); border: none; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: 600;">+ New</button>
         </div>
         <div class="notes-list" style="flex: 1; overflow-y: auto; padding: 6px;">
@@ -4439,12 +4439,12 @@ function getNotesContent() {
         ${activeNote.id ? `
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <input type="text" id="note-title-input" value="${activeNote.title}" oninput="updateActiveNoteTitle(this.value)" placeholder="Note Title..." style="flex: 1; background: transparent; border: none; color: #fff; font-size: 16px; font-weight: 600; outline: none; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px; margin-right: 12px;" />
-            <button onclick="copyNoteToVMClipboard()" style="background: rgba(0,122,255,0.2); border: 1px solid #007AFF; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;">📋 Copy to VM</button>
-            <button onclick="deleteNote('${activeNote.id}')" style="background: rgba(255,59,48,0.2); border: 1px solid #ff3b30; color: #ffbaba; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-left: 6px;">🗑️ Delete</button>
+            <button onclick="copyNoteToVMClipboard()" style="background: rgba(0,122,255,0.2); border: 1px solid #007AFF; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;"> Copy to VM</button>
+            <button onclick="deleteNote('${activeNote.id}')" style="background: rgba(255,59,48,0.2); border: 1px solid #ff3b30; color: #ffbaba; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-left: 6px;"> Delete</button>
           </div>
           <textarea id="note-body-textarea" oninput="updateActiveNoteContent(this.value)" placeholder="Start typing your secure note here..." style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 12px; color: #ddd; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.5; outline: none; resize: none;"></textarea>
           <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--ubuntu-light-grey); margin-top: 6px;">
-            <span id="note-save-status">🔒 Auto-saved to Encrypted Vault</span>
+            <span id="note-save-status"> Auto-saved to Encrypted Vault</span>
             <span id="note-char-count">${activeNote.content.length} characters</span>
           </div>
         ` : `
@@ -4464,7 +4464,7 @@ function selectNote(id) {
 
 function createNewNote() {
   const newId = 'n' + Date.now();
-  const newNote = { id: newId, title: '📝 New Confidential Note', content: '' };
+  const newNote = { id: newId, title: ' New Confidential Note', content: '' };
   systemState.notes.list.unshift(newNote);
   systemState.notes.activeNoteId = newId;
   updateNotesUI();
@@ -4506,8 +4506,8 @@ function copyNoteToVMClipboard() {
     systemState.vmClipboard = note.content;
     const status = document.getElementById('note-save-status');
     if (status) {
-      status.textContent = '📋 Copied Note to VM Clipboard!';
-      setTimeout(() => { status.textContent = '🔒 Auto-saved to Encrypted Vault'; }, 2000);
+      status.textContent = ' Copied Note to VM Clipboard!';
+      setTimeout(() => { status.textContent = ' Auto-saved to Encrypted Vault'; }, 2000);
     }
   }
 }
@@ -4530,23 +4530,23 @@ function getImporterContent() {
     <div class="app-importer-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #181818; padding: 20px; overflow-y: auto;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px; margin-bottom: 16px;">
         <div>
-          <h2 style="margin: 0; font-size: 19px; color: var(--ubuntu-orange); font-weight: 600;">📥 Cross-Platform Data Migration & Cryptographic Importer</h2>
+          <h2 style="margin: 0; font-size: 19px; color: var(--ubuntu-orange); font-weight: 600;"> Cross-Platform Data Migration & Cryptographic Importer</h2>
           <div style="font-size: 12px; color: var(--ubuntu-light-grey); margin-top: 2px;">Import profiles, documents, keys & credentials securely into isolated Tomb OS zones</div>
         </div>
         <span style="font-size: 10px; background: rgba(74,246,38,0.15); color: #4AF626; padding: 4px 10px; border-radius: 12px; font-family: var(--font-mono); font-weight: 600;">Sanitization Daemon: Ready</span>
       </div>
 
       <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
-        <button class="importer-tab active" onclick="switchImporterTab(this, 'apple')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid var(--ubuntu-orange); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">🍏 Apple Ecosystem (iCloud/iOS)</button>
-        <button class="importer-tab" onclick="switchImporterTab(this, 'google')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">🌐 Google Workspace & Chrome</button>
-        <button class="importer-tab" onclick="switchImporterTab(this, 'windows')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">🪟 Windows 10/11</button>
-        <button class="importer-tab" onclick="switchImporterTab(this, 'mac')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">💻 macOS & Linux SSH</button>
-        <button class="importer-tab" onclick="switchImporterTab(this, 'social')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">💬 Social APIs (Discord/Reddit)</button>
-        <button class="importer-tab" onclick="switchImporterTab(this, 'extdrive')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">💾 External Drive (USB/SD)</button>
+        <button class="importer-tab active" onclick="switchImporterTab(this, 'apple')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid var(--ubuntu-orange); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;"> Apple Ecosystem (iCloud/iOS)</button>
+        <button class="importer-tab" onclick="switchImporterTab(this, 'google')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;"> Google Workspace & Chrome</button>
+        <button class="importer-tab" onclick="switchImporterTab(this, 'windows')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;"> Windows 10/11</button>
+        <button class="importer-tab" onclick="switchImporterTab(this, 'mac')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;"> macOS & Linux SSH</button>
+        <button class="importer-tab" onclick="switchImporterTab(this, 'social')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;"> Social APIs (Discord/Reddit)</button>
+        <button class="importer-tab" onclick="switchImporterTab(this, 'extdrive')" style="flex: 1; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;"> External Drive (USB/SD)</button>
       </div>
 
       <div id="importer-panel-apple" class="importer-panel" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px;">
-        <h4 style="margin: 0 0 10px 0; color: #fff; font-size: 14px;">🍏 Import Apple iCloud, Apple Notes, Keychain & iOS Backups</h4>
+        <h4 style="margin: 0 0 10px 0; color: #fff; font-size: 14px;"> Import Apple iCloud, Apple Notes, Keychain & iOS Backups</h4>
         <p style="font-size: 12px; color: #ccc; line-height: 1.5; margin-bottom: 12px;">Seamlessly import your Apple ecosystem data, iCloud Drive files, Apple Keychain credentials, and local iPhone/iPad backups into Tomb OS.</p>
         <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #ddd; margin-bottom: 16px;">
           <label><input type="checkbox" checked id="imp-a-keychain" /> Apple Keychain Passwords & Wi-Fi Secrets (Sealed in Crypt Key Vault)</label>
@@ -4558,7 +4558,7 @@ function getImporterContent() {
       </div>
 
       <div id="importer-panel-google" class="importer-panel hidden" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px;">
-        <h4 style="margin: 0 0 10px 0; color: #007AFF; font-size: 14px;">🌐 Import Google Chrome Bookmarks, Drive & Keep Notes</h4>
+        <h4 style="margin: 0 0 10px 0; color: #007AFF; font-size: 14px;"> Import Google Chrome Bookmarks, Drive & Keep Notes</h4>
         <p style="font-size: 12px; color: #ccc; line-height: 1.5; margin-bottom: 12px;">Connect your Google account or select a Google Takeout JSON/HTML archive to import into Chromium and Tomb Secure Notes.</p>
         <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #ddd; margin-bottom: 16px;">
           <label><input type="checkbox" checked id="imp-g-bookmarks" /> Chrome Bookmarks & Web History (Sandboxed Chromium)</label>
@@ -4569,7 +4569,7 @@ function getImporterContent() {
       </div>
 
       <div id="importer-panel-windows" class="importer-panel hidden" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px;">
-        <h4 style="margin: 0 0 10px 0; color: #ffcc00; font-size: 14px;">🪟 Import Microsoft Windows User Files & Registry Profiles</h4>
+        <h4 style="margin: 0 0 10px 0; color: #ffcc00; font-size: 14px;"> Import Microsoft Windows User Files & Registry Profiles</h4>
         <p style="font-size: 12px; color: #ccc; line-height: 1.5; margin-bottom: 12px;">Migrate files from C:\\Users\\Administrator and BitLocker keys into isolated VM storage.</p>
         <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #ddd; margin-bottom: 16px;">
           <label><input type="checkbox" checked id="imp-w-docs" /> Windows Documents & Desktop Files (Mount to /home/sec-admin)</label>
@@ -4580,7 +4580,7 @@ function getImporterContent() {
       </div>
 
       <div id="importer-panel-mac" class="importer-panel hidden" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px;">
-        <h4 style="margin: 0 0 10px 0; color: #4AF626; font-size: 14px;">💻 Import macOS Keychain & Linux SSH / GPG Keys</h4>
+        <h4 style="margin: 0 0 10px 0; color: #4AF626; font-size: 14px;"> Import macOS Keychain & Linux SSH / GPG Keys</h4>
         <p style="font-size: 12px; color: #ccc; line-height: 1.5; margin-bottom: 12px;">Scan ~/.ssh and macOS Keychain for RSA/ED25519 identity keys and shell configurations.</p>
         <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #ddd; margin-bottom: 16px;">
           <label><input type="checkbox" checked id="imp-m-ssh" /> OpenSSH Keys (~/.ssh/id_rsa, ~/.ssh/id_ed25519)</label>
@@ -4591,38 +4591,38 @@ function getImporterContent() {
       </div>
 
       <div id="importer-panel-social" class="importer-panel hidden" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px;">
-        <h4 style="margin: 0 0 10px 0; color: #5865F2; font-size: 14px;">💬 Link Social Platforms & API Key Webhook Bridges</h4>
+        <h4 style="margin: 0 0 10px 0; color: #5865F2; font-size: 14px;"> Link Social Platforms & API Key Webhook Bridges</h4>
         <p style="font-size: 12px; color: #ccc; line-height: 1.5; margin-bottom: 12px;">Connect active API tokens for Discord, Reddit, Telegram, Twitter/X, Slack, and Matrix to relay encrypted alerts and chat streams into Tomb Secure Messenger.</p>
         <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #ddd; margin-bottom: 16px;">
-          <label><input type="checkbox" checked id="imp-s-discord" /> 👾 Discord Bot API & Webhook Stream (${systemState.env.DISCORD_WEBHOOK_URL ? 'Linked' : 'Configured'})</label>
-          <label><input type="checkbox" checked id="imp-s-reddit" /> 🤖 Reddit OAuth Client API (${systemState.env.REDDIT_CLIENT_ID})</label>
-          <label><input type="checkbox" checked id="imp-s-telegram" /> ✈️ Telegram Bot API Bridge (${systemState.env.TELEGRAM_BOT_TOKEN ? 'Active' : 'Configured'})</label>
-          <label><input type="checkbox" checked id="imp-s-twitter" /> 🐦 Twitter / X v2 Bearer API Integration</label>
-          <label><input type="checkbox" checked id="imp-s-slack" /> 💬 Slack Webhook Security Incident Relays</label>
+          <label><input type="checkbox" checked id="imp-s-discord" />  Discord Bot API & Webhook Stream (${systemState.env.DISCORD_WEBHOOK_URL ? 'Linked' : 'Configured'})</label>
+          <label><input type="checkbox" checked id="imp-s-reddit" />  Reddit OAuth Client API (${systemState.env.REDDIT_CLIENT_ID})</label>
+          <label><input type="checkbox" checked id="imp-s-telegram" />  Telegram Bot API Bridge (${systemState.env.TELEGRAM_BOT_TOKEN ? 'Active' : 'Configured'})</label>
+          <label><input type="checkbox" checked id="imp-s-twitter" />  Twitter / X v2 Bearer API Integration</label>
+          <label><input type="checkbox" checked id="imp-s-slack" />  Slack Webhook Security Incident Relays</label>
           <label><input type="checkbox" checked id="imp-s-matrix" /> 🟢 Matrix Synapse E2EE Federation Bridge</label>
         </div>
         <button onclick="runImporterMigration('Social Platforms (Discord, Reddit, Telegram, Twitter)')" style="background: #5865F2; border: none; color: #fff; padding: 8px 16px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer;">Verify & Connect Social API Bridges →</button>
       </div>
 
       <div id="importer-panel-extdrive" class="importer-panel hidden" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px;">
-        <h4 style="margin: 0 0 10px 0; color: #25D366; font-size: 14px;">💾 Import Files from External Hard Disk, NVMe & USB Storage</h4>
+        <h4 style="margin: 0 0 10px 0; color: #25D366; font-size: 14px;"> Import Files from External Hard Disk, NVMe & USB Storage</h4>
         <p style="font-size: 12px; color: #ccc; line-height: 1.5; margin-bottom: 12px;">Scan mounted external storage partitions (`/mnt/external_disk`, `/mnt/nvme_ssd`, `/mnt/sdcard`) or select local files. All drive uploads require mandatory payload encryption password setup.</p>
         
         <div style="background: rgba(255,255,255,0.04); border: 1px dashed rgba(74,246,38,0.4); border-radius: 6px; padding: 12px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px;">
-          <label style="font-size: 11px; color: #4AF626; font-weight: 700;">📁 1. Select File from Drive / USB Storage:</label>
+          <label style="font-size: 11px; color: #4AF626; font-weight: 700;"> 1. Select File from Drive / USB Storage:</label>
           <input type="file" id="drive-file-input" style="font-size: 11px; color: #ccc;" />
           
-          <label style="font-size: 11px; color: #FFCC00; font-weight: 700; margin-top: 4px;">🔐 2. Set Mandatory Drive Encryption Password:</label>
+          <label style="font-size: 11px; color: #FFCC00; font-weight: 700; margin-top: 4px;"> 2. Set Mandatory Drive Encryption Password:</label>
           <input type="password" id="drive-file-password" placeholder="Enter custom password to lock drive file..." style="background: #111; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 8px; color: #fff; font-family: var(--font-mono); font-size: 11px; outline: none;" />
           
           <button onclick="uploadEncryptedDriveFile()" style="background: #25D366; color: #000; border: none; padding: 8px 12px; border-radius: 4px; font-size: 11.5px; font-weight: 700; cursor: pointer; align-self: flex-start; margin-top: 4px;">Encrypt & Import Drive File →</button>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #ddd; margin-bottom: 16px;">
-          <label><input type="checkbox" checked id="imp-ex-vault" /> 🔑 Cryptographic Vault Backups (.vault, .gpg, .kyber)</label>
-          <label><input type="checkbox" checked id="imp-ex-docs" /> 📄 Confidential Documents & Spreadsheets (.pdf, .docx, .xlsx)</label>
-          <label><input type="checkbox" checked id="imp-ex-media" /> 🖼️ Photos & Encrypted Media Archives (.zip, .tar.gz)</label>
-          <label><input type="checkbox" checked id="imp-ex-img" /> 💿 System Images & Boot ISO Bundles (.iso, .img, .cpio.gz)</label>
+          <label><input type="checkbox" checked id="imp-ex-vault" />  Cryptographic Vault Backups (.vault, .gpg, .kyber)</label>
+          <label><input type="checkbox" checked id="imp-ex-docs" />  Confidential Documents & Spreadsheets (.pdf, .docx, .xlsx)</label>
+          <label><input type="checkbox" checked id="imp-ex-media" />  Photos & Encrypted Media Archives (.zip, .tar.gz)</label>
+          <label><input type="checkbox" checked id="imp-ex-img" />  System Images & Boot ISO Bundles (.iso, .img, .cpio.gz)</label>
         </div>
         <button onclick="runImporterMigration('External Hard Disk & Storage Partition')" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px 16px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer;">Scan Entire Disk Partition →</button>
       </div>
@@ -4649,18 +4649,18 @@ function runImporterMigration(sourceName) {
   const out = document.getElementById('importer-status-output');
   if (!out) return;
   out.style.display = 'block';
-  out.innerHTML = `[IMPORT DAEMON INITIATED] Connecting to ${sourceName} data stream...<br/>▶ Scanning archive payloads & verifying cryptographic checksums...`;
+  out.innerHTML = `[IMPORT DAEMON INITIATED] Connecting to ${sourceName} data stream...<br/> Scanning archive payloads & verifying cryptographic checksums...`;
 
   setTimeout(() => {
-    out.innerHTML += `<br/>▶ [GLOBAL COMPLIANCE AUDIT] Validating GDPR Art. 32 encryption & CCPA consumer data opt-out metadata...`;
+    out.innerHTML += `<br/> [GLOBAL COMPLIANCE AUDIT] Validating GDPR Art. 32 encryption & CCPA consumer data opt-out metadata...`;
   }, 700);
 
   setTimeout(() => {
-    out.innerHTML += `<br/>▶ [SANITY CHECK & ANONYMIZATION] Sanitizing PII records & scrubbing telemetry markers against malware signatures...`;
+    out.innerHTML += `<br/> [SANITY CHECK & ANONYMIZATION] Sanitizing PII records & scrubbing telemetry markers against malware signatures...`;
   }, 1400);
 
   setTimeout(() => {
-    out.innerHTML += `<br/>▶ [ISOLATION ENFORCED] Depositing compliant documents into VM Storage (/home/sec-admin/imported_${sourceName.toLowerCase().replace(/[^a-z]/g, '')})...<br/>⚖️ <strong>COMPLIANCE VERIFIED: 100% GDPR/CCPA/DPDP compliant data import from ${sourceName} completed cleanly!</strong>`;
+    out.innerHTML += `<br/> [ISOLATION ENFORCED] Depositing compliant documents into VM Storage (/home/sec-admin/imported_${sourceName.toLowerCase().replace(/[^a-z]/g, '')})...<br/> <strong>COMPLIANCE VERIFIED: 100% GDPR/CCPA/DPDP compliant data import from ${sourceName} completed cleanly!</strong>`;
     logAudit(`Cross-platform data migration completed cleanly from ${sourceName}. Verified 100% compliant under GDPR, CCPA, and SOC 2 frameworks.`);
     syncComplianceDials();
   }, 2200);
@@ -4677,24 +4677,24 @@ function uploadEncryptedDriveFile() {
   const password = passwordInput?.value?.trim();
 
   if (!file) {
-    out.innerHTML = `<span style="color: #ff3b30;">❌ ERROR: Please select a file from your drive to upload.</span>`;
+    out.innerHTML = `<span style="color: #ff3b30;"> ERROR: Please select a file from your drive to upload.</span>`;
     return;
   }
 
   if (!password || password.length < 4) {
-    out.innerHTML = `<span style="color: #ff3b30;">❌ SECURITY ENFORCED: Mandatory drive encryption password required (min 4 characters).</span>`;
+    out.innerHTML = `<span style="color: #ff3b30;"> SECURITY ENFORCED: Mandatory drive encryption password required (min 4 characters).</span>`;
     return;
   }
 
   const fileName = file.name;
-  out.innerHTML = `[DRIVE FILE ENCRYPTION DAEMON] Processing '${escapeHTML(fileName)}' (${Math.round(file.size / 1024)} KB)...<br/>▶ Deriving Kyber-1024 / AES-256 key from user password...`;
+  out.innerHTML = `[DRIVE FILE ENCRYPTION DAEMON] Processing '${escapeHTML(fileName)}' (${Math.round(file.size / 1024)} KB)...<br/> Deriving Kyber-1024 / AES-256 key from user password...`;
 
   setTimeout(() => {
-    out.innerHTML += `<br/>▶ Encrypting payload blocks with zero-knowledge passphrase derivative...`;
+    out.innerHTML += `<br/> Encrypting payload blocks with zero-knowledge passphrase derivative...`;
   }, 600);
 
   setTimeout(() => {
-    out.innerHTML += `<br/>🔐 <strong>ENCRYPTED & IMPORTED: '${escapeHTML(fileName)}' sealed into Cryptographic Vault!</strong><br/>File status: AES-256 Encrypted | Access requires custom drive password.`;
+    out.innerHTML += `<br/> <strong>ENCRYPTED & IMPORTED: '${escapeHTML(fileName)}' sealed into Cryptographic Vault!</strong><br/>File status: AES-256 Encrypted | Access requires custom drive password.`;
     logAudit(`User uploaded and encrypted drive file '${fileName}' with custom drive passphrase protection.`);
     if (fileInput) fileInput.value = '';
     if (passwordInput) passwordInput.value = '';
@@ -4714,7 +4714,7 @@ function getChatContent() {
       <div style="width: 260px; background: #111b21; border-right: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column;">
         <div style="padding: 14px; background: #202c33; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05);">
           <div style="font-weight: 700; font-size: 14px; color: #25D366; display: flex; align-items: center; gap: 6px;">
-            <span>💬 Tomb Messenger</span>
+            <span> Tomb Messenger</span>
             <span style="font-size: 9px; background: rgba(37,211,102,0.15); padding: 2px 6px; border-radius: 10px; color: #25D366;">E2EE PQC</span>
           </div>
         </div>
@@ -4722,59 +4722,59 @@ function getChatContent() {
           <input type="text" placeholder="Search contacts or chats..." style="width: 100%; padding: 7px 12px; border-radius: 8px; border: none; background: #202c33; color: #fff; font-size: 11px; outline: none; box-sizing: border-box;" />
         </div>
         <div style="flex: 1; overflow-y: auto;">
-          <div onclick="switchChatContact('sec-admin', '🔐 Sec-Admin Enclave')" class="chat-contact-item active" style="padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03); background: rgba(255,255,255,0.06);">
+          <div onclick="switchChatContact('sec-admin', ' Sec-Admin Enclave')" class="chat-contact-item active" style="padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03); background: rgba(255,255,255,0.06);">
             <div style="width: 36px; height: 36px; border-radius: 50%; background: #25D366; color: #111; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">SA</div>
             <div style="flex: 1; overflow: hidden;">
-              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span>🔐 Sec-Admin Enclave</span><span style="font-size: 10px; color: #8696a0;">16:52</span></div>
-              <div style="font-size: 11px; color: #8696a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Kyber-1024 lattice key verified ✓✓</div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span> Sec-Admin Enclave</span><span style="font-size: 10px; color: #8696a0;">16:52</span></div>
+              <div style="font-size: 11px; color: #8696a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Kyber-1024 lattice key verified </div>
             </div>
           </div>
-          <div onclick="switchChatContact('soc-analyst', '🛡️ SOC Threat Intel Analyst')" class="chat-contact-item" style="padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03);">
+          <div onclick="switchChatContact('soc-analyst', ' SOC Threat Intel Analyst')" class="chat-contact-item" style="padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03);">
             <div style="width: 36px; height: 36px; border-radius: 50%; background: #007AFF; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">ST</div>
             <div style="flex: 1; overflow: hidden;">
-              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span>🛡️ SOC Threat Intel</span><span style="font-size: 10px; color: #8696a0;">14:30</span></div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span> SOC Threat Intel</span><span style="font-size: 10px; color: #8696a0;">14:30</span></div>
               <div style="font-size: 11px; color: #8696a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Suricata packet stream clear.</div>
             </div>
           </div>
-          <div onclick="switchChatContact('key-broker', '🔑 PQC Key Broker Intermediary')" class="chat-contact-item" style="padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03);">
+          <div onclick="switchChatContact('key-broker', ' PQC Key Broker Intermediary')" class="chat-contact-item" style="padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03);">
             <div style="width: 36px; height: 36px; border-radius: 50%; background: #E95420; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">KB</div>
             <div style="flex: 1; overflow: hidden;">
-              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span>🔑 Key Broker Channel</span><span style="font-size: 10px; color: #8696a0;">11:15</span></div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span> Key Broker Channel</span><span style="font-size: 10px; color: #8696a0;">11:15</span></div>
               <div style="font-size: 11px; color: #8696a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Handshake channel active KB-994102</div>
             </div>
           </div>
-          <div onclick="switchChatContact('discord-bot', '👾 Discord Bot API Stream')" class="chat-contact-item" style="padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03);">
+          <div onclick="switchChatContact('discord-bot', ' Discord Bot API Stream')" class="chat-contact-item" style="padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03);">
             <div style="width: 36px; height: 36px; border-radius: 50%; background: #5865F2; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">DC</div>
             <div style="flex: 1; overflow: hidden;">
-              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span>👾 Discord API Bot</span><span style="font-size: 10px; color: #8696a0;">10:04</span></div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span> Discord API Bot</span><span style="font-size: 10px; color: #8696a0;">10:04</span></div>
               <div style="font-size: 11px; color: #8696a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Webhook stream active v10</div>
             </div>
           </div>
-          <div onclick="switchChatContact('reddit-feed', '🤖 Reddit r/NetSec Feed')" class="chat-contact-item" style="padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03);">
+          <div onclick="switchChatContact('reddit-feed', ' Reddit r/NetSec Feed')" class="chat-contact-item" style="padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03);">
             <div style="width: 36px; height: 36px; border-radius: 50%; background: #FF4500; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">RD</div>
             <div style="flex: 1; overflow: hidden;">
-              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span>🤖 Reddit r/NetSec</span><span style="font-size: 10px; color: #8696a0;">09:45</span></div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span> Reddit r/NetSec</span><span style="font-size: 10px; color: #8696a0;">09:45</span></div>
               <div style="font-size: 11px; color: #8696a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">OAuth2 Client authenticated</div>
             </div>
           </div>
-          <div onclick="switchChatContact('telegram-bot', '✈️ Telegram Broadcast Bot')" class="chat-contact-item" style="padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03);">
+          <div onclick="switchChatContact('telegram-bot', ' Telegram Broadcast Bot')" class="chat-contact-item" style="padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03);">
             <div style="width: 36px; height: 36px; border-radius: 50%; background: #24A1DE; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">TG</div>
             <div style="flex: 1; overflow: hidden;">
-              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span>✈️ Telegram Security</span><span style="font-size: 10px; color: #8696a0;">08:12</span></div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span> Telegram Security</span><span style="font-size: 10px; color: #8696a0;">08:12</span></div>
               <div style="font-size: 11px; color: #8696a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Bot API bridge connected</div>
             </div>
           </div>
-          <div onclick="switchChatContact('twitter-osint', '🐦 Twitter / X OSINT Stream')" class="chat-contact-item" style="padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03);">
+          <div onclick="switchChatContact('twitter-osint', ' Twitter / X OSINT Stream')" class="chat-contact-item" style="padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03);">
             <div style="width: 36px; height: 36px; border-radius: 50%; background: #1DA1F2; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">TW</div>
             <div style="flex: 1; overflow: hidden;">
-              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span>🐦 Twitter / X OSINT</span><span style="font-size: 10px; color: #8696a0;">07:30</span></div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span> Twitter / X OSINT</span><span style="font-size: 10px; color: #8696a0;">07:30</span></div>
               <div style="font-size: 11px; color: #8696a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Bearer token v2 stream online</div>
             </div>
           </div>
-          <div onclick="switchChatContact('slack-relays', '💬 Slack SOC Alerts')" class="chat-contact-item" style="padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03);">
+          <div onclick="switchChatContact('slack-relays', ' Slack SOC Alerts')" class="chat-contact-item" style="padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.03);">
             <div style="width: 36px; height: 36px; border-radius: 50%; background: #4A154B; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">SL</div>
             <div style="flex: 1; overflow: hidden;">
-              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span>💬 Slack Incident Relays</span><span style="font-size: 10px; color: #8696a0;">Yesterday</span></div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;"><span> Slack Incident Relays</span><span style="font-size: 10px; color: #8696a0;">Yesterday</span></div>
               <div style="font-size: 11px; color: #8696a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Webhook alerts configured</div>
             </div>
           </div>
@@ -4786,19 +4786,19 @@ function getChatContent() {
         <!-- Chat Top Bar -->
         <div style="padding: 10px 16px; background: #202c33; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05);">
           <div>
-            <div id="chat-active-name" style="font-weight: 700; font-size: 13px; color: #fff;">🔐 Sec-Admin Enclave</div>
+            <div id="chat-active-name" style="font-weight: 700; font-size: 13px; color: #fff;"> Sec-Admin Enclave</div>
             <div style="font-size: 10px; color: #25D366;">online • End-to-End Encrypted (Signal Protocol / Meta Open Spec + Kyber PQC)</div>
           </div>
           <div style="display: flex; gap: 10px; align-items: center;">
-            <button onclick="toggleChatEphemeral()" id="chat-ephemeral-btn" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 10px; cursor: pointer;">💣 Ephemeral Off</button>
-            <button onclick="alert('Initiating Quantum-Encrypted Voice Call...')" style="background: transparent; border: none; color: #aebac1; cursor: pointer; font-size: 14px;">📞</button>
-            <button onclick="alert('Initiating HD Video Conference Enclave...')" style="background: transparent; border: none; color: #aebac1; cursor: pointer; font-size: 14px;">📹</button>
+            <button onclick="toggleChatEphemeral()" id="chat-ephemeral-btn" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 10px; cursor: pointer;"> Ephemeral Off</button>
+            <button onclick="alert('Initiating Quantum-Encrypted Voice Call...')" style="background: transparent; border: none; color: #aebac1; cursor: pointer; font-size: 14px;"></button>
+            <button onclick="alert('Initiating HD Video Conference Enclave...')" style="background: transparent; border: none; color: #aebac1; cursor: pointer; font-size: 14px;"></button>
           </div>
         </div>
 
         <!-- Security Protocol Banner -->
         <div style="background: #182229; padding: 6px 12px; text-align: center; font-size: 10.5px; color: #ffe87c; border-bottom: 1px solid rgba(255,255,255,0.03);">
-          🔒 Messages and calls are end-to-end encrypted using Open-Source Meta / Signal Double Ratchet protocol and Kyber-1024 post-quantum lattices. No one outside of this chat, not even Tomb OS, can read or listen to them.
+           Messages and calls are end-to-end encrypted using Open-Source Meta / Signal Double Ratchet protocol and Kyber-1024 post-quantum lattices. No one outside of this chat, not even Tomb OS, can read or listen to them.
         </div>
 
         <!-- Message Thread Scroll Container -->
@@ -4809,15 +4809,15 @@ function getChatContent() {
           </div>
           <div style="align-self: flex-end; background: #005c4b; padding: 8px 12px; border-radius: 8px; max-width: 70%; font-size: 12px; line-height: 1.4;">
             <div>All message payloads verified under Signal Protocol Double Ratchet specification.</div>
-            <div style="font-size: 9px; color: #e9edef; text-align: right; margin-top: 4px; display: flex; justify-content: flex-end; align-items: center; gap: 4px;"><span>16:52</span><span style="color: #53bdeb;">✓✓</span></div>
+            <div style="font-size: 9px; color: #e9edef; text-align: right; margin-top: 4px; display: flex; justify-content: flex-end; align-items: center; gap: 4px;"><span>16:52</span><span style="color: #53bdeb;"></span></div>
           </div>
         </div>
 
         <!-- Chat Input Area -->
         <div style="padding: 10px 16px; background: #202c33; display: flex; align-items: center; gap: 10px;">
-          <button onclick="alert('Attaching Sealed Encrypted File...')" style="background: transparent; border: none; color: #8696a0; font-size: 16px; cursor: pointer;">📎</button>
+          <button onclick="alert('Attaching Sealed Encrypted File...')" style="background: transparent; border: none; color: #8696a0; font-size: 16px; cursor: pointer;"></button>
           <input type="text" id="chat-msg-input" onkeydown="if(event.key==='Enter')sendChatMessage()" placeholder="Type a secure message..." style="flex: 1; padding: 9px 14px; border-radius: 8px; border: none; background: #2a3942; color: #fff; font-size: 12px; outline: none;" />
-          <button onclick="sendChatMessage()" style="background: #00a884; border: none; color: #fff; padding: 8px 14px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 12px;">Send ➔</button>
+          <button onclick="sendChatMessage()" style="background: #00a884; border: none; color: #fff; padding: 8px 14px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 12px;">Send </button>
         </div>
       </div>
     </div>
@@ -4835,11 +4835,11 @@ function toggleChatEphemeral() {
   const btn = document.getElementById('chat-ephemeral-btn');
   if (btn) {
     if (isChatEphemeralActive) {
-      btn.textContent = '💣 Ephemeral On (30s)';
+      btn.textContent = ' Ephemeral On (30s)';
       btn.style.background = 'rgba(233,84,32,0.3)';
       btn.style.borderColor = '#E95420';
     } else {
-      btn.textContent = '💣 Ephemeral Off';
+      btn.textContent = ' Ephemeral Off';
       btn.style.background = 'rgba(255,255,255,0.08)';
       btn.style.borderColor = 'rgba(255,255,255,0.15)';
     }
@@ -4860,7 +4860,7 @@ function sendChatMessage() {
   msgEl.innerHTML = `
     <div>${text}</div>
     <div style="font-size: 9px; color: #e9edef; text-align: right; margin-top: 4px; display: flex; justify-content: flex-end; align-items: center; gap: 4px;">
-      <span>${timeStr}</span><span style="color: #53bdeb;">✓✓</span>
+      <span>${timeStr}</span><span style="color: #53bdeb;"></span>
     </div>
   `;
   thread.appendChild(msgEl);
@@ -4931,11 +4931,11 @@ function getControlCenterContent() {
     <div class="app-controlcenter-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #141414; padding: 20px; overflow-y: auto;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px;">
         <div>
-          <h2 style="margin: 0; font-size: 20px; color: var(--ubuntu-orange); font-weight: 600;">🎛️ Application Control Center</h2>
+          <h2 style="margin: 0; font-size: 20px; color: var(--ubuntu-orange); font-weight: 600;"> Application Control Center</h2>
           <div style="font-size: 12px; color: var(--ubuntu-light-grey); margin-top: 2px;">Launch and access all 26 Tomb OS applications from a central hub</div>
         </div>
         <div style="width: 240px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 18px; padding: 6px 12px; display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 12px; color: #888;">🔍</span>
+          <span style="font-size: 12px; color: #888;"></span>
           <input type="text" id="cc-search-input" oninput="filterControlCenterApps(this.value)" placeholder="Search applications..." style="flex: 1; background: transparent; border: none; color: #fff; font-size: 12px; outline: none;" autofocus />
         </div>
       </div>
@@ -5232,7 +5232,7 @@ function getThemeContent() {
         Fully customize the design system of Tomb OS. Adjust colors, wallpaper background, window transparency, dock position, and system-wide borders.
       </div>
 
-      <div class="theme-sec-title">🎨 Theme Accents & Wallpaper</div>
+      <div class="theme-sec-title"> Theme Accents & Wallpaper</div>
       
       <div class="theme-row">
         <div class="theme-label">Predefined Theme Palettes:</div>
@@ -5248,7 +5248,7 @@ function getThemeContent() {
         </div>
       </div>
 
-      <div class="theme-sec-title">✨ Glassmorphism & Transparency</div>
+      <div class="theme-sec-title"> Glassmorphism & Transparency</div>
 
       <div class="theme-row">
         <div class="theme-label">Glassmorphism Blur:</div>
@@ -5266,7 +5266,7 @@ function getThemeContent() {
         </div>
       </div>
 
-      <div class="theme-sec-title">🖥️ Dock Sizing & Placement</div>
+      <div class="theme-sec-title"> Dock Sizing & Placement</div>
 
       <div class="theme-row">
         <div class="theme-label">Dock Position:</div>
@@ -5282,7 +5282,7 @@ function getThemeContent() {
         </div>
       </div>
 
-      <div class="theme-sec-title">🔲 Window Borders (Qubes-Style VM Borders)</div>
+      <div class="theme-sec-title"> Window Borders (Qubes-Style VM Borders)</div>
 
       <div class="theme-row">
         <div class="theme-label">Border Width:</div>
@@ -5298,7 +5298,7 @@ function getThemeContent() {
         </div>
       </div>
 
-      <div class="theme-sec-title">🔤 Typography & Font Scale</div>
+      <div class="theme-sec-title"> Typography & Font Scale</div>
 
       <div class="theme-row">
         <div class="theme-label">Font Family:</div>
@@ -5864,7 +5864,7 @@ function getAccessoryContent() {
     <div class="app-accessory-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #141414; padding: 20px; overflow-y: auto;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px; margin-bottom: 18px;">
         <div>
-          <h2 style="margin: 0; font-size: 20px; color: #007AFF; font-weight: 700;">🔌 External Hardware Security Accessory Manager</h2>
+          <h2 style="margin: 0; font-size: 20px; color: #007AFF; font-weight: 700;"> External Hardware Security Accessory Manager</h2>
           <div style="font-size: 12px; color: var(--ubuntu-light-grey); margin-top: 2px;">Pair & configure YubiKeys, Titan Keys, Smart Cards & Hardware Security Modules (HSM)</div>
         </div>
         <span style="font-size: 10px; background: rgba(0,122,255,0.2); color: #007AFF; padding: 4px 10px; border-radius: 12px; font-family: var(--font-mono); font-weight: 600;">WebAuthn FIDO2 Active</span>
@@ -5872,18 +5872,18 @@ function getAccessoryContent() {
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
         <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px;">
-          <h4 style="margin: 0 0 10px 0; color: #fff; font-size: 14px;">📡 Paired Security Accessories (2)</h4>
+          <h4 style="margin: 0 0 10px 0; color: #fff; font-size: 14px;"> Paired Security Accessories (2)</h4>
           <div style="display: flex; flex-direction: column; gap: 10px;">
             <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(74,246,38,0.3); border-radius: 6px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
               <div>
-                <div style="font-size: 12.5px; font-weight: 600; color: #fff;">🔑 YubiKey 5 NFC (SN: 9941028)</div>
+                <div style="font-size: 12.5px; font-weight: 600; color: #fff;"> YubiKey 5 NFC (SN: 9941028)</div>
                 <div style="font-size: 10.5px; color: var(--ubuntu-light-grey);">FIDO2 / U2F / OpenPGP Smart Card</div>
               </div>
               <span style="font-size: 9px; background: rgba(74,246,38,0.15); color: #4AF626; padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono);">PRIMARY</span>
             </div>
             <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,204,0,0.3); border-radius: 6px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
               <div>
-                <div style="font-size: 12.5px; font-weight: 600; color: #fff;">🛡️ Google Titan Security Key</div>
+                <div style="font-size: 12.5px; font-weight: 600; color: #fff;"> Google Titan Security Key</div>
                 <div style="font-size: 10.5px; color: var(--ubuntu-light-grey);">NFC / Bluetooth LE Hardware Token</div>
               </div>
               <span style="font-size: 9px; background: rgba(255,204,0,0.15); color: #ffcc00; padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono);">BACKUP</span>
@@ -5892,12 +5892,12 @@ function getAccessoryContent() {
         </div>
 
         <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(0,122,255,0.3); border-radius: 8px; padding: 16px;">
-          <h4 style="margin: 0 0 10px 0; color: #007AFF; font-size: 14px;">➕ Pair New Security Accessory</h4>
+          <h4 style="margin: 0 0 10px 0; color: #007AFF; font-size: 14px;"> Pair New Security Accessory</h4>
           <p style="font-size: 12px; color: #ccc; line-height: 1.5; margin-bottom: 14px;">Insert USB security key, tap NFC accessory, or attach biometric reader to bind hardware FIDO2 attestation keys.</p>
           <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;">
-            <button onclick="pairHardwareAccessory('YubiKey 5Ci / NFC')" style="background: #007AFF; color: #fff; border: none; padding: 8px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: left;">📡 Pair YubiKey NFC / USB-C Security Key →</button>
-            <button onclick="pairHardwareAccessory('Google Titan Key')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 8px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: left;">🛡️ Pair Google Titan Security Key →</button>
-            <button onclick="pairHardwareAccessory('PKCS#11 Hardware Security Module (HSM)')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 8px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: left;">💾 Pair PKCS#11 Cryptographic HSM Token →</button>
+            <button onclick="pairHardwareAccessory('YubiKey 5Ci / NFC')" style="background: #007AFF; color: #fff; border: none; padding: 8px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: left;"> Pair YubiKey NFC / USB-C Security Key →</button>
+            <button onclick="pairHardwareAccessory('Google Titan Key')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 8px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: left;"> Pair Google Titan Security Key →</button>
+            <button onclick="pairHardwareAccessory('PKCS#11 Hardware Security Module (HSM)')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 8px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: left;"> Pair PKCS#11 Cryptographic HSM Token →</button>
           </div>
         </div>
       </div>
@@ -5911,14 +5911,14 @@ function pairHardwareAccessory(name) {
   const out = document.getElementById('accessory-pairing-output');
   if (!out) return;
   out.style.display = 'block';
-  out.innerHTML = `[WEBAUTHN INITIATED] Waiting for hardware interaction on ${name}...<br/>▶ Please insert or tap your security accessory now...`;
+  out.innerHTML = `[WEBAUTHN INITIATED] Waiting for hardware interaction on ${name}...<br/> Please insert or tap your security accessory now...`;
 
   setTimeout(() => {
-    out.innerHTML += `<br/>▶ [ATTESTATION VERIFIED] Received hardware challenge signature from ${name}. Validating attestation certificate...`;
+    out.innerHTML += `<br/> [ATTESTATION VERIFIED] Received hardware challenge signature from ${name}. Validating attestation certificate...`;
   }, 1000);
 
   setTimeout(() => {
-    out.innerHTML += `<br/>✅ <strong>SUCCESS: Hardware Security Accessory '${name}' paired cleanly! Bound to TPM 2.0 enclave and administrative session unlock profile.</strong>`;
+    out.innerHTML += `<br/> <strong>SUCCESS: Hardware Security Accessory '${name}' paired cleanly! Bound to TPM 2.0 enclave and administrative session unlock profile.</strong>`;
     logAudit(`Paired new external hardware security accessory: ${name}`);
   }, 2000);
 }
@@ -5934,7 +5934,7 @@ function toggleAiTaskRecorder() {
     if (btn) {
       btn.style.background = 'rgba(255,59,48,0.8)';
       btn.style.color = '#fff';
-      btn.textContent = '⏹ Recording AI Macro...';
+      btn.textContent = ' Recording AI Macro...';
     }
     logAudit('[AI TASK RECORDER] Recording started. Filtering all sensitive passphrases & PII credentials.');
     openWindow('taskrecorder');
@@ -5979,37 +5979,37 @@ function getTaskRecorderContent() {
     <div class="app-taskrecorder-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #141414; padding: 20px; overflow-y: auto;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px; margin-bottom: 18px;">
         <div>
-          <h2 style="margin: 0; font-size: 20px; color: #FF3B30; font-weight: 700;">🎬 Autonomous AI Task Recorder & Macro Auto-Pilot</h2>
+          <h2 style="margin: 0; font-size: 20px; color: #FF3B30; font-weight: 700;"> Autonomous AI Task Recorder & Macro Auto-Pilot</h2>
           <div style="font-size: 12px; color: var(--ubuntu-light-grey); margin-top: 2px;">Record complex workflows once & let OpenAI GPT-4o re-execute them automatically</div>
         </div>
         <button onclick="toggleAiTaskRecorder()" style="background: ${isRec ? '#FF3B30' : 'rgba(255,59,48,0.2)'}; color: #fff; border: 1px solid #FF3B30; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">
-          ${isRec ? '⏹ Stop & Save Macro' : '🔴 Start Recording Task'}
+          ${isRec ? ' Stop & Save Macro' : ' Start Recording Task'}
         </button>
       </div>
 
       <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 14px; margin-bottom: 16px; font-size: 12px; color: #ccc;">
-        <strong>🛡️ SENSITIVE CONTENT FILTERING:</strong> Active. All administrative passwords, private GPG keys, and session tokens are automatically redacted before macros are saved or processed by AI.
+        <strong> SENSITIVE CONTENT FILTERING:</strong> Active. All administrative passwords, private GPG keys, and session tokens are automatically redacted before macros are saved or processed by AI.
       </div>
 
       ${isRec ? `
         <div style="background: rgba(255,59,48,0.1); border: 1px solid #FF3B30; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-          <h4 style="margin: 0 0 8px 0; color: #FF3B30;">🔴 LIVE RECORDING IN PROGRESS...</h4>
+          <h4 style="margin: 0 0 8px 0; color: #FF3B30;"> LIVE RECORDING IN PROGRESS...</h4>
           <p style="font-size: 12px; color: #ddd; margin-bottom: 10px;">Perform your actions (open windows, run commands, navigate browser). Steps captured:</p>
           <div style="font-family: var(--font-mono); font-size: 11.5px; color: #4AF626; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 4px; max-height: 120px; overflow-y: auto;">
-            ${systemState.taskRecorder.currentSteps.length === 0 ? '<i>No actions recorded yet... Perform tasks in Tomb OS.</i>' : systemState.taskRecorder.currentSteps.map((s, i) => `<div>▶ Step ${i+1}: ${escapeHTML(s)}</div>`).join('')}
+            ${systemState.taskRecorder.currentSteps.length === 0 ? '<i>No actions recorded yet... Perform tasks in Tomb OS.</i>' : systemState.taskRecorder.currentSteps.map((s, i) => `<div> Step ${i+1}: ${escapeHTML(s)}</div>`).join('')}
           </div>
         </div>
       ` : ''}
 
-      <h4 style="margin: 0 0 12px 0; color: #fff; font-size: 15px;">🤖 Saved AI Auto-Pilot Macros (${systemState.taskRecorder.savedMacros.length})</h4>
+      <h4 style="margin: 0 0 12px 0; color: #fff; font-size: 15px;"> Saved AI Auto-Pilot Macros (${systemState.taskRecorder.savedMacros.length})</h4>
       <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
         ${systemState.taskRecorder.savedMacros.map(m => `
           <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 14px; display: flex; justify-content: space-between; align-items: center;">
             <div>
-              <div style="font-weight: 700; font-size: 13px; color: #fff;">⚡ ${escapeHTML(m.name)}</div>
+              <div style="font-weight: 700; font-size: 13px; color: #fff;"> ${escapeHTML(m.name)}</div>
               <div style="font-size: 11px; color: #aaa; margin-top: 2px; font-family: var(--font-mono);">${m.steps.length} automated execution steps | Filtered & Sanitized</div>
             </div>
-            <button onclick="runAiTaskMacro('${m.id}')" style="background: var(--ubuntu-orange); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">▶ Run AI Auto-Pilot</button>
+            <button onclick="runAiTaskMacro('${m.id}')" style="background: var(--ubuntu-orange); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;"> Run AI Auto-Pilot</button>
           </div>
         `).join('')}
       </div>
@@ -6025,17 +6025,17 @@ function runAiTaskMacro(macroId) {
   const out = document.getElementById('macro-execution-output');
   if (!out) return;
   out.style.display = 'block';
-  out.innerHTML = `[OPENAI GPT-4o AUTO-PILOT] Initiating autonomous macro re-execution for '${macro.name}'...<br/>🛡️ Verifying sensitive content filtration rules... Verified clean!`;
+  out.innerHTML = `[OPENAI GPT-4o AUTO-PILOT] Initiating autonomous macro re-execution for '${macro.name}'...<br/> Verifying sensitive content filtration rules... Verified clean!`;
 
   macro.steps.forEach((step, idx) => {
     setTimeout(() => {
-      out.innerHTML += `<br/>▶ [STEP ${idx+1}/${macro.steps.length}] Executing autonomous AI payload: <code>${escapeHTML(step)}</code>... Success!`;
+      out.innerHTML += `<br/> [STEP ${idx+1}/${macro.steps.length}] Executing autonomous AI payload: <code>${escapeHTML(step)}</code>... Success!`;
       try { eval(step); } catch(e) {}
     }, (idx + 1) * 800);
   });
 
   setTimeout(() => {
-    out.innerHTML += `<br/>✅ <strong>AUTONOMOUS AI EXECUTION COMPLETE: Task '${macro.name}' completed 100% cleanly without manual re-work!</strong>`;
+    out.innerHTML += `<br/> <strong>AUTONOMOUS AI EXECUTION COMPLETE: Task '${macro.name}' completed 100% cleanly without manual re-work!</strong>`;
     logAudit(`OpenAI GPT-4o autonomously re-executed task macro: ${macro.name}`);
   }, (macro.steps.length + 1) * 800);
 }
@@ -6059,7 +6059,7 @@ function getInstallerContent() {
     <div class="app-installer-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #141414; padding: 20px; overflow-y: auto;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px; margin-bottom: 18px;">
         <div>
-          <h2 style="margin: 0; font-size: 20px; color: #007AFF; font-weight: 700;">📦 Software Package Installer & Security Store</h2>
+          <h2 style="margin: 0; font-size: 20px; color: #007AFF; font-weight: 700;"> Software Package Installer & Security Store</h2>
           <div style="font-size: 12px; color: var(--ubuntu-light-grey); margin-top: 2px;">Discover, verify checksums & install new sandboxed applications cleanly into Tomb OS</div>
         </div>
         <span style="font-size: 10px; background: rgba(0,122,255,0.2); color: #007AFF; padding: 4px 10px; border-radius: 12px; font-family: var(--font-mono); font-weight: 600;">GPG Repository Signed</span>
@@ -6089,22 +6089,22 @@ function installSoftwarePackage(pkgId, pkgName) {
   const out = document.getElementById('pkg-install-output');
   if (!out) return;
   out.style.display = 'block';
-  out.innerHTML = `[PACKAGE MANAGER] Fetching GPG signed repository manifest for '${pkgName}' (${pkgId})...<br/>▶ Verifying SHA-256 cryptographic checksums & AppArmor profile templates...`;
+  out.innerHTML = `[PACKAGE MANAGER] Fetching GPG signed repository manifest for '${pkgName}' (${pkgId})...<br/> Verifying SHA-256 cryptographic checksums & AppArmor profile templates...`;
 
   setTimeout(() => {
     if (pkgId === 'qubes-kernel') {
-      out.innerHTML += `<br/>▶ [XEN DOM0 DEPLOYMENT] Staging Qubes OS freestanding C microkernel (qubes_kernel.c) & seL4 capability gates...`;
+      out.innerHTML += `<br/> [XEN DOM0 DEPLOYMENT] Staging Qubes OS freestanding C microkernel (qubes_kernel.c) & seL4 capability gates...`;
     } else {
-      out.innerHTML += `<br/>▶ [SANDBOX PROVISIONING] Allocating isolated VM container storage sector... Mounting read-only binaries...`;
+      out.innerHTML += `<br/> [SANDBOX PROVISIONING] Allocating isolated VM container storage sector... Mounting read-only binaries...`;
     }
   }, 900);
 
   setTimeout(() => {
     if (pkgId === 'qubes-kernel') {
-      out.innerHTML += `<br/>✅ <strong>SUCCESS: Qubes OS Hardened Xen Micro-VM Kernel installed! GRUB2 updated for Dom0 execution.</strong>`;
+      out.innerHTML += `<br/> <strong>SUCCESS: Qubes OS Hardened Xen Micro-VM Kernel installed! GRUB2 updated for Dom0 execution.</strong>`;
       logAudit(`Installed Qubes OS Hardened Xen Micro-VM Kernel module into hardware bootloader.`);
     } else {
-      out.innerHTML += `<br/>✅ <strong>SUCCESS: Application '${pkgName}' installed cleanly into Tomb OS! Added to Control Center launcher.</strong>`;
+      out.innerHTML += `<br/> <strong>SUCCESS: Application '${pkgName}' installed cleanly into Tomb OS! Added to Control Center launcher.</strong>`;
       logAudit(`Installed new application package '${pkgName}' (${pkgId}) cleanly into sandboxed zone.`);
     }
   }, 1800);
@@ -6129,11 +6129,11 @@ function getTypeSpeedContent() {
     <div class="app-typespeed-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #141414; padding: 20px; overflow-y: auto;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px; margin-bottom: 18px;">
         <div>
-          <h2 style="margin: 0; font-size: 20px; color: #4AF626; font-weight: 700;">⌨️ Real-Time Typing Speed & Ergonomics Monitor</h2>
+          <h2 style="margin: 0; font-size: 20px; color: #4AF626; font-weight: 700;"> Real-Time Typing Speed & Ergonomics Monitor</h2>
           <div style="font-size: 12px; color: var(--ubuntu-light-grey); margin-top: 2px;">Optional real-time WPM calculation, keystroke accuracy & typing cadence telemetry</div>
         </div>
         <button onclick="toggleTypeSpeedMonitor()" style="background: ${isEn ? '#4AF626' : 'rgba(255,255,255,0.1)'}; color: ${isEn ? '#000' : '#fff'}; border: 1px solid #4AF626; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">
-          ${isEn ? '🟢 Monitoring Active (Click to Disable)' : '⚪ Enable Typing Speed Monitor'}
+          ${isEn ? '🟢 Monitoring Active (Click to Disable)' : ' Enable Typing Speed Monitor'}
         </button>
       </div>
 
@@ -6158,7 +6158,7 @@ function getTypeSpeedContent() {
       </div>
 
       <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-        <h4 style="margin: 0 0 10px 0; color: #fff; font-size: 14px;">📝 Live Typing Test Sandbox</h4>
+        <h4 style="margin: 0 0 10px 0; color: #fff; font-size: 14px;"> Live Typing Test Sandbox</h4>
         <p style="font-size: 12px; color: #ccc; margin-bottom: 12px;">Type into the box below to test your real-time WPM and accuracy telemetry:</p>
         <textarea oninput="handleTypingTestInput(this)" placeholder="Start typing here to measure real-time speed..." style="width: 100%; height: 100px; background: #222; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 12px; color: #fff; font-family: var(--font-mono); font-size: 13px; outline: none; box-sizing: border-box; resize: none;"></textarea>
       </div>
@@ -6193,7 +6193,7 @@ function getSecurityHubContent() {
     <div class="app-securityhub-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #141414; padding: 20px; overflow-y: auto;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px; margin-bottom: 18px;">
         <div>
-          <h2 style="margin: 0; font-size: 20px; color: #007AFF; font-weight: 700;">🛡️ Modular Enterprise Security Framework Control Hub</h2>
+          <h2 style="margin: 0; font-size: 20px; color: #007AFF; font-weight: 700;"> Modular Enterprise Security Framework Control Hub</h2>
           <div style="font-size: 12px; color: var(--ubuntu-light-grey); margin-top: 2px;">Comprehensive industry-standard security controls partitioned into independent modular enclaves</div>
         </div>
         <span style="font-size: 10px; background: rgba(74,246,38,0.15); color: #4AF626; padding: 4px 10px; border-radius: 12px; font-family: var(--font-mono); font-weight: 600;">100% Modular Architecture</span>
@@ -6231,12 +6231,12 @@ function getOpenClawContent() {
     <div class="app-openclaw-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: var(--font-mono); background: #0c0c0c; overflow: hidden;">
       <div style="padding: 8px 14px; background: #181818; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
         <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="color: #FFCC00; font-weight: 700; font-size: 13px;">🐱 Captain Claw (OpenClaw Engine)</span>
+          <span style="color: #FFCC00; font-weight: 700; font-size: 13px;"> Captain Claw (OpenClaw Engine)</span>
           <span style="font-size: 10px; background: rgba(255,204,0,0.15); color: #FFCC00; padding: 2px 6px; border-radius: 4px;">Level 1: Pirate Fortress</span>
         </div>
         <div id="openclaw-hud" style="font-size: 11px; display: flex; gap: 14px;">
           <span id="oc-score" style="color: #FFCC00; font-weight: 600;">Gold: 0</span>
-          <span id="oc-lives" style="color: #ff3b30; font-weight: 600;">❤️ ❤️ ❤️</span>
+          <span id="oc-lives" style="color: #ff3b30; font-weight: 600;">  </span>
         </div>
       </div>
       <div style="flex: 1; position: relative; background: #111; display: flex; justify-content: center; align-items: center;">
@@ -6415,7 +6415,7 @@ function initOpenClawGame() {
       ) {
         lives--;
         const livesEl = document.getElementById('oc-lives');
-        if (livesEl) livesEl.textContent = '❤️ '.repeat(Math.max(0, lives));
+        if (livesEl) livesEl.textContent = ' '.repeat(Math.max(0, lives));
         player.x = 50;
         player.y = 300;
         if (lives <= 0) {
@@ -6515,7 +6515,7 @@ function getAgentsDashboardContent() {
   return `
     <div class="app-agents-container" style="display: flex; height: 100%; color: #fff; font-family: var(--font-mono); background: #0c0c0c;">
       <div style="width: 240px; background: #141414; border-right: 1px solid rgba(255,255,255,0.1); padding: 16px; display: flex; flex-direction: column; gap: 14px;">
-        <h3 style="margin: 0; font-size: 14px; color: #9C27B0; font-weight: 700;">🤖 Agent Mesh Mesh</h3>
+        <h3 style="margin: 0; font-size: 14px; color: #9C27B0; font-weight: 700;"> Agent Mesh Mesh</h3>
         <div style="font-size: 10.5px; color: #aaa;">Active Autonomous Agents:</div>
         <div style="display: flex; flex-direction: column; gap: 8px;">
           <div style="background: rgba(156,39,176,0.15); border: 1px solid #9C27B0; padding: 8px 10px; border-radius: 6px; font-size: 11px;">
@@ -6540,7 +6540,7 @@ function getAgentsDashboardContent() {
           <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 6px;">
             <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: #fff; font-size: 9.5px; font-weight: 600;">
               <input type="checkbox" id="agent-fs-permission-toggle" onchange="toggleAgentFsPermission(this)" />
-              🔓 Grant Full Host Filesystem Access
+               Grant Full Host Filesystem Access
             </label>
           </div>
         </div>
@@ -6596,9 +6596,9 @@ function sendAgentPrompt() {
     if (val.toLowerCase().includes('read') || val.toLowerCase().includes('file') || val.toLowerCase().includes('index') || val.toLowerCase().includes('disk')) {
       const isGranted = systemState.agentFsAccess?.granted ?? false;
       if (!isGranted) {
-        log.innerHTML += `<div style="color: #ff3b30;">[TaskAgent] ❌ PERMISSION DENIED: Cannot access host filesystem. Please check '🔓 Grant Full Host Filesystem Access' in the sidebar to authorize agent file indexing.</div>`;
+        log.innerHTML += `<div style="color: #ff3b30;">[TaskAgent]  PERMISSION DENIED: Cannot access host filesystem. Please check ' Grant Full Host Filesystem Access' in the sidebar to authorize agent file indexing.</div>`;
       } else {
-        log.innerHTML += `<div style="color: #4AF626;">[TaskAgent] 🔓 HOST FILESYSTEM ACCESS GRANTED. Indexing root storage sectors ('/')... Scanned 124,102 files across user directories. Data indexed into MemoryAgent store.</div>`;
+        log.innerHTML += `<div style="color: #4AF626;">[TaskAgent]  HOST FILESYSTEM ACCESS GRANTED. Indexing root storage sectors ('/')... Scanned 124,102 files across user directories. Data indexed into MemoryAgent store.</div>`;
         log.innerHTML += `<div style="color: #007AFF;">[MemoryAgent] Created 128 new structured semantic embeddings from host document indexing.</div>`;
       }
     } else if (val.toLowerCase().includes('scan') || val.toLowerCase().includes('run')) {
@@ -6631,7 +6631,7 @@ function getThreatMapContent() {
     <div class="app-threatmap-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: var(--font-mono); background: #050811;">
       <div style="padding: 8px 14px; background: #0b1120; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
         <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="color: #ff3b30; font-weight: 700; font-size: 13px;">📡 Global Vector Threat Radar</span>
+          <span style="color: #ff3b30; font-weight: 700; font-size: 13px;"> Global Vector Threat Radar</span>
           <span style="font-size: 10px; background: rgba(255,59,48,0.2); color: #ff3b30; padding: 2px 6px; border-radius: 4px;">DEFCON 2 ACTIVE</span>
         </div>
         <div style="font-size: 11px; color: #aaa;">
@@ -6728,7 +6728,7 @@ function getCipherLabContent() {
   return `
     <div class="app-cipherlab-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: var(--font-mono); background: #0d1117; padding: 18px; overflow-y: auto;">
       <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px;">
-        <h2 style="margin: 0; font-size: 18px; color: #00BFFF;">🔐 Post-Quantum Cryptography Studio</h2>
+        <h2 style="margin: 0; font-size: 18px; color: #00BFFF;"> Post-Quantum Cryptography Studio</h2>
         <div style="font-size: 11px; color: #8b949e; margin-top: 2px;">NIST Round 3 PQC Standard Suite (Kyber-1024 Lattice Encapsulation & Dilithium-5 Signatures)</div>
       </div>
 
@@ -6759,7 +6759,7 @@ function getCipherLabContent() {
 
       <div style="background: rgba(74,246,38,0.04); border: 1px dashed rgba(74,246,38,0.3); border-radius: 8px; padding: 14px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <h4 style="margin: 0; font-size: 12.5px; color: #4AF626;">📡 Quantum Radar & Entanglement Detection Evasion</h4>
+          <h4 style="margin: 0; font-size: 12.5px; color: #4AF626;"> Quantum Radar & Entanglement Detection Evasion</h4>
           <button onclick="runQuantumDetectionAudit()" style="background: #4AF626; color: #000; border: none; padding: 4px 10px; border-radius: 4px; font-weight: 700; font-size: 10.5px; cursor: pointer;">Audit Quantum Stealth →</button>
         </div>
         <p style="font-size: 10.5px; color: #ccc; line-height: 1.4; margin: 0 0 8px 0;">Inject Kyber-1024 entropy noise vectors to decouple quantum phase coherence, rendering system hardware 100% immune to quantum radar & signal detection.</p>
@@ -6791,10 +6791,10 @@ function runQuantumDetectionAudit() {
   const out = document.getElementById('quantum-stealth-output');
   if (!out) return;
   out.style.display = 'block';
-  out.innerHTML = `[QUANTUM STEALTH DAEMON] Scanning RF & photonic spectrum for quantum sensing probes...<br/>▶ Injecting Kyber-1024 entropy noise to decouple phase coherence...`;
+  out.innerHTML = `[QUANTUM STEALTH DAEMON] Scanning RF & photonic spectrum for quantum sensing probes...<br/> Injecting Kyber-1024 entropy noise to decouple phase coherence...`;
 
   setTimeout(() => {
-    out.innerHTML += `<br/>🛡️ <strong>QUANTUM STEALTH VERIFIED: 0 Quantum Entanglement Probes Detected. 100% immune to quantum radar & spectral eavesdropping.</strong>`;
+    out.innerHTML += `<br/> <strong>QUANTUM STEALTH VERIFIED: 0 Quantum Entanglement Probes Detected. 100% immune to quantum radar & spectral eavesdropping.</strong>`;
     logAudit("Verified system quantum stealth radar evasion. Active Kyber-1024 phase decoupling protects hardware against quantum detection.");
   }, 1200);
 }
@@ -6808,7 +6808,7 @@ function getKernelDebugContent() {
     <div class="app-kerneldebug-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: var(--font-mono); background: #000; padding: 16px; overflow-y: auto;">
       <div style="border-bottom: 1px solid rgba(74,246,38,0.3); padding-bottom: 10px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <h2 style="margin: 0; font-size: 16px; color: #4AF626;">💻 Tomb OS Monolithic Kernel v2.0 Ring 0 Debugger</h2>
+          <h2 style="margin: 0; font-size: 16px; color: #4AF626;"> Tomb OS Monolithic Kernel v2.0 Ring 0 Debugger</h2>
           <div style="font-size: 10.5px; color: #888;">x86_64 Freestanding Architecture Inspection</div>
         </div>
         <span style="font-size: 10px; background: rgba(74,246,38,0.15); color: #4AF626; padding: 3px 8px; border-radius: 4px; font-weight: 700;">KPTI & KASLR ACTIVE</span>
@@ -6866,7 +6866,7 @@ function getServiceConnectContent() {
     <div class="app-serviceconnect-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: var(--font-mono); background: #0c0c0c; padding: 18px; overflow-y: auto;">
       <div style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <h2 style="margin: 0; font-size: 18px; color: #007AFF;">🌐 Universal Zero-Trust Secure Service Connect Hub</h2>
+          <h2 style="margin: 0; font-size: 18px; color: #007AFF;"> Universal Zero-Trust Secure Service Connect Hub</h2>
           <div style="font-size: 11px; color: #aaa; margin-top: 2px;">Establish E2EE encrypted micro-segmented tunnels to external databases, cloud APIs, & remote servers with zero security compromise.</div>
         </div>
         <span style="font-size: 10px; background: rgba(0,122,255,0.2); color: #007AFF; padding: 4px 10px; border-radius: 12px; font-weight: 600;">ZTNA Gateway Active</span>
@@ -6874,7 +6874,7 @@ function getServiceConnectContent() {
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
         <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
-          <h4 style="margin: 0; color: #007AFF; font-size: 13px;">🔗 Establish Outbound Service Connection</h4>
+          <h4 style="margin: 0; color: #007AFF; font-size: 13px;"> Establish Outbound Service Connection</h4>
           
           <div>
             <label style="display: block; font-size: 10.5px; color: #888; margin-bottom: 4px;">Service Target Type:</label>
@@ -6900,7 +6900,7 @@ function getServiceConnectContent() {
         </div>
 
         <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 14px; display: flex; flex-direction: column;">
-          <h4 style="margin: 0 0 10px 0; color: #4AF626; font-size: 13px;">🛡️ Active Zero-Trust Tunnel Monitor</h4>
+          <h4 style="margin: 0 0 10px 0; color: #4AF626; font-size: 13px;"> Active Zero-Trust Tunnel Monitor</h4>
           <div id="zt-connect-output" style="flex: 1; min-height: 160px; background: #000; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 10px; font-size: 10.5px; line-height: 1.6; color: #ccc; overflow-y: auto;">
             <div style="color: #888;">No active outbound connections. Select a target service to establish an isolated E2EE tunnel.</div>
           </div>
@@ -6924,15 +6924,15 @@ function initiateZeroTrustConnect() {
   const target = url && url.trim() ? url.trim() : 'api.internal.service.net';
 
   out.innerHTML = `<div style="color: #007AFF;">[ZTNA GATEWAY] Intercepting connection request for '${escapeHTML(target)}'...</div>`;
-  out.innerHTML += `<div style="color: #888;">▶ Running DLP packet payload inspection (0 secrets exposed)...</div>`;
+  out.innerHTML += `<div style="color: #888;"> Running DLP packet payload inspection (0 secrets exposed)...</div>`;
 
   setTimeout(() => {
-    out.innerHTML += `<div style="color: #FFCC00;">▶ [PQC ENCRYPTION] Wrapping payload in Kyber-1024 key encapsulation envelope...</div>`;
+    out.innerHTML += `<div style="color: #FFCC00;"> [PQC ENCRYPTION] Wrapping payload in Kyber-1024 key encapsulation envelope...</div>`;
   }, 700);
 
   setTimeout(() => {
     rotateTaskIp();
-    out.innerHTML += `<div style="color: #4AF626;">✅ <strong>CONNECTED: E2EE Tunnel established to '${escapeHTML(target)}'!</strong><br/>Egress IP: ${systemState.activeTaskIp} | Latency: 14ms | Status: ULTRA-SECURE</div>`;
+    out.innerHTML += `<div style="color: #4AF626;"> <strong>CONNECTED: E2EE Tunnel established to '${escapeHTML(target)}'!</strong><br/>Egress IP: ${systemState.activeTaskIp} | Latency: 14ms | Status: ULTRA-SECURE</div>`;
     logAudit(`Established Zero-Trust connection tunnel to external service '${target}'.`);
   }, 1500);
 }
@@ -6945,7 +6945,7 @@ function getSysmonContent() {
     <div class="app-sysmon-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: var(--font-mono); background: #0c0c0c; padding: 18px; overflow-y: auto;">
       <div style="border-bottom: 1px solid rgba(74,246,38,0.3); padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <h2 style="margin: 0; font-size: 18px; color: #4AF626;">📊 System Performance & Resource Telemetry</h2>
+          <h2 style="margin: 0; font-size: 18px; color: #4AF626;"> System Performance & Resource Telemetry</h2>
           <div style="font-size: 11px; color: #aaa; margin-top: 2px;">Real-time CPU core load meters, RAM allocation gauges, and micro-VM metrics.</div>
         </div>
         <span style="font-size: 10px; background: rgba(74,246,38,0.15); color: #4AF626; padding: 4px 10px; border-radius: 12px; font-weight: 600;">Hardware Telemetry Active</span>
@@ -6953,7 +6953,7 @@ function getSysmonContent() {
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
         <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
-          <h4 style="margin: 0; color: #4AF626; font-size: 13px;">💻 CPU Core Telemetry Load (${systemState.liveCores} Active Cores)</h4>
+          <h4 style="margin: 0; color: #4AF626; font-size: 13px;"> CPU Core Telemetry Load (${systemState.liveCores} Active Cores)</h4>
           <div style="display: flex; flex-direction: column; gap: 8px; font-size: 11px;">
             <div>
               <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Core 0 (Kernel Ring 0)</span><strong style="color: #4AF626;">12%</strong></div>
@@ -6975,7 +6975,7 @@ function getSysmonContent() {
         </div>
 
         <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
-          <h4 style="margin: 0; color: #00BFFF; font-size: 13px;">🧠 Physical Memory Allocations</h4>
+          <h4 style="margin: 0; color: #00BFFF; font-size: 13px;"> Physical Memory Allocations</h4>
           <div style="font-size: 11px; line-height: 1.8; color: #ccc;">
             Total System RAM: <strong style="color: #fff;">16,384 MB</strong><br/>
             Kernel Core (Ring 0): <strong style="color: #4AF626;">501 MB</strong><br/>
@@ -6997,10 +6997,10 @@ function getStressTestContent() {
     <div class="app-stresstest-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: var(--font-mono); background: #0d0d0d; padding: 18px; overflow-y: auto;">
       <div style="border-bottom: 1px solid rgba(255,59,48,0.3); padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <h2 style="margin: 0; font-size: 18px; color: #ff3b30;">⚡ Enterprise Stress Test & Load Benchmark Suite</h2>
+          <h2 style="margin: 0; font-size: 18px; color: #ff3b30;"> Enterprise Stress Test & Load Benchmark Suite</h2>
           <div style="font-size: 11px; color: #aaa; margin-top: 2px;">Subject kernel memory, PQC ciphers, and multi-agent systems to maximum synthetic load.</div>
         </div>
-        <button onclick="runSystemStressTest()" style="background: #ff3b30; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; font-weight: 700; font-size: 11.5px; cursor: pointer;">Execute Full Stress Test ⚡</button>
+        <button onclick="runSystemStressTest()" style="background: #ff3b30; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; font-weight: 700; font-size: 11.5px; cursor: pointer;">Execute Full Stress Test </button>
       </div>
 
       <div style="background: #000; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 14px; flex: 1; min-height: 240px; font-size: 11px; line-height: 1.6; color: #ccc; overflow-y: auto;" id="stress-test-console">
@@ -7017,18 +7017,18 @@ function runSystemStressTest() {
   log.scrollTop = log.scrollHeight;
 
   setTimeout(() => {
-    log.innerHTML += `<div style="color: #FFCC00;">▶ [STAGE 1/3] Stressing PQC Kyber-1024 Lattice Engine (10,000 iterations)... PASS (0 errors, 4.2ms avg)</div>`;
+    log.innerHTML += `<div style="color: #FFCC00;"> [STAGE 1/3] Stressing PQC Kyber-1024 Lattice Engine (10,000 iterations)... PASS (0 errors, 4.2ms avg)</div>`;
     log.scrollTop = log.scrollHeight;
   }, 600);
 
   setTimeout(() => {
-    log.innerHTML += `<div style="color: #00BFFF;">▶ [STAGE 2/3] Allocating & Scrubbing 4,000 Volatile RAM Pages... PASS (Zero leaks detected)</div>`;
+    log.innerHTML += `<div style="color: #00BFFF;"> [STAGE 2/3] Allocating & Scrubbing 4,000 Volatile RAM Pages... PASS (Zero leaks detected)</div>`;
     log.scrollTop = log.scrollHeight;
   }, 1200);
 
   setTimeout(() => {
-    log.innerHTML += `<div style="color: #9C27B0;">▶ [STAGE 3/3] Simulating 100 Concurrent Agent Tasks... PASS (100% completion)</div>`;
-    log.innerHTML += `<div style="color: #4AF626; font-weight: 700; margin-top: 8px;">✅ BENCHMARK COMPLETE: System operating with 100% stability under peak stress.</div>`;
+    log.innerHTML += `<div style="color: #9C27B0;"> [STAGE 3/3] Simulating 100 Concurrent Agent Tasks... PASS (100% completion)</div>`;
+    log.innerHTML += `<div style="color: #4AF626; font-weight: 700; margin-top: 8px;"> BENCHMARK COMPLETE: System operating with 100% stability under peak stress.</div>`;
     log.scrollTop = log.scrollHeight;
     logAudit("Executed full enterprise system stress test and load benchmark suite with 100% stability.");
   }, 1800);
@@ -7065,10 +7065,10 @@ function getImmuneSystemContent() {
     <div class="app-immunesystem-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: var(--font-mono); background: #0b0204; padding: 18px; overflow-y: auto;">
       <div style="border-bottom: 1px solid rgba(255,59,48,0.4); padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <h2 style="margin: 0; font-size: 18px; color: #ff3b30;">🦠 Autonomous White Blood Cell Immune System</h2>
+          <h2 style="margin: 0; font-size: 18px; color: #ff3b30;"> Autonomous White Blood Cell Immune System</h2>
           <div style="font-size: 11px; color: #aaa; margin-top: 2px;">Biological threat hunting agents phagocytizing intrusions like white blood cells targeting sickness.</div>
         </div>
-        <button onclick="runImmunePhagocytosisCycle()" style="background: #ff3b30; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; font-weight: 700; font-size: 11.5px; cursor: pointer;">Deploy Phagocytes & Neutralize Intrusions 🩸</button>
+        <button onclick="runImmunePhagocytosisCycle()" style="background: #ff3b30; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; font-weight: 700; font-size: 11.5px; cursor: pointer;">Deploy Phagocytes & Neutralize Intrusions </button>
       </div>
 
       <div style="background: #000; border: 1px solid rgba(255,59,48,0.2); border-radius: 6px; padding: 14px; flex: 1; min-height: 240px; font-size: 11px; line-height: 1.6; color: #ccc; overflow-y: auto;" id="immune-system-console">
@@ -7085,23 +7085,23 @@ function runImmunePhagocytosisCycle() {
   log.scrollTop = log.scrollHeight;
 
   setTimeout(() => {
-    log.innerHTML += `<div style="color: #FFCC00;">▶ [PATHOGEN DETECTED] Identified unauthorized memory probe anomaly [PID: 4092] in Cell sector 0x7F...</div>`;
+    log.innerHTML += `<div style="color: #FFCC00;"> [PATHOGEN DETECTED] Identified unauthorized memory probe anomaly [PID: 4092] in Cell sector 0x7F...</div>`;
     log.scrollTop = log.scrollHeight;
   }, 600);
 
   setTimeout(() => {
-    log.innerHTML += `<div style="color: #00BFFF;">▶ [ENGAGING PHAGOCYTOSIS] Enveloping intruder process PID 4092 with isolated VM capability locks...</div>`;
+    log.innerHTML += `<div style="color: #00BFFF;"> [ENGAGING PHAGOCYTOSIS] Enveloping intruder process PID 4092 with isolated VM capability locks...</div>`;
     log.scrollTop = log.scrollHeight;
   }, 1200);
 
   setTimeout(() => {
-    log.innerHTML += `<div style="color: #4AF626; font-weight: 700; margin-top: 8px;">🩸 <strong>INTRUSION NEUTRALIZED: Phagocyte agents successfully destroyed malicious PID 4092 and purged RAM sector.</strong></div>`;
+    log.innerHTML += `<div style="color: #4AF626; font-weight: 700; margin-top: 8px;"> <strong>INTRUSION NEUTRALIZED: Phagocyte agents successfully destroyed malicious PID 4092 and purged RAM sector.</strong></div>`;
     log.scrollTop = log.scrollHeight;
   }, 1800);
 
   setTimeout(() => {
-    log.innerHTML += `<div style="color: #9C27B0; font-weight: 700; margin-top: 8px;">🧬 [ADAPTIVE IMMUNE LEARNING] Analyzing threat model signature 0x7F-MEM-PROBE...</div>`;
-    log.innerHTML += `<div style="color: #00BFFF;">🛡️ <strong>SYSTEM HARDENED: Generated custom AppArmor kernel antibody rule ('deny_ptrace_mem_access') & sealed rule into persistent immune memory!</strong></div>`;
+    log.innerHTML += `<div style="color: #9C27B0; font-weight: 700; margin-top: 8px;"> [ADAPTIVE IMMUNE LEARNING] Analyzing threat model signature 0x7F-MEM-PROBE...</div>`;
+    log.innerHTML += `<div style="color: #00BFFF;"> <strong>SYSTEM HARDENED: Generated custom AppArmor kernel antibody rule ('deny_ptrace_mem_access') & sealed rule into persistent immune memory!</strong></div>`;
     log.scrollTop = log.scrollHeight;
     logAudit("Immune agents analyzed threat model signature, synthesizing an adaptive AppArmor antibody rule to harden the system against future probes.");
   }, 2600);
@@ -7129,10 +7129,10 @@ function getQuantumLabContent() {
     <div class="app-quantumlab-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: var(--font-mono); background: #040914; padding: 18px; overflow-y: auto;">
       <div style="border-bottom: 1px solid rgba(0,229,255,0.3); padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
         <div>
-          <h2 style="margin: 0; font-size: 18px; color: #00e5ff;">⚛️ Sycamore-Class Quantum Processing Studio</h2>
+          <h2 style="margin: 0; font-size: 18px; color: #00e5ff;"> Sycamore-Class Quantum Processing Studio</h2>
           <div style="font-size: 11px; color: #aaa; margin-top: 2px;">Google Sycamore-Class 105-Qubit Architecture • 99.9% Gate Fidelity • Random Circuit Sampling</div>
         </div>
-        <button onclick="runQuantumSuperpositionBenchmark()" style="background: #00e5ff; color: #000; border: none; padding: 8px 16px; border-radius: 4px; font-weight: 700; font-size: 11.5px; cursor: pointer;">Execute Sycamore Quantum Supremacy RCS ⚛️</button>
+        <button onclick="runQuantumSuperpositionBenchmark()" style="background: #00e5ff; color: #000; border: none; padding: 8px 16px; border-radius: 4px; font-weight: 700; font-size: 11.5px; cursor: pointer;">Execute Sycamore Quantum Supremacy RCS </button>
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
@@ -7164,17 +7164,17 @@ function runQuantumSuperpositionBenchmark() {
   log.scrollTop = log.scrollHeight;
 
   setTimeout(() => {
-    log.innerHTML += `<div style="color: #FFCC00;">▶ Executing Random Circuit Sampling (RCS) depth-20 cycle across 105 qubits... (99.94% single-qubit fidelity)</div>`;
+    log.innerHTML += `<div style="color: #FFCC00;"> Executing Random Circuit Sampling (RCS) depth-20 cycle across 105 qubits... (99.94% single-qubit fidelity)</div>`;
     log.scrollTop = log.scrollHeight;
   }, 700);
 
   setTimeout(() => {
-    log.innerHTML += `<div style="color: #9C27B0;">▶ Evaluating Cross-Entropy Benchmarking (XEB) fidelity metric against Frontier supercomputer baseline...</div>`;
+    log.innerHTML += `<div style="color: #9C27B0;"> Evaluating Cross-Entropy Benchmarking (XEB) fidelity metric against Frontier supercomputer baseline...</div>`;
     log.scrollTop = log.scrollHeight;
   }, 1400);
 
   setTimeout(() => {
-    log.innerHTML += `<div style="color: #4AF626; font-weight: 700; margin-top: 8px;">⚛️ <strong>QUANTUM SUPREMACY BENCHMARK VERIFIED: Processed 1,000,000,000 RCS bitstring samples in 2.4 seconds! Accomplished compute workload requiring 47+ years on classical supercomputers (XEB: 0.999).</strong></div>`;
+    log.innerHTML += `<div style="color: #4AF626; font-weight: 700; margin-top: 8px;"> <strong>QUANTUM SUPREMACY BENCHMARK VERIFIED: Processed 1,000,000,000 RCS bitstring samples in 2.4 seconds! Accomplished compute workload requiring 47+ years on classical supercomputers (XEB: 0.999).</strong></div>`;
     log.scrollTop = log.scrollHeight;
     logAudit("Executed Sycamore-Class Quantum Supremacy RCS benchmark. Achieved 1 billion bitstrings/sec sampling speed with 99.9% gate fidelity.");
   }, 2200);
@@ -7188,10 +7188,10 @@ function getDocsEditorContent() {
     <div class="app-docseditor-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #1a1a1a; padding: 16px;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 12px;">
         <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 16px;">📝</span>
+          <span style="font-size: 16px;"></span>
           <input type="text" value="Untitled Document.md" style="background: transparent; border: none; color: #fff; font-size: 14px; font-weight: 600; outline: none; width: 220px;" />
         </div>
-        <button onclick="logAudit('Tomb Docs: Cryptographically signed and saved document.')" style="background: #007AFF; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; font-weight: 600; font-size: 11px; cursor: pointer;">Save & Sign 🔒</button>
+        <button onclick="logAudit('Tomb Docs: Cryptographically signed and saved document.')" style="background: #007AFF; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; font-weight: 600; font-size: 11px; cursor: pointer;">Save & Sign </button>
       </div>
       <textarea style="flex: 1; background: #111; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 14px; color: #eee; font-family: var(--font-mono); font-size: 12px; line-height: 1.6; outline: none; resize: none;" placeholder="Start typing your document or markdown notes here..."></textarea>
     </div>
@@ -7202,7 +7202,7 @@ function getSheetsContent() {
   return `
     <div class="app-sheets-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #141414; padding: 16px; overflow-x: auto;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h3 style="margin: 0; font-size: 16px; color: #4AF626; display: flex; align-items: center; gap: 8px;">📊 Tomb Sheets Data Grid</h3>
+        <h3 style="margin: 0; font-size: 16px; color: #4AF626; display: flex; align-items: center; gap: 8px;"> Tomb Sheets Data Grid</h3>
         <button onclick="logAudit('Tomb Sheets: Exported active data table.')" style="background: #4AF626; color: #000; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer;">Export CSV →</button>
       </div>
       <table style="width: 100%; border-collapse: collapse; font-size: 11.5px; text-align: left; font-family: var(--font-mono);">
@@ -7228,15 +7228,15 @@ function getCalendarContent() {
   return `
     <div class="app-calendar-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #141414; padding: 16px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-        <h3 style="margin: 0; font-size: 16px; color: #FFCC00; display: flex; align-items: center; gap: 8px;">📅 Encrypted Calendar & Schedule</h3>
+        <h3 style="margin: 0; font-size: 16px; color: #FFCC00; display: flex; align-items: center; gap: 8px;"> Encrypted Calendar & Schedule</h3>
         <span style="font-size: 12px; color: #888;">June 2026</span>
       </div>
       <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 14px; flex: 1;">
         <h4 style="margin: 0 0 10px 0; font-size: 13px; color: #fff;">Upcoming Encrypted Events</h4>
         <div style="font-size: 11.5px; line-height: 1.8; color: #ccc;">
-          📌 <strong>Today, 14:00</strong> — seL4 Kernel Math Proof Code Review<br/>
-          📌 <strong>Tomorrow, 09:30</strong> — Zero-Trust ZTNA Tunnel Rotation Sync<br/>
-          📌 <strong>Friday, 16:00</strong> — Quantum Supremacy RCS Benchmark Audit
+           <strong>Today, 14:00</strong> — seL4 Kernel Math Proof Code Review<br/>
+           <strong>Tomorrow, 09:30</strong> — Zero-Trust ZTNA Tunnel Rotation Sync<br/>
+           <strong>Friday, 16:00</strong> — Quantum Supremacy RCS Benchmark Audit
         </div>
       </div>
     </div>
