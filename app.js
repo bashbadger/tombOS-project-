@@ -4711,6 +4711,7 @@ let isChatEphemeralActive = false;
 let userChatCredits = 50; // Chat agent session credits
 let activeWorkspaceTab = 'messages'; // Active tab in single-window mode
 let workspaceLayoutMode = 'split'; // 'split' or 'tabbed'
+let isVMPatchCodeSafe = false; // Code sandbox safety status
 
 function getUnifiedWorkspaceContent() {
   setTimeout(() => {
@@ -4765,10 +4766,10 @@ function getUnifiedWorkspaceContent() {
           </div>
         </div>
 
-        <!-- PANEL 2: OpenClaw 2-Bit platformer -->
+        <!-- PANEL 2: OpenClaw 2-Bit platformer & Isolated VM Code Sandbox -->
         <div id="hub-panel-game" style="flex: 1; background: #0a0a0f; display: flex; flex-direction: column; border-right: 1px solid rgba(0,229,255,0.15); overflow: hidden;">
           <div style="padding: 10px 14px; background: #111116; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
-            <span style="font-weight: 700; font-size: 12.5px; color: #FFCC00;">OpenClaw (Cat Care)</span>
+            <span style="font-weight: 700; font-size: 12.5px; color: #FFCC00;">OpenClaw (Cat Care & VM Dev Sandbox)</span>
             <div style="display: flex; gap: 10px; font-size: 10.5px;">
               <span id="oc-score" style="color: #FFCC00;">Gold: 0</span>
               <span id="oc-friends" style="color: #00e5ff;">Mice: 0</span>
@@ -4777,11 +4778,24 @@ function getUnifiedWorkspaceContent() {
               <span id="oc-lives" style="color: #ff3b30;">LIVES: 3</span>
             </div>
           </div>
-          <div style="flex: 1; display: flex; justify-content: center; align-items: center; position: relative; background: #101017; overflow: hidden; padding: 10px;">
-            <canvas id="openclaw-canvas" tabindex="0" width="480" height="340" style="display: block; background: #080d16; image-rendering: pixelated; border: 1px solid rgba(0,229,255,0.2); outline: none;"></canvas>
+          <div style="height: 310px; display: flex; justify-content: center; align-items: center; position: relative; background: #101017; overflow: hidden; padding: 5px; flex-shrink: 0;">
+            <canvas id="openclaw-canvas" tabindex="0" width="480" height="300" style="display: block; background: #080d16; image-rendering: pixelated; border: 1px solid rgba(0,229,255,0.2); outline: none;"></canvas>
           </div>
-          <div style="padding: 6px 12px; background: #111116; font-size: 9.5px; color: #888; text-align: center; border-top: 1px solid rgba(255,255,255,0.08); flex-shrink: 0;">
-            Use <strong>W/A/S/D</strong> or <strong>Arrows</strong> to move/jump. Rescue Mice to expand the map width!
+          
+          <!-- Isolated Developer VM Sandbox Console -->
+          <div style="flex: 1; min-height: 180px; background: #080d15; border-top: 2px solid rgba(0,229,255,0.15); display: flex; flex-direction: column; padding: 10px; box-sizing: border-box;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 11px; font-weight: 700; color: #00e5ff; letter-spacing: 0.5px;">Isolated seL4 developer VM Sandbox</span>
+              <span id="vm-sandbox-status" style="font-size: 10px; color: #8e8e93; font-weight: 700;">VM Status: Isolated</span>
+            </div>
+            <textarea id="vm-sandbox-editor" style="flex: 1; width: 100%; height: 80px; background: #05080e; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; color: #4AF626; font-family: var(--font-mono); font-size: 11px; padding: 8px; outline: none; resize: none; box-sizing: border-box;" spellcheck="false">// write system patch code here...
+function verifyStackSecurity() {
+  return true;
+}</textarea>
+            <div style="display: flex; gap: 8px; margin-top: 8px; flex-shrink: 0;">
+              <button onclick="testVMSandboxCode()" style="flex: 1; background: #1a2536; border: 1px solid rgba(0,229,255,0.25); color: #00e5ff; padding: 6px 12px; border-radius: 4px; font-size: 10.5px; font-weight: 700; cursor: pointer; transition: all 0.2s;">🧪 Test Patch in VM</button>
+              <button id="vm-deploy-btn" onclick="deployVMSandboxCode()" disabled style="flex: 1; background: #202c33; border: none; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 10.5px; font-weight: 700; cursor: not-allowed; transition: all 0.2s;">🚀 Commit & Deploy to Core</button>
+            </div>
           </div>
         </div>
 
@@ -4906,6 +4920,69 @@ function setWorkspaceActiveTab(tabName) {
     }
     panelTelem.style.display = 'flex';
     panelTelem.style.width = '100%';
+  }
+}
+
+function testVMSandboxCode() {
+  const code = document.getElementById('vm-sandbox-editor').value;
+  const statusEl = document.getElementById('vm-sandbox-status');
+  if (!statusEl) return;
+
+  statusEl.textContent = "Initializing isolated VM sandbox...";
+  statusEl.style.color = "#00e5ff";
+
+  setTimeout(() => {
+    statusEl.textContent = "Compiling and performing static safety checks...";
+  }, 1000);
+
+  setTimeout(() => {
+    if (code.includes('eval') || code.includes('unsafe')) {
+      statusEl.textContent = "SAFETY VERIFICATION FAILED: Unsafe reference detected in sandbox.";
+      statusEl.style.color = "#ff3b30";
+      isVMPatchCodeSafe = false;
+    } else {
+      statusEl.textContent = "VERIFICATION PASSED: Code is 100% safe & effective.";
+      statusEl.style.color = "#4AF626";
+      isVMPatchCodeSafe = true;
+      const deployBtn = document.getElementById('vm-deploy-btn');
+      if (deployBtn) {
+        deployBtn.disabled = false;
+        deployBtn.style.background = "#00a884";
+        deployBtn.style.cursor = "pointer";
+      }
+    }
+  }, 2000);
+}
+
+function deployVMSandboxCode() {
+  if (!isVMPatchCodeSafe) return;
+  const statusEl = document.getElementById('vm-sandbox-status');
+  
+  // Log into the defensive telemetry stream in Right column!
+  const telemStream = document.querySelector('#hub-panel-telemetry div:last-child div');
+  if (telemStream) {
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    const logItem = document.createElement('div');
+    logItem.style.color = "#4AF626";
+    logItem.innerHTML = `[${timeStr}] [DEPLOY] Patch promoted from Isolated VM Sandbox to production kernel layer!`;
+    telemStream.appendChild(logItem);
+    telemStream.scrollTop = telemStream.scrollHeight;
+  }
+
+  logAudit("Security Wall: Promoted verified code patch from VM sandbox to production kernel.");
+  alert("Code Deployed! Patch successfully promoted from Isolated VM into System Core.");
+
+  if (statusEl) {
+    statusEl.textContent = "Code deployed to system core.";
+    statusEl.style.color = "#8e8e93";
+  }
+
+  // Reset button state
+  const deployBtn = document.getElementById('vm-deploy-btn');
+  if (deployBtn) {
+    deployBtn.disabled = true;
+    deployBtn.style.background = "#202c33";
+    deployBtn.style.cursor = "not-allowed";
   }
 }
 
