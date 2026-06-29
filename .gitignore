@@ -17,3 +17,6 @@ agents/data/
 *.zip
 *.gz
 *.tar
+
+# Community automation scripts
+ruby-cli/github_sync.rb
