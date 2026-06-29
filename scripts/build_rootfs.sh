@@ -70,6 +70,7 @@ AA_EOF
 
 echo "[+] Packing hardened rootfs into initrd archive..."
 cd "$ROOTFS_DIR"
-find . | cpio -o -H newc | gzip -9 > /Users/andrue/tombOS-project/tombos_rootfs.cpio.gz
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+find . | cpio -o -H newc | gzip -9 > "${SCRIPT_DIR}/tombos_rootfs.cpio.gz"
 
-echo "✅ Hardened Root filesystem built successfully: /Users/andrue/tombOS-project/tombos_rootfs.cpio.gz"
+echo "✅ Hardened Root filesystem built successfully: ${SCRIPT_DIR}/tombos_rootfs.cpio.gz"
