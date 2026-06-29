@@ -487,6 +487,35 @@ curl -X POST https://your-agent-domain.com/webhooks/generic \
   }'
 ```
 
+---
+
+## 📶 6. Offline Capabilities & Network Sync Manager
+
+Tomb OS is engineered for maximum resilience under network-constrained, air-gapped, or zero-connectivity scenarios. The agent mesh runs completely offline, caching events locally and utilizing local hardware models.
+
+### 💾 Local SQLite / Outbox Cache (`local_outbox.json`)
+If Wi-Fi or Ethernet connectivity is lost:
+1. All outgoing alerts and chat updates are intercepted by the `NetworkSyncStore` class.
+2. Messages are serialized and saved locally to the persistent outbox store at `agents/data/local_outbox.json`.
+3. System memory is secured, preventing data loss during extended blackouts.
+
+### 🤖 Local AI Model Fallback (Ollama / Llama3)
+When cloud LLM API servers are unreachable:
+1. The orchestrator automatically routes prompt inference queries to a locally hosted Ollama server or local ONNX inference engine.
+2. To enable local fallback:
+   - Ensure Ollama is running locally: `ollama run llama3`
+   - Start the agent mesh with the fallback flag:
+     ```bash
+     OFFLINE_FALLBACK_URL="http://localhost:11434" OFFLINE_MODEL="llama3" npm start
+     ```
+
+### 📶 Wi-Fi Restored Synchronization
+Once internet connectivity is restored:
+1. The network sync daemon automatically detects a live connection.
+2. The local outbox cache is systematically read and sent sequentially to the target webhooks (Slack, MS Teams, Google Chat, Discord, etc.).
+3. Once successfully delivered, cached items are securely scrubbed from local storage.
+
+
 
 
 
