@@ -525,6 +525,27 @@ function syncComplianceDials() {
 
 // Window Management Configuration
 const windowConfig = {
+  docseditor: {
+    title: "Tomb Docs (Encrypted Office Writer & Markdown Studio)",
+    width: 800,
+    height: 560,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM13 9V3.5L18.5 9H13z" fill="#007AFF"/></svg>`,
+    getContent: () => getDocsEditorContent()
+  },
+  sheets: {
+    title: "Tomb Sheets (Secure Data Grid & Spreadsheet)",
+    width: 840,
+    height: 560,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 4h-7V5h7v2zm-9-2v2H5V5h5zm-5 4h5v4H5V9zm7 0h7v4h-7V9zm7 6h-7v4h7v-4zm-9 4H5v-4h5v4z" fill="#4AF626"/></svg>`,
+    getContent: () => getSheetsContent()
+  },
+  calendar: {
+    title: "Tomb Calendar & Encrypted Event Scheduler",
+    width: 780,
+    height: 540,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z" fill="#FFCC00"/></svg>`,
+    getContent: () => getCalendarContent()
+  },
   quantumlab: {
     title: "Tomb Quantum Computing Studio & Superposition Simulator",
     width: 840,
@@ -4899,7 +4920,10 @@ const allAppLauncherList = [
   { id: 'serviceconnect', name: 'Zero-Trust Service Connect Hub', category: 'Networking & Security', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#007AFF"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>`, desc: 'Connect securely to any external service, DB or API without security compromise', zone: 'secure' },
   { id: 'stresstest', name: 'Stress Test & Load Benchmarker', category: 'System & Security', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#ff3b30"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>`, desc: 'Execute synthetic load tests across CPU cores, PQC ciphers & agent task queues', zone: 'work' },
   { id: 'immunesystem', name: 'Autonomous White Blood Cell Immune System', category: 'AI & Security', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#ff3b30"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>`, desc: 'Biological threat hunting agents phagocytizing intrusions like white blood cells', zone: 'secure' },
-  { id: 'quantumlab', name: 'Quantum Computing Studio & Simulator', category: 'System & Security', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#00e5ff"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.8L19 8l-7 3.5L5 8l7-3.2z"/></svg>`, desc: 'Simulated 128-qubit quantum superposition & Hadamard circuit simulator', zone: 'secure' }
+  { id: 'quantumlab', name: 'Quantum Computing Studio & Simulator', category: 'System & Security', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#00e5ff"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.8L19 8l-7 3.5L5 8l7-3.2z"/></svg>`, desc: 'Simulated 128-qubit quantum superposition & Hadamard circuit simulator', zone: 'secure' },
+  { id: 'docseditor', name: 'Tomb Docs Office Writer', category: 'Productivity', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#007AFF"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM13 9V3.5L18.5 9H13z"/></svg>`, desc: 'Encrypted document authoring, markdown notes & report writer', zone: 'personal' },
+  { id: 'sheets', name: 'Tomb Sheets Data Grid', category: 'Productivity', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#4AF626"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 4h-7V5h7v2zm-9-2v2H5V5h5zm-5 4h5v4H5V9zm7 0h7v4h-7V9zm7 6h-7v4h7v-4zm-9 4H5v-4h5v4z"/></svg>`, desc: 'Interactive spreadsheet, financial data grid & table math', zone: 'personal' },
+  { id: 'calendar', name: 'Tomb Calendar & Event Planner', category: 'Productivity', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#FFCC00"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/></svg>`, desc: 'Secure event scheduling, deadline tracker & calendar alarms', zone: 'personal' }
 ];
 
 function getControlCenterContent() {
@@ -4908,7 +4932,7 @@ function getControlCenterContent() {
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px;">
         <div>
           <h2 style="margin: 0; font-size: 20px; color: var(--ubuntu-orange); font-weight: 600;">🎛️ Application Control Center</h2>
-          <div style="font-size: 12px; color: var(--ubuntu-light-grey); margin-top: 2px;">Launch and access all 23 Tomb OS applications from a central hub</div>
+          <div style="font-size: 12px; color: var(--ubuntu-light-grey); margin-top: 2px;">Launch and access all 26 Tomb OS applications from a central hub</div>
         </div>
         <div style="width: 240px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 18px; padding: 6px 12px; display: flex; align-items: center; gap: 8px;">
           <span style="font-size: 12px; color: #888;">🔍</span>
@@ -7155,6 +7179,70 @@ function runQuantumSuperpositionBenchmark() {
     logAudit("Executed Sycamore-Class Quantum Supremacy RCS benchmark. Achieved 1 billion bitstrings/sec sampling speed with 99.9% gate fidelity.");
   }, 2200);
 }
+
+// ============================================================================
+// 12. PRELOADED PRODUCTIVITY APP SUITE (DOCS, SHEETS, CALENDAR)
+// ============================================================================
+function getDocsEditorContent() {
+  return `
+    <div class="app-docseditor-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #1a1a1a; padding: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 16px;">📝</span>
+          <input type="text" value="Untitled Document.md" style="background: transparent; border: none; color: #fff; font-size: 14px; font-weight: 600; outline: none; width: 220px;" />
+        </div>
+        <button onclick="logAudit('Tomb Docs: Cryptographically signed and saved document.')" style="background: #007AFF; color: #fff; border: none; padding: 6px 14px; border-radius: 4px; font-weight: 600; font-size: 11px; cursor: pointer;">Save & Sign 🔒</button>
+      </div>
+      <textarea style="flex: 1; background: #111; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 14px; color: #eee; font-family: var(--font-mono); font-size: 12px; line-height: 1.6; outline: none; resize: none;" placeholder="Start typing your document or markdown notes here..."></textarea>
+    </div>
+  `;
+}
+
+function getSheetsContent() {
+  return `
+    <div class="app-sheets-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #141414; padding: 16px; overflow-x: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="margin: 0; font-size: 16px; color: #4AF626; display: flex; align-items: center; gap: 8px;">📊 Tomb Sheets Data Grid</h3>
+        <button onclick="logAudit('Tomb Sheets: Exported active data table.')" style="background: #4AF626; color: #000; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer;">Export CSV →</button>
+      </div>
+      <table style="width: 100%; border-collapse: collapse; font-size: 11.5px; text-align: left; font-family: var(--font-mono);">
+        <thead>
+          <tr style="background: rgba(255,255,255,0.06); color: #888; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <th style="padding: 8px; border-right: 1px solid rgba(255,255,255,0.1);">#</th>
+            <th style="padding: 8px; border-right: 1px solid rgba(255,255,255,0.1);">Category</th>
+            <th style="padding: 8px; border-right: 1px solid rgba(255,255,255,0.1);">Q1 Budget</th>
+            <th style="padding: 8px;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);"><td style="padding: 8px; border-right: 1px solid rgba(255,255,255,0.05);">1</td><td style="padding: 8px; border-right: 1px solid rgba(255,255,255,0.05);">R&D Infrastructure</td><td style="padding: 8px; border-right: 1px solid rgba(255,255,255,0.05);">$140,000</td><td style="padding: 8px; color: #4AF626;">APPROVED</td></tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);"><td style="padding: 8px; border-right: 1px solid rgba(255,255,255,0.05);">2</td><td style="padding: 8px; border-right: 1px solid rgba(255,255,255,0.05);">PQC Lattice Audit</td><td style="padding: 8px; border-right: 1px solid rgba(255,255,255,0.05);">$85,000</td><td style="padding: 8px; color: #4AF626;">APPROVED</td></tr>
+          <tr><td style="padding: 8px; border-right: 1px solid rgba(255,255,255,0.05);">3</td><td style="padding: 8px; border-right: 1px solid rgba(255,255,255,0.05);">Security Training</td><td style="padding: 8px; border-right: 1px solid rgba(255,255,255,0.05);">$22,000</td><td style="padding: 8px; color: #FFCC00;">PENDING</td></tr>
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function getCalendarContent() {
+  return `
+    <div class="app-calendar-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: 'Outfit', sans-serif; background: #141414; padding: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <h3 style="margin: 0; font-size: 16px; color: #FFCC00; display: flex; align-items: center; gap: 8px;">📅 Encrypted Calendar & Schedule</h3>
+        <span style="font-size: 12px; color: #888;">June 2026</span>
+      </div>
+      <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 14px; flex: 1;">
+        <h4 style="margin: 0 0 10px 0; font-size: 13px; color: #fff;">Upcoming Encrypted Events</h4>
+        <div style="font-size: 11.5px; line-height: 1.8; color: #ccc;">
+          📌 <strong>Today, 14:00</strong> — seL4 Kernel Math Proof Code Review<br/>
+          📌 <strong>Tomorrow, 09:30</strong> — Zero-Trust ZTNA Tunnel Rotation Sync<br/>
+          📌 <strong>Friday, 16:00</strong> — Quantum Supremacy RCS Benchmark Audit
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 
 
 
