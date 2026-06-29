@@ -81,3 +81,71 @@ sudo systemctl daemon-reload
 sudo systemctl enable tomb-agents
 sudo systemctl start tomb-agents
 ```
+
+---
+
+## 🔌 4. Enterprise & Social Communication Integrations
+
+Tomb OS agents support automated notification alerting, threat feeds, and workflow automation across various external platforms. Configure these options using environment variables when starting the agent mesh.
+
+### 💬 Discord API Relay
+To relay system alarms and intrusion logs directly to a Discord channel:
+1. Go to your Discord server Settings -> Integrations -> Webhooks -> Create Webhook.
+2. Copy the Webhook URL.
+3. Start the agent with the environment variable:
+   ```bash
+   DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/xxxx/xxxx" npm start
+   ```
+
+### ✈️ Telegram Broadcast Bot
+To broadcast post-quantum encrypted alerts to security admin channels:
+1. Message `@BotFather` on Telegram to generate a new bot and obtain a Bot Token.
+2. Add your bot to the target channel as an administrator.
+3. Start the agent with:
+   ```bash
+   TELEGRAM_BOT_TOKEN="123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ" TELEGRAM_CHAT_ID="-100xxxxxxx" npm start
+   ```
+
+### 🟢 WhatsApp Business API Integration
+To send critical notification alerts directly to system owners via WhatsApp Business:
+1. Set up a Meta Developer Account and create a WhatsApp Business App.
+2. Retrieve your Temporary/Permanent Access Token and Phone Number ID.
+3. Start the agent with:
+   ```bash
+   WHATSAPP_ACCESS_TOKEN="EAAGxx..." WHATSAPP_PHONE_NUMBER_ID="109xxxxxxxx" npm start
+   ```
+
+### 🟢 WeChat Enterprise & Mini Program Alerting
+To dispatch alerts to enterprise WeChat networks (WeCom):
+1. Register a WeCom corporate account and create an integration Bot.
+2. Copy the Webhook Key from the Bot settings.
+3. Run the service:
+   ```bash
+   WECHAT_WECOM_WEBHOOK="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxx-xxxx" npm start
+   ```
+
+### 📋 Jira Ticket Automation Linker
+To auto-create high-priority bug reports when security anomalies are detected:
+1. Generate an API Token from your Atlassian account security settings.
+2. Provide target project key and credentials:
+   ```bash
+   JIRA_HOST="your-domain.atlassian.net" JIRA_EMAIL="admin@domain.com" JIRA_API_TOKEN="ATATT3xF..." JIRA_PROJECT_KEY="SEC" npm start
+   ```
+
+### ☘️ Clover POS Merchant API Webhooks
+To monitor point-of-sale merchant networks and alert on transaction anomalies:
+1. Create a Clover Developer Account and navigate to Webhooks under App Settings.
+2. Mount the webhook endpoint pointing to your deployed agent API: `https://your-agent-domain.com/webhooks/clover`.
+3. Set the Clover verification token:
+   ```bash
+   CLOVER_WEBHOOK_VERIFICATION_TOKEN="clover_sec_verify_key" npm start
+   ```
+
+### 🔴 Reddit NetSec Threat Feed client
+To pull real-time threat intelligence and zero-day advisories from security subreddits:
+1. Register a script application in Reddit App Preferences to obtain Client ID and Secret.
+2. Start the client daemon:
+   ```bash
+   REDDIT_CLIENT_ID="your_client_id" REDDIT_CLIENT_SECRET="your_client_secret" REDDIT_USER_AGENT="tombOS:v1.0.0 (by /u/bashbadger)" npm start
+   ```
+
