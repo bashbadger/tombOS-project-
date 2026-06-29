@@ -3067,5 +3067,17 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   }
 }
 
+/* Tomb OS Dock Middle Spacer & Layout Customization */
+#dock.hide-dock-middle .dock-spacer,
+#dock.hide-dock-middle .dock-middle-item {
+  display: none !important;
+}
+
+#dock.dock-layout-center {
+  justify-content: center !important;
+  margin: 0 auto !important;
+}
+
+
 
 

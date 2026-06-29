@@ -5282,6 +5282,21 @@ function getThemeContent() {
         </div>
       </div>
 
+      <div class="theme-row">
+        <div class="theme-label">Dock Middle Spacers & Alignment:</div>
+        <div class="theme-buttons">
+          <button class="theme-btn ${systemState.theme.hideDockMiddle ? 'active' : ''}" onclick="toggleUIDockMiddle()">
+            ${systemState.theme.hideDockMiddle ? 'Restore Dock Middle Spacers' : 'Take Out Dock Middle Spacers'}
+          </button>
+          <button class="theme-btn ${systemState.theme.dockLayoutMode === 'center' ? 'active' : ''}" onclick="applyUIDockLayoutMode('center')">
+            Center Align Dock
+          </button>
+          <button class="theme-btn ${systemState.theme.dockLayoutMode === 'default' ? 'active' : ''}" onclick="applyUIDockLayoutMode('default')">
+            Default Edge Align
+          </button>
+        </div>
+      </div>
+
       <div class="theme-sec-title"> Window Borders (Qubes-Style VM Borders)</div>
 
       <div class="theme-row">
@@ -5407,6 +5422,31 @@ function applyUIDockSize(size) {
       dock.classList.add(`size-${size}`);
     }
   }
+  refreshThemeWindow();
+}
+
+function toggleUIDockMiddle() {
+  systemState.theme.hideDockMiddle = !systemState.theme.hideDockMiddle;
+  const dock = document.getElementById('dock');
+  if (dock) {
+    if (systemState.theme.hideDockMiddle) {
+      dock.classList.add('hide-dock-middle');
+    } else {
+      dock.classList.remove('hide-dock-middle');
+    }
+  }
+  logAudit(`Dock Middle Spacers state updated: ${systemState.theme.hideDockMiddle ? 'TAKEN OUT (HIDDEN)' : 'RESTORED'}`);
+  refreshThemeWindow();
+}
+
+function applyUIDockLayoutMode(mode) {
+  systemState.theme.dockLayoutMode = mode;
+  const dock = document.getElementById('dock');
+  if (dock) {
+    dock.classList.remove('dock-layout-center', 'dock-layout-default');
+    dock.classList.add(`dock-layout-${mode}`);
+  }
+  logAudit(`Dock Layout Mode updated to: ${mode}`);
   refreshThemeWindow();
 }
 
