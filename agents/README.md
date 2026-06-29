@@ -168,4 +168,15 @@ To listen and respond to security advisories and query status via Instagram DMs:
    INSTAGRAM_ACCOUNT_ID="178xxxxxxxxxx" INSTAGRAM_PAGE_ACCESS_TOKEN="EAAGxx..." INSTAGRAM_VERIFY_TOKEN="instagram_secret_verify_token" npm start
    ```
 
+### 📹 Google Meet Scheduling & Integration
+To auto-schedule and launch Google Meet video rooms for security incident war-rooms:
+1. Go to Google Cloud Console, create a new project, and enable the Google Calendar API.
+2. Create a Service Account, generate a JSON Key File, and place it in your workspace.
+3. Share your calendar or grant domain-wide delegation permissions.
+4. Launch the agent mesh:
+   ```bash
+   GOOGLE_APPLICATION_CREDENTIALS="/opt/tombos/agents/google-service-account.json" GOOGLE_MEET_ORGANIZER_EMAIL="admin@domain.com" npm start
+   ```
+
+
 
