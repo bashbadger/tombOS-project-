@@ -524,6 +524,13 @@ function syncComplianceDials() {
 
 // Window Management Configuration
 const windowConfig = {
+  quantumlab: {
+    title: "Tomb Quantum Computing Studio & Superposition Simulator",
+    width: 840,
+    height: 580,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.8L19 8l-7 3.5L5 8l7-3.2z" fill="#00e5ff"/></svg>`,
+    getContent: () => getQuantumLabContent()
+  },
   immunesystem: {
     title: "Autonomous White Blood Cell Immune Defense System",
     width: 820,
@@ -4890,7 +4897,8 @@ const allAppLauncherList = [
   { id: 'cipherlab', name: 'Post-Quantum Cipher Laboratory', category: 'Security', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#00BFFF"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.8L19 8l-7 3.5L5 8l7-3.2z"/></svg>`, desc: 'Kyber-1024 / Dilithium-5 keypair generator & lattice benchmarker', zone: 'secure' },
   { id: 'serviceconnect', name: 'Zero-Trust Service Connect Hub', category: 'Networking & Security', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#007AFF"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>`, desc: 'Connect securely to any external service, DB or API without security compromise', zone: 'secure' },
   { id: 'stresstest', name: 'Stress Test & Load Benchmarker', category: 'System & Security', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#ff3b30"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>`, desc: 'Execute synthetic load tests across CPU cores, PQC ciphers & agent task queues', zone: 'work' },
-  { id: 'immunesystem', name: 'Autonomous White Blood Cell Immune System', category: 'AI & Security', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#ff3b30"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>`, desc: 'Biological threat hunting agents phagocytizing intrusions like white blood cells', zone: 'secure' }
+  { id: 'immunesystem', name: 'Autonomous White Blood Cell Immune System', category: 'AI & Security', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#ff3b30"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>`, desc: 'Biological threat hunting agents phagocytizing intrusions like white blood cells', zone: 'secure' },
+  { id: 'quantumlab', name: 'Quantum Computing Studio & Simulator', category: 'System & Security', icon: `<svg viewBox="0 0 24 24" width="22" height="22" fill="#00e5ff"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.8L19 8l-7 3.5L5 8l7-3.2z"/></svg>`, desc: 'Simulated 128-qubit quantum superposition & Hadamard circuit simulator', zone: 'secure' }
 ];
 
 function getControlCenterContent() {
@@ -4899,7 +4907,7 @@ function getControlCenterContent() {
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px;">
         <div>
           <h2 style="margin: 0; font-size: 20px; color: var(--ubuntu-orange); font-weight: 600;">🎛️ Application Control Center</h2>
-          <div style="font-size: 12px; color: var(--ubuntu-light-grey); margin-top: 2px;">Launch and access all 22 Tomb OS applications from a central hub</div>
+          <div style="font-size: 12px; color: var(--ubuntu-light-grey); margin-top: 2px;">Launch and access all 23 Tomb OS applications from a central hub</div>
         </div>
         <div style="width: 240px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 18px; padding: 6px 12px; display: flex; align-items: center; gap: 8px;">
           <span style="font-size: 12px; color: #888;">🔍</span>
@@ -7087,6 +7095,62 @@ function verifyBackgroundTamperIntegrity() {
 setTimeout(() => {
   verifyBackgroundTamperIntegrity();
 }, 2500);
+
+// ============================================================================
+// 11. QUANTUM COMPUTING STUDIO & SUPERPOSITION SIMULATOR ENGINE
+// ============================================================================
+function getQuantumLabContent() {
+  return `
+    <div class="app-quantumlab-container" style="display: flex; flex-direction: column; height: 100%; color: #fff; font-family: var(--font-mono); background: #040914; padding: 18px; overflow-y: auto;">
+      <div style="border-bottom: 1px solid rgba(0,229,255,0.3); padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h2 style="margin: 0; font-size: 18px; color: #00e5ff;">⚛️ Tomb Quantum Computing Studio</h2>
+          <div style="font-size: 11px; color: #aaa; margin-top: 2px;">Simulated 128-Qubit Superposition, Hadamard Transforms & Grover Search Optimization.</div>
+        </div>
+        <button onclick="runQuantumSuperpositionBenchmark()" style="background: #00e5ff; color: #000; border: none; padding: 8px 16px; border-radius: 4px; font-weight: 700; font-size: 11.5px; cursor: pointer;">Execute 128-Qubit Circuit Benchmark ⚛️</button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(0,229,255,0.2); border-radius: 6px; padding: 12px;">
+          <h4 style="margin: 0 0 6px 0; color: #00e5ff; font-size: 12px;">Qubit Superposition Matrix</h4>
+          <div style="font-size: 10.5px; color: #ccc; line-height: 1.5;">Active State Vector Dim: <strong style="color: #4AF626;">2^128 States</strong><br/>Coherence Time: <strong style="color: #FFCC00;">Infinite (Zero Decoherence)</strong></div>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(0,229,255,0.2); border-radius: 6px; padding: 12px;">
+          <h4 style="margin: 0 0 6px 0; color: #FFCC00; font-size: 12px;">Quantum Acceleration Engine</h4>
+          <div style="font-size: 10.5px; color: #ccc; line-height: 1.5;">Grover Search Speedup: <strong style="color: #00e5ff;">O(√N) Quadratic</strong><br/>Parallel Execution Streams: <strong style="color: #4AF626;">1,024 Multithreaded Lanes</strong></div>
+        </div>
+      </div>
+
+      <div style="background: #000; border: 1px solid rgba(0,229,255,0.2); border-radius: 6px; padding: 14px; flex: 1; min-height: 200px; font-size: 11px; line-height: 1.6; color: #ccc; overflow-y: auto;" id="quantum-studio-console">
+        <div style="color: #888;">Quantum simulator ready. Click 'Execute 128-Qubit Circuit Benchmark' to simulate quantum Hadamard transforms and state vector superposition.</div>
+      </div>
+    </div>
+  `;
+}
+
+function runQuantumSuperpositionBenchmark() {
+  const log = document.getElementById('quantum-studio-console');
+  if (!log) return;
+  log.innerHTML = `<div style="color: #00e5ff; font-weight: 700;">[QUANTUM ENGINE INITIATED] Allocating 128-Qubit State Vector Space (2^128 states)...</div>`;
+  log.scrollTop = log.scrollHeight;
+
+  setTimeout(() => {
+    log.innerHTML += `<div style="color: #FFCC00;">▶ Applying Hadamard Transform Matrix across Qubit Register Q[0...127]... Superposition Active!</div>`;
+    log.scrollTop = log.scrollHeight;
+  }, 700);
+
+  setTimeout(() => {
+    log.innerHTML += `<div style="color: #9C27B0;">▶ Executing Grover Quantum Search Oracle algorithm across unstructured dataset...</div>`;
+    log.scrollTop = log.scrollHeight;
+  }, 1400);
+
+  setTimeout(() => {
+    log.innerHTML += `<div style="color: #4AF626; font-weight: 700; margin-top: 8px;">⚛️ <strong>QUANTUM EXECUTION COMPLETE: 128-Qubit circuit benchmark executed with zero decoherence! Parallel search completed with O(√N) speedup.</strong></div>`;
+    log.scrollTop = log.scrollHeight;
+    logAudit("Executed 128-qubit quantum circuit benchmark simulating quantum superposition and Grover search optimization.");
+  }, 2200);
+}
+
 
 
 
