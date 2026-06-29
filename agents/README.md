@@ -299,6 +299,148 @@ Signal requires a local helper daemon (like `signal-cli` or `signal-cli-rest-api
    SIGNAL_API_URL="http://localhost:8080" SIGNAL_SENDER_NUMBER="+1234567890" SIGNAL_RECIPIENT_NUMBER="+1987654321" npm start
    ```
 
+### 💬 Snapchat Business Messaging API
+To schedule and broadcast updates to your Snapchat business subscriber feeds:
+1. Go to Snapchat Business Manager -> Developer Portal -> Create App.
+2. Obtain your Client ID and Client Secret.
+3. Start the agent:
+   ```bash
+   SNAPCHAT_CLIENT_ID="snap_client_id_xxxx" SNAPCHAT_CLIENT_SECRET="snap_secret_xxxx" npm start
+   ```
+
+### 💬 Tencent QQ Messenger API
+To broadcast system telemetry summaries to QQ groups:
+1. Register an open application at the Tencent Open Platform.
+2. Retrieve your App ID and App Key.
+3. Start the agent:
+   ```bash
+   QQ_APP_ID="qq_appid_xxxx" QQ_APP_KEY="qq_appkey_xxxx" npm start
+   ```
+
+### 💬 Viber Business Bot
+To dispatch automated Viber message alerts:
+1. Go to Viber Admin Panel -> Create Bot Account.
+2. Copy your Viber Bot API Token.
+3. Start the agent:
+   ```bash
+   VIBER_BOT_TOKEN="viber_token_xxxx" npm start
+   ```
+
+### 💬 Line Messaging API
+To trigger messages to Line users and groups:
+1. Register a developer account at Line Developers Console.
+2. Under Messaging API settings, generate a Channel Access Token and obtain the Channel Secret.
+3. Start the agent:
+   ```bash
+   LINE_CHANNEL_ACCESS_TOKEN="line_token_xxxx" LINE_CHANNEL_SECRET="line_secret_xxxx" npm start
+   ```
+
+### 💬 Skype Bot (Microsoft Bot Framework)
+To relay system alarms into Skype group chats:
+1. Go to Azure Portal -> Bot Services -> Register a new Skype Bot.
+2. Copy the App ID and App Password.
+3. Start the agent:
+   ```bash
+   SKYPE_APP_ID="skype_appid_xxxx" SKYPE_APP_PASSWORD="skype_apppass_xxxx" npm start
+   ```
+
+### 💬 Session Messenger (Decentralized Onion Network)
+Session uses decentralized onion routing. To send alerts over Session:
+1. Establish a connection to a local/remote Session public swarm node.
+2. Start the daemon with the target Session ID:
+   ```bash
+   SESSION_NODE_URL="http://localhost:2856" SESSION_RECIPIENT_ID="05xxxxxxxx..." npm start
+   ```
+
+### 💬 Briar Messenger (Tor Onion Service API)
+Briar runs over local Tor connections. To communicate with Briar:
+1. Enable the Briar REST API in your Briar desktop/mobile client settings.
+2. Copy the auth token and local Tor endpoint.
+3. Start the agent:
+   ```bash
+   BRIAR_API_URL="http://localhost:8082" BRIAR_AUTH_TOKEN="briar_secret_token" npm start
+   ```
+
+### 💬 Pumble Chat Webhooks
+To dispatch threat updates into Pumble channels:
+1. Navigate to Pumble Workspace Administration -> Integrations -> Incoming Webhooks.
+2. Add a new integration and copy the Webhook URL.
+3. Launch the agent:
+   ```bash
+   PUMBLE_WEBHOOK_URL="https://api.pumble.com/workspaces/xxxx/webhooks/xxxx" npm start
+   ```
+
+### 💬 Chanty Webhooks
+To broadcast security logs to Chanty team spaces:
+1. Open Chanty -> Manage Integrations -> Webhooks.
+2. Generate a custom Webhook URL.
+3. Start the agent:
+   ```bash
+   CHANTY_WEBHOOK_URL="https://api.chanty.com/webhooks/xxxx" npm start
+   ```
+
+### 💬 Element & Matrix Client-Server API
+To relay alerts into Matrix end-to-end encrypted rooms via Element:
+1. Create a Matrix bot account on your homeserver (e.g., matrix.org).
+2. Retrieve the Access Token and the target Room ID.
+3. Launch the agent:
+   ```bash
+   MATRIX_HOMESERVER_URL="https://matrix.org" MATRIX_ACCESS_TOKEN="matrix_token_xxxx" MATRIX_ROOM_ID="!room_id:matrix.org" npm start
+   ```
+
+### 💬 Freshchat Web SDK API
+To trigger automated agent chat sessions over Freshchat:
+1. Go to Freshchat Admin settings -> API Tokens.
+2. Generate an API Key and copy your App ID.
+3. Start the agent:
+   ```bash
+   FRESHCHAT_APP_ID="fresh_appid_xxxx" FRESHCHAT_API_KEY="fresh_key_xxxx" npm start
+   ```
+
+### 💬 Wimi Project Webhooks
+To publish incident reporting status directly to Wimi spaces:
+1. Go to Wimi Admin settings -> Integrations -> Webhooks.
+2. Set the target room endpoint URL.
+3. Start the agent:
+   ```bash
+   WIMI_WEBHOOK_URL="https://your-wimi-workspace.wimi.pro/api/webhooks/xxxx" npm start
+   ```
+
+### 💬 Brosix Private Communication Network
+To relay alerts over Brosix enterprise lines:
+1. Log into your Brosix Web Control Panel and generate an API Integration Key.
+2. Start the service:
+   ```bash
+   BROSIX_API_KEY="brosix_key_xxxx" npm start
+   ```
+
+### 💬 Ryver Enterprise Chat Webhooks
+To push real-time threat analysis directly to Ryver forum channels:
+1. Go to Ryver Admin settings -> Integrations -> Inbound Webhooks.
+2. Copy the Webhook URL.
+3. Start the agent:
+   ```bash
+   RYVER_WEBHOOK_URL="https://your-ryver-org.ryver.com/api/webhooks/xxxx" npm start
+   ```
+
+### 💬 Flock Chat Webhooks
+To push automated summaries to Flock chat channels:
+1. Go to Flock Admin panel -> Integrations -> Incoming Webhooks.
+2. Copy the Webhook URL.
+3. Launch the agent:
+   ```bash
+   FLOCK_WEBHOOK_URL="https://api.flock.com/hooks/xxxx" npm start
+   ```
+
+### 💬 Zangi Business Messaging API
+To relay high-priority voice/text alert pings over Zangi private networks:
+1. Register for a Zangi Business Account.
+2. Generate your API Key and Secret parameters.
+3. Start the service:
+   ```bash
+   ZANGI_API_KEY="zangi_key_xxxx" ZANGI_API_SECRET="zangi_secret_xxxx" npm start
+   ```
+
 ---
 
 ## 🔌 5. Generic Custom Webhook API Structure
