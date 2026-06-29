@@ -6346,6 +6346,7 @@ function getOpenClawContent() {
           <span id="oc-score" style="color: #FFCC00; font-weight: 600;">Gold: 0</span>
           <span id="oc-friends" style="color: #00e5ff; font-weight: 600;">Mice: 0</span>
           <span id="oc-map-size" style="color: #4AF626; font-weight: 600;">Map: 700px</span>
+          <span id="oc-hunger" style="color: #FF7F50; font-weight: 600;">HUNGER: 100%</span>
           <span id="oc-lives" style="color: #ff3b30; font-weight: 600;">LIVES: 3</span>
         </div>
       </div>
@@ -6386,6 +6387,7 @@ function initOpenClawGame() {
     jumpStrength: -11,
     grounded: false,
     direction: 1, // 1 right, -1 left
+    hunger: 100, // Tamagotchi hunger percentage
     history: [] // Tracks historical positions for trailing friends
   };
 
@@ -6463,12 +6465,33 @@ function initOpenClawGame() {
   function update() {
     if (gameOver) return;
 
-    // Handle speed boost timer
+    // Deplete hunger over time
+    player.hunger = Math.max(0, player.hunger - 0.04);
+
+    // Update hunger HUD
+    const hungerEl = document.getElementById('oc-hunger');
+    if (hungerEl) {
+      hungerEl.textContent = `HUNGER: ${Math.round(player.hunger)}%`;
+      if (player.hunger < 30) {
+        hungerEl.style.color = '#ff3b30'; // Warning red
+      } else {
+        hungerEl.style.color = '#FF7F50'; // Orange
+      }
+    }
+
+    // Handle speed boost and hunger fatigue
+    let baseSpeed = player.normalSpeed;
+    if (player.hunger <= 0) {
+      baseSpeed = 1.8; // Fatigued slow speed
+    } else if (player.hunger < 30) {
+      baseSpeed = player.normalSpeed * 0.7; // Sluggish speed
+    }
+
     if (player.boostTimer > 0) {
       player.boostTimer--;
       player.speed = player.boostSpeed;
     } else {
-      player.speed = player.normalSpeed;
+      player.speed = baseSpeed;
     }
 
     // Movement Controls
@@ -6540,13 +6563,15 @@ function initOpenClawGame() {
         if (r.type === 'milk') {
           score += 300;
           player.boostTimer = 180; // Speed boost
-          logAudit("OpenClaw: Collected milk! Speed boost activated.");
+          player.hunger = Math.min(100, player.hunger + 40);
+          logAudit("OpenClaw: Collected milk! Speed boost activated and hunger satisfied.");
         } else {
           score += 200;
           lives = Math.min(3, lives + 1); // Heal
+          player.hunger = Math.min(100, player.hunger + 25);
           const livesEl = document.getElementById('oc-lives');
           if (livesEl) livesEl.textContent = `LIVES: ${lives}`;
-          logAudit("OpenClaw: Collected fresh water! Extra health restored.");
+          logAudit("OpenClaw: Collected fresh water! Extra health restored and thirst quenched.");
         }
         const scoreEl = document.getElementById('oc-score');
         if (scoreEl) scoreEl.textContent = `Gold: ${score}`;
