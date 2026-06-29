@@ -506,6 +506,25 @@ function syncComplianceDials() {
 
 // Window Management Configuration
 const windowConfig = {
+  tombcraft: {
+    title: "TombCraft v0.1 [HIDDEN]",
+    width: 660,
+    height: 520,
+    icon: `<svg viewBox="0 0 24 24" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="2" fill="#8B4513"/><rect x="7" y="7" width="4" height="4" fill="#4AF626"/><rect x="13" y="7" width="4" height="4" fill="#654321"/><rect x="7" y="13" width="4" height="4" fill="#654321"/><rect x="13" y="13" width="4" height="4" fill="#555"/></svg>`,
+    getContent: () => `
+      <div style="background: #0a0a0a; height: 100%; display: flex; flex-direction: column; font-family: var(--font-mono);">
+        <div style="padding: 6px 12px; background: #1a1a1a; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+          <span style="color: #4AF626; font-size: 11px; font-weight: 600;">TombCraft Mining Sim</span>
+          <div id="tc-hud" style="font-size: 10px; color: #ccc;">
+            <span id="tc-score" style="color: #FFCC00;">Score: 0</span> |
+            <span id="tc-pickaxe" style="color: #00BFFF;">Pickaxe: Wood</span> |
+            <span id="tc-depth" style="color: #ff6b6b;">Depth: 0</span>
+          </div>
+        </div>
+        <canvas id="tombcraft-canvas" width="636" height="440" style="display: block; cursor: crosshair; image-rendering: pixelated;"></canvas>
+      </div>
+    `
+  },
   readme: {
     title: "README_SECURITY.md",
     width: 600,
@@ -1249,6 +1268,12 @@ function handleTerminalCommand(e, input) {
   gpg -c [text]              - Run symmetric AES encryption pipeline.
   ssh-e2ee [remote_ip]       - Establish E2EE remote terminal session.
   clear                      - Purge terminal lines.`;
+          break;
+        case 'mine':
+        case 'minecraft':
+        case 'tombcraft':
+          output = '[HIDDEN] Initializing TombCraft v0.1 mining simulation...';
+          setTimeout(() => openWindow('tombcraft'), 300);
           break;
         case 'env':
           output = `# Tomb OS Linked Productivity Environment (.env)

@@ -5,3 +5,15 @@ out/
 agents/node_modules/
 agents/dist/
 agents/data/
+
+# Object files & build artifacts
+*.o
+*.obj
+*.bin
+*.elf
+*.iso
+*.img
+*.cpio.gz
+*.zip
+*.gz
+*.tar
