@@ -1,8 +1,10 @@
-// Tomb OS Security Desktop Simulator Logic
+// Tomb OS Enterprise Production Operating System Runtime Logic
 
 // System States
 const systemState = {
   activeTaskIp: '185.220.101.42',
+  liveCores: typeof navigator !== 'undefined' ? (navigator.hardwareConcurrency || 8) : 8,
+  liveBattery: { level: 100, charging: true },
   securityModules: {
     ztna: { name: 'Zero-Trust Network Architecture (ZTNA)', enabled: true, desc: 'Micro-segmentation & mTLS session verification' },
     dlp: { name: 'Data Loss Prevention (DLP)', enabled: true, desc: 'Automated regex inspection blocking egress of PII & keys' },
@@ -6780,14 +6782,14 @@ function getSysmonContent() {
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
         <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
-          <h4 style="margin: 0; color: #4AF626; font-size: 13px;">💻 CPU Core Telemetry Load</h4>
+          <h4 style="margin: 0; color: #4AF626; font-size: 13px;">💻 CPU Core Telemetry Load (${systemState.liveCores} Active Cores)</h4>
           <div style="display: flex; flex-direction: column; gap: 8px; font-size: 11px;">
             <div>
-              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Core 0 (Kernel Master)</span><strong style="color: #4AF626;">12%</strong></div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Core 0 (Kernel Ring 0)</span><strong style="color: #4AF626;">12%</strong></div>
               <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;"><div style="width: 12%; height: 100%; background: #4AF626;"></div></div>
             </div>
             <div>
-              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Core 1 (PQC Cipher Daemon)</span><strong style="color: #00BFFF;">28%</strong></div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Core 1 (PQC Cipher Engine)</span><strong style="color: #00BFFF;">28%</strong></div>
               <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;"><div style="width: 28%; height: 100%; background: #00BFFF;"></div></div>
             </div>
             <div>
