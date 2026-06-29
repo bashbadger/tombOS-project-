@@ -97,6 +97,87 @@ To relay system alarms and intrusion logs directly to a Discord channel:
    DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/xxxx/xxxx" npm start
    ```
 
+### 💬 Slack Incoming Webhooks
+To push notifications and security summaries to Slack channels:
+1. Create a Slack App in your workspace and enable Incoming Webhooks.
+2. Generate and copy the Webhook URL for the target channel.
+3. Start the agent:
+   ```bash
+   SLACK_WEBHOOK_URL="https://hooks.slack.com/services/Txxx/Bxxx/xxxx" npm start
+   ```
+
+### 💬 Microsoft Teams Incoming Webhooks
+To relay logs and alerts into MS Teams channels:
+1. Add the "Incoming Webhook" connector to your Microsoft Teams channel.
+2. Copy the generated Webhook URL.
+3. Launch the agent:
+   ```bash
+   TEAMS_WEBHOOK_URL="https://yourdomain.webhook.office.com/webhookb2/xxxx" npm start
+   ```
+
+### 💬 Google Chat Webhook Integration
+To send messages to Google Chat Spaces:
+1. Open the target Space, click Space Settings -> Apps & Integrations -> Webhooks.
+2. Add a new webhook and copy its URL.
+3. Start the agent:
+   ```bash
+   GOOGLE_CHAT_WEBHOOK_URL="https://chat.googleapis.com/v1/spaces/xxxx/webhooks/xxxx" npm start
+   ```
+
+### 💬 Twist Integration
+To post security logs as Twist threads:
+1. Add a Twist Integration to your target Twist channel.
+2. Copy the Twist Webhook URL.
+3. Start the agent:
+   ```bash
+   TWIST_WEBHOOK_URL="https://twist.com/api/v1/integration/incoming_webhook/xxxx" npm start
+   ```
+
+### 💬 Basecamp Chatbot Integration
+To post automated updates to a Basecamp campfire:
+1. In the target Basecamp project Campfire, click Set Up Chatbot.
+2. Copy the Chatbot URL.
+3. Start the agent:
+   ```bash
+   BASECAMP_WEBHOOK_URL="https://3.basecamp.com/xxxx/integrations/xxxx/buckets/xxxx/chats/xxxx/lines" npm start
+   ```
+
+### 💬 Mattermost Webhooks
+To dispatch threat response notifications into Mattermost channels:
+1. Go to Mattermost -> Integrations -> Incoming Webhook -> Add Incoming Webhook.
+2. Copy the Webhook URL.
+3. Launch the agent:
+   ```bash
+   MATTERMOST_WEBHOOK_URL="https://your-mattermost.com/hooks/xxxx" npm start
+   ```
+
+### 💬 Rocket.Chat Webhooks
+To post logs directly to Rocket.Chat rooms:
+1. Go to Rocket.Chat -> Administration -> Integrations -> New Integration -> Incoming Webhook.
+2. Copy the Webhook URL.
+3. Launch the agent:
+   ```bash
+   ROCKETCHAT_WEBHOOK_URL="https://your-rocketchat.com/hooks/xxxx" npm start
+   ```
+
+### 💬 Wire Messenger Bot
+To send end-to-end encrypted alert messages over Wire:
+1. Register a developer bot on the Wire Developer Portal.
+2. Obtain your Bot Token and Bot ID.
+3. Launch the agent:
+   ```bash
+   WIRE_BOT_TOKEN="wire_token_xxxx" WIRE_BOT_ID="wire_id_xxxx" npm start
+   ```
+
+### 🔐 AWS Wickr Enterprise Bot
+To dispatch secure, zero-trust notifications over AWS Wickr:
+1. Create a Wickr Bot account inside AWS Wickr Admin Console.
+2. Generate client token and config files.
+3. Start the agent:
+   ```bash
+   WICKR_BOT_TOKEN="aws_wickr_token_xxxx" WICKR_KEY_PATH="/opt/tombos/wickr_keys.json" npm start
+   ```
+
 ### ✈️ Telegram Broadcast Bot
 To broadcast post-quantum encrypted alerts to security admin channels:
 1. Message `@BotFather` on Telegram to generate a new bot and obtain a Bot Token.
