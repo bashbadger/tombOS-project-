@@ -4779,8 +4779,43 @@ function getUnifiedWorkspaceContent() {
               <span id="oc-lives" style="color: #ff3b30;">LIVES: 3</span>
             </div>
           </div>
-          <div style="height: 310px; display: flex; justify-content: center; align-items: center; position: relative; background: #101017; overflow: hidden; padding: 5px; flex-shrink: 0;">
-            <canvas id="openclaw-canvas" tabindex="0" width="480" height="300" style="display: block; background: #080d16; image-rendering: pixelated; border: 1px solid rgba(0,229,255,0.2); outline: none;"></canvas>
+          <div style="height: 310px; display: flex; background: #101017; overflow: hidden; padding: 5px; flex-shrink: 0; gap: 8px;">
+            <!-- Canvas -->
+            <canvas id="openclaw-canvas" tabindex="0" width="320" height="300" style="display: block; background: #080d16; image-rendering: pixelated; border: 1px solid rgba(0,229,255,0.2); outline: none;"></canvas>
+            
+            <!-- Settings Panel -->
+            <div style="flex: 1; background: #070a10; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; padding: 8px; display: flex; flex-direction: column; gap: 8px; font-family: var(--font-mono); overflow-y: auto; font-size: 10px; box-sizing: border-box;">
+              <div style="color: #FFCC00; font-weight: 700; border-bottom: 1px solid rgba(255,204,0,0.2); padding-bottom: 4px;">Game Config & Options</div>
+              
+              <div>
+                <label style="display: block; color: #8e8e93; margin-bottom: 2px;">Difficulty:</label>
+                <select id="oc-opt-difficulty" onchange="changeOpenClawDifficulty(this.value)" style="width: 100%; background: #1a2536; border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 9px; padding: 3px; border-radius: 3px; outline: none;">
+                  <option value="easy">Easy (Slower Hunger)</option>
+                  <option value="medium" selected>Medium (Standard)</option>
+                  <option value="hard">Hard (Fast Hunger)</option>
+                </select>
+              </div>
+
+              <div>
+                <label style="display: block; color: #8e8e93; margin-bottom: 2px;">Audio SFX Vol:</label>
+                <input type="range" min="0" max="100" value="80" oninput="changeOpenClawAudio('sfx', this.value)" style="width: 100%; accent-color: #00e5ff; background: #1a2536; height: 4px; border-radius: 2px; outline: none; cursor: pointer;">
+              </div>
+
+              <div>
+                <label style="display: block; color: #8e8e93; margin-bottom: 2px;">Music Vol:</label>
+                <input type="range" min="0" max="100" value="65" oninput="changeOpenClawAudio('music', this.value)" style="width: 100%; accent-color: #00e5ff; background: #1a2536; height: 4px; border-radius: 2px; outline: none; cursor: pointer;">
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                <input type="checkbox" id="oc-opt-fps" checked onchange="toggleOpenClawFPS(this.checked)" style="cursor: pointer; accent-color: #00e5ff;">
+                <label for="oc-opt-fps" style="color: #ccc; cursor: pointer;">Show FPS Counter</label>
+              </div>
+
+              <div style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 6px;">
+                <label style="display: block; color: #FFCC00; font-weight: 700; margin-bottom: 2px;">Active Cheat Code:</label>
+                <input type="text" id="oc-cheat-input" onkeydown="if(event.key==='Enter')submitOpenClawCheat()" placeholder="Type mpkfa / mpjordan..." style="width: 100%; background: #05080e; border: 1px solid rgba(255,255,255,0.15); color: #4AF626; font-size: 10px; padding: 4px; border-radius: 3px; outline: none; box-sizing: border-box;" />
+              </div>
+            </div>
           </div>
           
           <!-- Isolated Developer VM Sandbox Console -->
@@ -4977,13 +5012,45 @@ function deployVMSandboxCode() {
     statusEl.textContent = "Code deployed to system core.";
     statusEl.style.color = "#8e8e93";
   }
+}
 
-  // Reset button state
-  const deployBtn = document.getElementById('vm-deploy-btn');
-  if (deployBtn) {
-    deployBtn.disabled = true;
-    deployBtn.style.background = "#202c33";
-    deployBtn.style.cursor = "not-allowed";
+function changeOpenClawDifficulty(diff) {
+  console.log(`[OpenClaw Options] Difficulty adjusted to: ${diff}`);
+  logAudit(`Tomb OS OpenClaw: Changed gameplay parameters to ${diff} difficulty.`);
+}
+
+function changeOpenClawAudio(type, val) {
+  console.log(`[OpenClaw Options] Audio ${type} volume updated: ${val}%`);
+}
+
+function toggleOpenClawFPS(show) {
+  console.log(`[OpenClaw Options] Show FPS layout counter: ${show}`);
+}
+
+function submitOpenClawCheat() {
+  const input = document.getElementById('oc-cheat-input');
+  if (!input) return;
+  const cheat = input.value.trim().toLowerCase();
+  input.value = '';
+
+  if (cheat === 'mpkfa') {
+    // God mode / Infinite lives in Captain Claw
+    alert("Cheat Enabled: MPKFA (God Mode Activated - Infinite Lives granted!)");
+    logAudit("Tomb OS OpenClaw: Admin activated God Mode cheat payload.");
+    const livesEl = document.getElementById('oc-lives');
+    if (livesEl) livesEl.textContent = "LIVES: 99";
+  } else if (cheat === 'mpjordan') {
+    // Super jump
+    alert("Cheat Enabled: MPJORDAN (Mega Gravity Jump Activated!)");
+    logAudit("Tomb OS OpenClaw: Admin activated Super Jump cheat payload.");
+  } else if (cheat === 'mpapple') {
+    // Reset hunger
+    alert("Cheat Enabled: MPAPPLE (Instant Hunger Satiated - Food Vault filled!)");
+    logAudit("Tomb OS OpenClaw: Admin activated Hunger Replenish cheat payload.");
+    const hungerEl = document.getElementById('oc-hunger');
+    if (hungerEl) hungerEl.textContent = "HUNGER: 0% (FULL)";
+  } else {
+    alert(`Unknown cheat code: "${cheat}"`);
   }
 }
 
