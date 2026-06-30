@@ -88,10 +88,10 @@ const systemState = {
     COMPLIANCE_MODE: 'STRICT_GDPR_CCPA_DPDP'
   },
   theme: {
-    accent: '#E95420',
-    darkBase: '#2C001E',
-    secondary: '#5E2750',
-    wallpaper: 'gradient-aubergine',
+    accent: '#00E676',
+    darkBase: '#0B2512',
+    secondary: '#1B5E20',
+    wallpaper: 'gradient-turtle',
     opacity: 0.65,
     blur: 15,
     fontFamily: 'outfit',
@@ -5508,6 +5508,7 @@ function getThemeContent() {
   const currentTheme = systemState.theme;
   
   const themes = [
+    { id: 'turtle', name: 'Sea Turtle Green', accent: '#00E676', darkBase: '#0B2512', secondary: '#1B5E20' },
     { id: 'aubergine', name: 'Ubuntu Aubergine', accent: '#E95420', darkBase: '#2C001E', secondary: '#5E2750' },
     { id: 'cyberpunk', name: 'Cyberpunk Green', accent: '#4AF626', darkBase: '#020f01', secondary: '#0a2f07' },
     { id: 'tombdark', name: 'Tomb Dark', accent: '#E95420', darkBase: '#11000a', secondary: '#2c001e' },
@@ -5519,6 +5520,7 @@ function getThemeContent() {
   ];
 
   const wallpapers = [
+    { id: 'gradient-turtle', name: 'Gradient Turtle Green' },
     { id: 'gradient-aubergine', name: 'Gradient Aubergine' },
     { id: 'tomb-dark', name: 'Tomb Dark' },
     { id: 'cyberpunk-green', name: 'Cyberpunk Green' },
@@ -5809,12 +5811,13 @@ function applyUIWallpaper(wallId) {
   const wrapper = document.getElementById('desktop-wrapper');
   if (wrapper) {
     const gradients = {
+      'gradient-turtle': 'radial-gradient(circle at center, #1b4d22 0%, #0d2e14 60%, #041407 100%)',
       'gradient-aubergine': 'radial-gradient(circle at center, #6b2659 0%, #200115 70%, #0c0008 100%)',
       'tomb-dark': 'radial-gradient(circle at center, #1b0026 0%, #000 100%)',
       'cyberpunk-green': 'radial-gradient(circle at center, #0a2f07 0%, #020f01 70%, #000000 100%)',
       'deep-space-blue': 'radial-gradient(circle at center, #0c1b33 0%, #050b14 70%, #000000 100%)'
     };
-    wrapper.style.background = gradients[wallId] || gradients['gradient-aubergine'];
+    wrapper.style.background = gradients[wallId] || gradients['gradient-turtle'];
   }
   refreshThemeWindow();
 }
