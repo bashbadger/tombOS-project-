@@ -47,6 +47,10 @@ export class MemoryStore {
       'gcloud run deploy',
       'gcloud container clusters get-credentials',
       'gcloud auth login',
+      'aws s3 cp',
+      'aws ec2 start-instances',
+      'aws ec2 stop-instances',
+      'aws eks update-kubeconfig',
       'docker-compose up',
       'npm run build',
       'git push origin'

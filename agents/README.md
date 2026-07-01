@@ -659,6 +659,25 @@ npm run setup
 * **Cellular settings**: Configures Twilio phone number, SID, and recipient details.
 * **Storage configurations**: Points memory state directories to target volumes.
 
+---
+
+## ☁️ 13. Amazon Web Services (AWS) Cloud Integration
+
+Tomb OS supports automated control and auditing of AWS infrastructure resources. Configure your AWS credential parameters using the environment variables below:
+
+### ⚙️ Environment Configuration
+Launch the agent mesh with AWS variables, or configure them using the interactive `npm run setup` wizard:
+```bash
+AWS_ACCESS_KEY_ID="AKIA..." AWS_SECRET_ACCESS_KEY="wJalr..." AWS_DEFAULT_REGION="us-east-1" npm start
+```
+
+### 📋 Pre-Authorized AWS Operations
+The system pre-authorizes the following CLI prefix groups for automated cloud scaling:
+* **Amazon S3**: `aws s3 cp` (automated backups and telemetry syncs)
+* **Amazon EC2**: `aws ec2 start-instances` / `aws ec2 stop-instances` (automated server power cycles)
+* **Amazon EKS**: `aws eks update-kubeconfig` (Kubernetes cluster configuration syncing)
+
+
 
 
 

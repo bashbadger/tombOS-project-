@@ -45,6 +45,18 @@ async function runSetup() {
     config.OFFLINE_MODEL = model.trim() || 'llama3';
   }
 
+  // 1.5 AWS Cloud Configuration
+  console.log("\n--- 1.5 AWS Cloud Configuration ---");
+  const awsEnable = await askQuestion("Enable AWS Cloud service integrations? (y/n) [n]: ");
+  if (awsEnable.toLowerCase().startsWith('y')) {
+    const accessKey = await askQuestion("Enter AWS Access Key ID: ");
+    config.AWS_ACCESS_KEY_ID = accessKey.trim();
+    const secretKey = await askQuestion("Enter AWS Secret Access Key: ");
+    config.AWS_SECRET_ACCESS_KEY = secretKey.trim();
+    const region = await askQuestion("Enter AWS Region [us-east-1]: ");
+    config.AWS_DEFAULT_REGION = region.trim() || 'us-east-1';
+  }
+
   // 2. Cross-Platform Webhook Relays
   console.log("\n--- 2. Cross-Platform Messaging Relays ---");
   const relayEnable = await askQuestion("Enable cross-platform message relays? (y/n) [n]: ");
