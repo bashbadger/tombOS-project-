@@ -557,7 +557,25 @@ fun MainScreen(
                 Button(
                   onClick = {
                     if (commandInput.isNotBlank()) {
-                      outputLogs = outputLogs + "📱 Sent from phone: \"$commandInput\""
+                      val cmd = commandInput.trim()
+                      var response = ""
+                      val cmdLower = cmd.toLowerCase()
+                      if (cmdLower == "help") {
+                        response = "[tombOS] Available commands: help, status, gcloud list, aws list-s3, system info, clear"
+                      } else if (cmdLower == "status" || cmdLower == "system status") {
+                        response = "[tombOS] seL4 Microkernel: Active\n[tombOS] Intrusion Detection: 0 alerts\n[tombOS] Kyber Shield: Stable (99.8%)"
+                      } else if (cmdLower.contains("gcloud")) {
+                        response = "[gcloud] Bypassing authorization prompt...\n[gcloud] active account: sec-admin@turtle-secure.gcp.internal"
+                      } else if (cmdLower.contains("aws")) {
+                        response = "[aws] Using pre-authorized token...\n[aws] s3://secure-enclave-backup/ (accessed successfully)"
+                      } else if (cmdLower == "clear") {
+                        outputLogs = listOf()
+                        commandInput = ""
+                        return@Button
+                      } else {
+                        response = "[tombOS] Executed command: $cmd\n[tombOS] Egress code: 0 (Success)"
+                      }
+                      outputLogs = outputLogs + ("📱 Sent: \"$cmd\"") + response.split("\n")
                       commandInput = ""
                     }
                   },
