@@ -19,6 +19,7 @@ import com.example.tombos.theme.TombOSTheme
 package com.example.tombos.ui.main
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -48,6 +49,9 @@ fun MainScreen(
   var pinInput by remember { mutableStateOf("") }
   var activeThemeName by remember { mutableStateOf("graphene_os") }
   var installedApps by remember { mutableStateOf(setOf<String>()) }
+  var minecraftGrid by remember { mutableStateOf(listOf("Dirt", "Stone", "Coal", "Iron", "Gold", "Diamond", "Stone", "Dirt", "Coal", "Iron", "Gold", "Diamond", "Stone", "Dirt", "Coal", "Iron")) }
+  var minedResources by remember { mutableStateOf(mapOf("Dirt" to 0, "Stone" to 0, "Coal" to 0, "Iron" to 0, "Gold" to 0, "Diamond" to 0)) }
+  var selectedMinecraftTool by remember { mutableStateOf("Pickaxe") }
   
   val activePrimary = when (activeThemeName) {
     "graphene_os" -> Color(0xFF81C784)
@@ -532,6 +536,95 @@ fun MainScreen(
                     modifier = Modifier.weight(1f)
                   ) {
                     Text("Deploy Patch", color = Color.Black)
+                  }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                HorizontalDivider(color = Color.DarkGray)
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("⛏️ OpenClaw Minecraft Sandbox", fontWeight = FontWeight.Bold, color = activePrimary)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Tool selection
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                  listOf("Pickaxe", "Shovel", "Axe").forEach { tool ->
+                    Button(
+                      onClick = { selectedMinecraftTool = tool },
+                      colors = ButtonDefaults.buttonColors(
+                        containerColor = if (selectedMinecraftTool == tool) activePrimary else Color.DarkGray
+                      ),
+                      modifier = Modifier.weight(1f)
+                    ) {
+                      Text(tool, fontSize = 9.sp, color = if (selectedMinecraftTool == tool) Color.Black else Color.White)
+                    }
+                  }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Inventory display
+                Text(
+                  text = "Inventory: Dirt: ${minedResources["Dirt"]}, Stone: ${minedResources["Stone"]}, Coal: ${minedResources["Coal"]}, Iron: ${minedResources["Iron"]}, Gold: ${minedResources["Gold"]}, Diamond: ${minedResources["Diamond"]}",
+                  fontSize = 10.sp,
+                  color = Color.LightGray,
+                  fontFamily = FontFamily.Monospace
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // 4x4 Grid of Blocks
+                Column(
+                  modifier = Modifier.fillMaxWidth(),
+                  verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                  for (row in 0 until 4) {
+                    Row(
+                      modifier = Modifier.fillMaxWidth(),
+                      horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                      for (col in 0 until 4) {
+                        val index = row * 4 + col
+                        val blockType = minecraftGrid[index]
+                        val blockColor = when (blockType) {
+                          "Dirt" -> Color(0xFF8B5A2B)
+                          "Stone" -> Color(0xFF708090)
+                          "Coal" -> Color(0xFF2F4F4F)
+                          "Iron" -> Color(0xFFD2B48C)
+                          "Gold" -> Color(0xFFFFD700)
+                          "Diamond" -> Color(0xFF00FFFF)
+                          else -> Color.DarkGray
+                        }
+                        Box(
+                          modifier = Modifier
+                            .weight(1f)
+                            .aspectRatio(1f)
+                            .background(blockColor)
+                            .clickable {
+                              // Mining logic based on tool match
+                              val match = when (blockType) {
+                                "Dirt" -> selectedMinecraftTool == "Shovel"
+                                "Stone", "Coal", "Iron", "Gold", "Diamond" -> selectedMinecraftTool == "Pickaxe"
+                                else -> true
+                              }
+                              if (match) {
+                                minedResources = minedResources.toMutableMap().apply {
+                                  put(blockType, (get(blockType) ?: 0) + 1)
+                                }
+                                val nextBlock = listOf("Dirt", "Stone", "Coal", "Iron", "Gold", "Diamond").random()
+                                val newGrid = minecraftGrid.toMutableList()
+                                newGrid[index] = nextBlock
+                                minecraftGrid = newGrid
+                              }
+                            },
+                          contentAlignment = Alignment.Center
+                        ) {
+                          Text(
+                            text = blockType.take(2).toUpperCase(),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                          )
+                        }
+                      }
+                    }
                   }
                 }
               }
