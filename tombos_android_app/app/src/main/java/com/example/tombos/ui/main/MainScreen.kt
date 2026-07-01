@@ -47,6 +47,7 @@ fun MainScreen(
   var isPinAuthenticated by remember { mutableStateOf(false) }
   var pinInput by remember { mutableStateOf("") }
   var activeThemeName by remember { mutableStateOf("graphene_os") }
+  var installedApps by remember { mutableStateOf(setOf<String>()) }
   
   val activePrimary = when (activeThemeName) {
     "graphene_os" -> Color(0xFF81C784)
@@ -265,6 +266,7 @@ fun MainScreen(
             "messenger" -> 1
             "openclaw" -> 2
             "terminal" -> 3
+            "store" -> 4
             else -> 0
           },
           modifier = Modifier
@@ -283,6 +285,9 @@ fun MainScreen(
           }
           Tab(selected = selectedTab == "terminal", onClick = { selectedTab = "terminal" }) {
             Text("Terminal", modifier = Modifier.padding(10.dp), fontSize = 11.sp)
+          }
+          Tab(selected = selectedTab == "store", onClick = { selectedTab = "store" }) {
+            Text("Store", modifier = Modifier.padding(10.dp), fontSize = 11.sp)
           }
         }
 
@@ -577,6 +582,63 @@ fun MainScreen(
                       Text(log, color = Color.Green, fontFamily = FontFamily.Monospace, fontSize = 10.sp)
                     }
                   }
+                }
+              }
+            }
+          }
+
+          "store" -> {
+            Card(
+              modifier = Modifier.fillMaxWidth(),
+              colors = CardDefaults.cardColors(containerColor = activeSurface)
+            ) {
+              Column(modifier = Modifier.padding(16.dp)) {
+                Text("🏪 Secure Sandbox App Store", fontWeight = FontWeight.Bold, color = activePrimary)
+                Spacer(modifier = Modifier.height(6.dp))
+                Text("Cryptographically signed, sandbox-approved security enclaves:", fontSize = 11.sp, color = Color.Gray)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                val apps = listOf(
+                  Triple("Signal Private Messenger", "E2EE Chat client with post-quantum security layers", "COM.SIGNAL.MESSENGER"),
+                  Triple("Orbot / Tor Client", "Onion routing proxy for full device traffic virtualization", "ORG.TORPROJECT.ORBOT"),
+                  Triple("KeePassDX Encrypted Vault", "Offline local credential store with ChaCha20 encryption", "KEEPASS.DX.VAULT"),
+                  Triple("Auditor Attestation", "Hardware security module validator and OS signature checks", "ORG.ATTACK.AUDITOR"),
+                  Triple("OpenKeychain PGP", "PGP key generator, file signers, and signature verification", "ORG.OPENKEYCHAIN")
+                )
+
+                apps.forEach { app ->
+                  Row(
+                    modifier = Modifier
+                      .fillMaxWidth()
+                      .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                  ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                      Text(app.first, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color.White)
+                      Text(app.second, fontSize = 10.sp, color = Color.Gray)
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    val isInstalled = installedApps.contains(app.third)
+                    Button(
+                      onClick = {
+                        if (!isInstalled) {
+                          installedApps = installedApps + app.third
+                        }
+                      },
+                      colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isInstalled) Color.DarkGray else activePrimary
+                      ),
+                      modifier = Modifier.wrapContentSize()
+                    ) {
+                      Text(
+                        text = if (isInstalled) "Installed" else "Install",
+                        fontSize = 10.sp,
+                        color = if (isInstalled) Color.LightGray else Color.Black
+                      )
+                    }
+                  }
+                  HorizontalDivider(color = Color.DarkGray, modifier = Modifier.padding(vertical = 4.dp))
                 }
               }
             }
