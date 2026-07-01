@@ -72,7 +72,7 @@ fun MainScreen(
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
     Text(
-      text = "🐢 Turtle OS Mobile Enclave",
+      text = "🛡️ GrapheneOS Secure Enclave",
       fontSize = 20.sp,
       fontWeight = FontWeight.Bold,
       color = MaterialTheme.colorScheme.primary,

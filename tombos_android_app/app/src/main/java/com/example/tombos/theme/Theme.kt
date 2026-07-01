@@ -11,17 +11,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-  primary = TurtleNeonGreen,
-  secondary = TurtleOliveSecondary,
-  tertiary = TurtleDeepGreen,
-  background = TurtleDarkShell,
-  surface = TurtleDarkShell
+  primary = GrapheneOSGreen,
+  secondary = GrapheneOSSteel,
+  tertiary = GrapheneOSSlate,
+  background = GrapheneOSBlack,
+  surface = GrapheneOSSlate
 )
 
 private val LightColorScheme = lightColorScheme(
-  primary = TurtleOliveSecondary,
-  secondary = TurtleDeepGreen,
-  tertiary = TurtleNeonGreen
+  primary = GrapheneOSSteel,
+  secondary = GrapheneOSSlate,
+  tertiary = GrapheneOSGreen,
+  background = GrapheneOSBlack,
+  surface = GrapheneOSSlate
 )
 
 @Composable
